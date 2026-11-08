@@ -248,7 +248,7 @@
 </head>
 <body>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v193</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v194</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -317,7 +317,7 @@
     <div class="settings">
       <label class="sl"><span>めくる位置（最終小節の中）<b id="fracv">70%</b></span><input type="range" id="frac" min="20" max="90" step="5" value="70"><span style="display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:-8px;line-height:1"><span>早め</span><span>遅め</span></span></label>
       <label class="sl sl2"><span>ページのめくり始め<b id="prevv"></b></span><input type="range" id="prevbars" min="0" max="4" step="1" value="2"></label>
-      <div id="tempoblock"><small id="tempoinfo" style="white-space:pre-line"></small>
+      <div id="tempoblock" hidden><small id="tempoinfo" style="white-space:pre-line"></small>
       <button type="button" id="learnreset">覚えた時間配分を消す</button></div>
       <button type="button" id="recbtn" aria-pressed="false">演奏を録音する</button><input type="checkbox" id="recon" hidden>
       <div id="recblock" style="display:grid;gap:14px"><button type="button" id="recdel" style="display:grid;gap:2px;justify-items:center"><span id="recdeltx">録音を消す</span><small id="recsaved" style="color:var(--dim);font-size:12px;line-height:1.3"></small></button><button type="button" id="recexp">録音を書き出す</button></div>
@@ -454,9 +454,6 @@
     <p>設定（歯車のマーク）の「めくる位置」を変えると、めくる早さを調整できます。曲の一覧で、鉛筆と四角のマーク（覚え直す）を押すと、楽譜と書き込みはそのままで、今の演奏の録音から、めくる場所をやり直せます。</p>
     <h3>アプリのバージョンアップを反映させるためには？</h3>
     <p>ホーム画面のアプリを下から上へスワイプし、一旦完全に終了して、開き直してください。ホーム画面のアイコンを削除すると、曲のデータが消えるので、絶対にしないでください。</p>
-    <h3>お手本演奏と「各小節の時間配分」の違い（早見表）</h3>
-    <div style="overflow-x:auto"><table style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:14px;line-height:1.5"><thead><tr><th style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;width:7.5em"></th><th style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">① お手本演奏</th><th style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">② 各小節の時間配分を覚えさせる（演奏後）</th></tr></thead><tbody><tr><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;font-weight:700;white-space:nowrap">いつ覚えるか</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">曲を作るとき（楽譜の写真と録音を用意する）。あとから、曲の一覧の「覚え直す」でも、いつでも差し替えられる</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">弾き終えたあとに表示される画面で、ボタンを押したとき</td></tr><tr><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;font-weight:700;white-space:nowrap">何を覚えるか</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">録音の音の特徴の時間変化／楽譜の各ページが録音のどこから始まるか／ページをめくる位置（録音を聞かせながら「ここで譜めくりをする」で教える）／繰り返しの扱い／楽譜の写真、切り抜き、書き込み、ページの名前</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">曲全体の各小節の長さ（秒）。弾いた範囲だけ</td></tr><tr><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;font-weight:700;white-space:nowrap">覚えないもの</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">録音の音声そのもの</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">音の高さ、めくる位置、ページの割り振り</td></tr><tr><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;font-weight:700;white-space:nowrap">何に使うか</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">今弾いている場所の追跡と、めくる位置の基準（地図）</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">小節ごとの時間配分を、今の演奏に合わせる（時間の物差し）</td></tr><tr><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;font-weight:700;white-space:nowrap">範囲</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">曲全体、または一部のページだけ差し替え（「ここから」「ここまで」のピンで、そのページの頭から次のページの頭までを指定）</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">弾いた範囲だけ。ページごとに覚えることもできる。途中で止めたページは対象外</td></tr><tr><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;font-weight:700;white-space:nowrap">演奏後の表示</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">「◯ページ目：お手本演奏の約◯倍」</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">覚えたページは「これまでの演奏で覚えたテンポの約◯倍」と、そのページを基準に表示</td></tr><tr><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;font-weight:700;white-space:nowrap">おすすめの場面</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">今の演奏が、お手本の速さと大きく違うとき（約0.8倍より遅い、約1.25倍より速い）</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">速さの違いが小さいとき。リタルダンドやルバートで、小節ごとの長さが変わったとき</td></tr><tr><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;font-weight:700;white-space:nowrap">消す方法</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">曲を消す、または作り直す</td><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">設定の「覚えた時間配分を消す」</td></tr><tr><td style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left;font-weight:700;white-space:nowrap">保存場所</td><td colspan="2" style="border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left">どちらも、この iPad の中だけ（他の端末には渡せません）</td></tr></tbody></table></div>
-    <p style="margin-top:12px">② は小節の長さを記録するだけで、「どこでめくるか」は変えません。曲を作るページの ④「新しいテンポを覚える」で新しい演奏を覚えさせると、それまでに ② で覚えた時間配分は消えます。演奏後の画面では、速さの差に応じて、①（お手本演奏の差し替え）と ② のどちらがおすすめかを案内します。</p>
   </div>
 </div>
 <div id="vhint" hidden style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center"><div style="background:#fff;color:#111;border-radius:16px;padding:22px 24px;max-width:420px;margin:16px;text-align:center;font-size:17px;line-height:1.6">動画を選ぶと、プレビュー画面が出ます。<br><b>右上の青い ✓ を押してください。</b><br><span style="color:#666;font-size:14px">（下の▶︎は再生ボタンです。押すと音が流れるだけで、選んだことになりません）</span><br><button id="vhintok" type="button" style="margin-top:14px;font-size:18px;padding:10px 36px;border-radius:12px;border:0;background:#2563eb;color:#fff">OK</button></div></div>
@@ -786,7 +783,7 @@
     }
     start[n] = t / FPS;
     var r = Object.create(Reference.prototype);
-    r.T = total; r.R = R; r.frameBars = fb; r.barStart = start; r.order = old.order; r.nBars = n; r.barFrames = total / n;
+    r.T = total; r.R = R; r.frameBars = fb; r.barStart = start; r.order = old.order; r.nBars = n; r.barFrames = (old.barFrames || total / n) * total / Math.max(1, old.T);      // (the length of a bar in frames is the song's own value, stretched like the song: not the average of the pseudo bars)
     return r;
   };
 
@@ -2190,7 +2187,7 @@
           var d7 = document.createElement('div'); d7.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px';
           var d7t = document.createElement('span'); d7t.textContent = (ja2 || (tempo && tempo.barSec)) ? paceRel(q, learn) : _t('{p}ページ目：約{n}割').replace('{p}', q.page).replace('{n}', Math.round(q.pace * 100)); d7.appendChild(d7t);
           var pb7 = document.createElement('button'); pb7.type = 'button'; pb7.style.cssText = 'width:auto;flex:none;padding:8px 16px;white-space:nowrap'; pb7.textContent = ja2 ? q.page + 'ページ目の時間配分を覚えさせる' : _t('Teach the bar timing of page {p}').replace('{p}', q.page);
-          pb7.onclick = function () { pb7.disabled = true; learnPage(learn, q, pb7); }; d7.appendChild(pb7); box.appendChild(d7);
+          pb7.onclick = function () { pb7.disabled = true; learnPage(learn, q, pb7); }; box.appendChild(d7);
         });
       }
       if (!sl && learn && learn.pg && r.pages) { try {      /* which of the two is better for a page: a new reference playing (big difference of speed) or the bar timing (small difference, ritardando, rubato) */
@@ -2200,13 +2197,13 @@
         var addR = function (txt) { var dr = document.createElement('div'); dr.style.cssText = 'margin:6px 0'; dr.textContent = txt; box.appendChild(dr); };
         if (bigP.length) addR(_t('{p}は、お手本演奏と速さが大きく違います。曲の一覧の「覚え直す」で、お手本演奏を差し替えるのをお勧めします。').replace('{p}', plist(bigP)))
         if (bigP.length && curId) { var jb = document.createElement('button'); jb.type = 'button'; jb.style.cssText = 'margin:2px 0 8px;min-height:44px'; jb.textContent = _t('曲を作るページを開く'); jb.onclick = function () { var le = lib.filter(function (x) { return x.id === curId; })[0]; if (!le) return; box.hidden = true; if (running) stop(); $('lib').hidden = true; wredo(le, 0); }; box.appendChild(jb); }
-        if (smallP.length) addR(_t('{p}は、速さの違いが小さいので、「各小節の時間配分を覚えさせる」をお勧めします。リタルダンドやルバートなどで、小節ごとの長さが変わったときにも向いています。').replace('{p}', plist(smallP)));
+        // (a small difference of speed: nothing to do - the tempo range "wide" follows it)
       } catch (e4) {} }
       var bs = document.createElement('div'); bs.className = 'pb';
       if (sl && slowMem) { var d4 = document.createElement('div'); d4.textContent = _t('ゆっくり用に覚えた速さ：') + slowMemText(); box.insertBefore(d4, bs); }
       var okp = (r.pages || []).filter(function (q) { return q.pace >= 0.2 && q.pace < 0.85 && q.full !== false; }).map(function (q) { return q.page; }); if (sl && okp.length && !(r.pages && r.pages.length > 1)) { var sb = document.createElement('button'); sb.type = 'button'; sb.textContent = (!window.LANG || window.LANG === 'ja') ? (okp.length === 1 ? okp[0] + 'ページ目' : okp.length === 2 ? okp[0] + 'ページ目と' + okp[1] + 'ページ目' : okp.slice(0, -1).map(function (x) { return x + 'ページ目'; }).join('、') + 'と' + okp[okp.length - 1] + 'ページ目') + 'の速さをゆっくり用に覚える' : _t('Remember the speed of page(s) {p} for slowly').replace('{p}', okp.join(', ')); sb.onclick = function () { var m = slowMem && slowMem.pages ? { pages: Object.assign({}, slowMem.pages), at: Date.now() } : { pages: {}, at: Date.now() }; r.pages.forEach(function (q) { if (q.pace >= 0.2 && q.pace < 0.85 && q.full !== false) m.pages[q.page] = Math.round(q.pace * 1000) / 1000; }); slowMem = m; store.putKey(slowKey(), JSON.stringify(m)); showTempoInfo(); box.hidden = true; toast(_t('覚えました。次の「ゆっくり」から使います。')); log(_t('ゆっくり用の速さを覚えました')); }; bs.appendChild(sb); }
       if (sl && slowMem) { var xb = document.createElement('button'); xb.type = 'button'; xb.textContent = _t('覚えた速さを消す'); xb.onclick = function () { slowMem = null; store.putKey(slowKey(), ''); showTempoInfo(); box.hidden = true; toast(_t('覚えた速さを消しました')); }; bs.appendChild(xb); }
-      if (!sl && learn) { var lb = document.createElement('button'); lb.type = 'button'; lb.textContent = _t('各小節の時間配分を覚えさせる'); lb.onclick = function () { box.hidden = true; applyPlayed(learn); }; bs.appendChild(lb); }
+      if (false) { var lb = document.createElement('button'); lb.type = 'button'; lb.textContent = _t('各小節の時間配分を覚えさせる'); lb.onclick = function () { box.hidden = true; applyPlayed(learn); }; bs.appendChild(lb); }
       var cb = document.createElement('button'); cb.type = 'button'; cb.textContent = _t('閉じる'); cb.onclick = function () { box.hidden = true; }; bs.appendChild(cb); box.appendChild(bs); box.hidden = false;
     }
   }
@@ -2257,9 +2254,9 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v193', title: pkg.title, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: +$('frac').value, previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v194', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: +$('frac').value, previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
-      trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0)]; }) };
+      trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
   function archiveRun(why) {                                   // called just before the follower is replaced by a new one
     try { var rr = runRecord(600); if (rr) { rr.endedBy = why || 'restart'; prevRuns.push(rr); if (prevRuns.length > 8) prevRuns.shift(); } } catch (e) {}
@@ -2363,7 +2360,7 @@
     pkg = Song.effective(pkgSrc, repOff); refCache = null; mapCache = {}; pvRect = {}; pager = null; tempo = null; slowMem = null; slowMemLoad();
     maxPage = Math.max.apply(null, Object.keys(pkg.bar_page).map(function (k) { return pkg.bar_page[k]; }));
     var mk = startPos.mark; if (mk) { var sp = startFromTap(mk.page, mk.x, mk.y); startPos = { page: mk.page, pos: sp === null || sp === undefined ? 0 : sp, mark: mk }; } else startPos = { page: pkg.bar_page[pkg.order[0]], pos: 0, mark: null };
-    showTempoInfo(); store.getKey(sig(), function (t0) { var go = function (t) { if (t && pkg) { try { tempo = JSON.parse(t); if (tempo.barSec.length !== pkg.order.length) tempo = null; } catch (e) { tempo = null; } showTempoInfo(); } }; if (t0) go(t0); else store.getKey(sigOld(), go); });
+    showTempoInfo(); store.getKey(sig(), function (t0) { var go = function (t) { if (t && pkg) { try { tempo = null; /* learned bar timing is no longer used */ } catch (e) { tempo = null; } showTempoInfo(); } }; if (t0) go(t0); else store.getKey(sigOld(), go); });
     drawPage(null, 0);
   }
   function repDelete(id) {
@@ -3929,7 +3926,7 @@
     tempo = null; slowMem = null; slowMemLoad(); $('learnbtn').disabled = false; showTempoInfo(); inkLoad(); viewLoad(); paLoad(); geoLoad();
     if (ud && save) { var ks = Object.keys(ud), lf = ks.length, nn = p.nkey || p.order.length; ks.forEach(function (pf) { store.putKey(pf + p.title + ':' + nn, ud[pf], function () { if (--lf === 0) { inkLoad(); viewLoad(); paLoad(); geoLoad(); } }); }); }       // handwriting etc. that came with a backup file
     tmode = 'single'; store.getKey('mode:' + (p.title || '') + ':' + (p.nkey || p.order.length), function (m) { if (pkg === p || (pkg && pkg.title === p.title)) tmode = m === 'wide' ? 'wide' : 'single'; });
-    store.getKey(sig(), function (t0) { var go = function (t) { if (t) { try { tempo = JSON.parse(t); if (tempo.barSec.length !== p.order.length) tempo = null; } catch (e) { tempo = null; } showTempoInfo(); } }; if (t0) go(t0); else store.getKey(sigOld(), go); });
+    store.getKey(sig(), function (t0) { var go = function (t) { if (t) { try { tempo = null; /* learned bar timing is no longer used */ } catch (e) { tempo = null; } showTempoInfo(); } }; if (t0) go(t0); else store.getKey(sigOld(), go); });
     if (!tickOn) { tickOn = true; requestAnimationFrame(tick); }
     nextPrep();
   }
