@@ -104,6 +104,9 @@
   #metp input[type=range] { width: 100%; min-height: 30px; accent-color: var(--accent); }
   #metp .mrow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; } #metp .mrow > span { font-size: 14px; min-width: 44px; }
   #metp #metbeats button { min-height: 40px; min-width: 40px; padding: 0 8px; } #metp #metbeats button.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  #metbar { display: none; position: fixed; left: 50%; transform: translateX(-50%); bottom: max(20px, env(safe-area-inset-bottom)); z-index: 60; gap: 12px; padding: 9px 14px; border-radius: 16px; background: rgba(30,30,36,.55); pointer-events: none; }      /* while the app follows: the beat dots only (no sound) */
+  @media (max-width: 700px) { #metbar { bottom: calc(max(20px, env(safe-area-inset-bottom)) + 110px); } }      /* narrow phone: above the button row */
+  #metbar.run { display: flex; } #metbar i { width: 14px; height: 14px; border-radius: 7px; background: rgba(255,255,255,.28); } #metbar i.f { background: var(--accent); } #metbar i.f.a { background: #fb7185; }
   #metp #metdots { display: flex; gap: 8px; justify-content: center; min-height: 14px; } #metp #metdots i { width: 14px; height: 14px; border-radius: 7px; background: rgba(255,255,255,.22); } #metp #metdots i.f { background: var(--accent); } #metp #metdots i.f.a { background: #fb7185; }
   #metp #metgo { background: var(--accent); border-color: #fff; font-weight: 700; flex: 1; } #metp #metgo.run { background: #b8442b; }
   #metp .pclose { justify-self: end; width: 32px; min-height: 32px !important; height: 32px; padding: 0 !important; border-radius: 16px !important; font-size: 18px !important; line-height: 1; margin: 0 -6px -6px 0; }
@@ -276,7 +279,7 @@
 <div id="launch"></div>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v208</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v209</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -376,6 +379,7 @@
 </footer>
 
 <button type="button" id="nextmv" hidden></button>
+<div id="metbar"></div>
 <div id="nxt" hidden>
   <div class="box">
     <h2 id="nxth"></h2>
@@ -2437,7 +2441,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v208', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: +$('frac').value, previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v209', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: +$('frac').value, previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -4742,7 +4746,7 @@
     var st = { bpm: 100, beats: 4, vol: 60 }, ctx = null, tm = 0, nextT = 0, beat = 0, on = false, taps = [];
     try { var sv = JSON.parse(localStorage.getItem('pagic-met') || 'null'); if (sv) { st.bpm = Math.max(30, Math.min(240, +sv.bpm || 100)); st.beats = [0, 2, 3, 4, 6].indexOf(+sv.beats) >= 0 ? +sv.beats : 4; st.vol = Math.max(0, Math.min(100, sv.vol == null ? 60 : +sv.vol)); } } catch (e) {}
     function save() { try { localStorage.setItem('pagic-met', JSON.stringify(st)); } catch (e) {} }
-    function dots() { var d = $('metdots'), n = st.beats || 0, i; d.innerHTML = ''; for (i = 0; i < n; i++) d.appendChild(document.createElement('i')); }
+    function dots() { var n = st.beats || 0, i; ['metdots', 'metbar'].forEach(function (id) { var d = $(id); d.innerHTML = ''; for (i = 0; i < n; i++) d.appendChild(document.createElement('i')); }); }
     function ui() {
       $('metv').textContent = st.bpm; $('metr').value = st.bpm; $('metvol').value = st.vol;
       Array.prototype.forEach.call($('metbeats').querySelectorAll('button'), function (b) { b.classList.toggle('on', +b.getAttribute('data-b') === st.beats); });
@@ -4755,9 +4759,22 @@
       g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(Math.max(v, 0.0001), t + 0.002); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
       o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + 0.09);
     }
-    function flash(i, acc) { var d = $('metdots').children[i]; if (!d) return; d.className = 'f' + (acc ? ' a' : ''); setTimeout(function () { d.className = ''; }, 110); }
+    function flash(i, acc) { ['metdots', 'metbar'].forEach(function (id) { var d = $(id).children[i]; if (!d) return; d.className = 'f' + (acc ? ' a' : ''); setTimeout(function () { d.className = ''; }, 110); }); }
+    var sil = false, nextP = 0;      // while following: no sound (the microphone would hear it), the dots at the bottom go on with their own clock
+    function silentTick() {
+      var now = performance.now();
+      if (!sil) { sil = true; nextP = now + Math.max(0, (nextT - ctx.currentTime) * 1000); $('metbar').className = 'run'; try { if (typeof asBack === 'function') asBack(); } catch (e) {} }
+      while (nextP < now + 120) {
+        var n = st.beats, i = n ? beat % n : 0, acc = n > 0 && i === 0;
+        (function (i2, a2, ms) { setTimeout(function () { if (on && n) flash(i2, a2); }, Math.max(0, ms)); })(i, acc, nextP - now);
+        nextP += 60000 / st.bpm; beat++;
+      }
+    }
     function tick() {
-      if (document.body.classList.contains('playing') || document.body.classList.contains('honban') || document.hidden) { stop(); return; }
+      var bc = document.body.classList;
+      if (bc.contains('honban') || document.hidden) { stop(); return; }
+      if (bc.contains('playing')) { silentTick(); return; }
+      if (sil) { stop(); return; }      // following has ended: the metronome stops (start it again when needed)
       while (nextT < ctx.currentTime + 0.12) {
         var n = st.beats, i = n ? beat % n : 0, acc = n > 0 && i === 0;
         click(nextT, acc);
@@ -4770,12 +4787,12 @@
       try { if (navigator.audioSession) { navigator.audioSession.type = 'playback'; asSet = true; } } catch (e) {}      // iOS: play out loud even with the silent switch on / after the microphone was used (same as the playback of recordings)
       function go() {
         try { var sb = ctx.createBuffer(1, 1, 22050), ss = ctx.createBufferSource(); ss.buffer = sb; ss.connect(ctx.destination); ss.start(0); } catch (e) {}
-        beat = 0; nextT = ctx.currentTime + 0.1; clearInterval(tm); tm = setInterval(tick, 25); on = true; ui();
+        sil = false; beat = 0; nextT = ctx.currentTime + 0.1; clearInterval(tm); tm = setInterval(tick, 25); on = true; ui();
       }
       var pr = null; try { pr = ctx.state !== 'running' && ctx.resume ? ctx.resume() : null; } catch (e) {}
       if (pr && pr.then) pr.then(go, go); else go();
     }
-    function stop() { clearInterval(tm); tm = 0; on = false; ui(); try { if (typeof asBack === 'function') asBack(); } catch (e) {} }
+    function stop() { clearInterval(tm); tm = 0; on = false; sil = false; try { $('metbar').className = ''; } catch (e) {} ui(); try { if (typeof asBack === 'function') asBack(); } catch (e) {} }
     function hold(btn, d) {
       var t1 = 0, t2 = 0;
       function end() { clearTimeout(t1); clearInterval(t2); }
@@ -4793,7 +4810,7 @@
     $('metgo').onclick = function () { if (on) stop(); else start(); };
     $('metbtn').onclick = function () { var p = $('metp'); p.hidden = !p.hidden; if (!p.hidden) { try { $('inkadj').hidden = true; } catch (e) {} dots(); ui(); } };
     $('metx').onclick = function () { $('metp').hidden = true; };
-    setInterval(function () { if (on && (document.body.classList.contains('playing') || document.body.classList.contains('honban'))) stop(); }, 300);
+    setInterval(function () { if (on && document.body.classList.contains('honban')) stop(); }, 300);
     dots(); ui();
   })();
   var inline = document.getElementById('pkgdata');
