@@ -276,7 +276,7 @@
 <div id="launch"></div>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v207</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v208</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2437,7 +2437,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v207', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: +$('frac').value, previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v208', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: +$('frac').value, previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2664,13 +2664,24 @@
     }
     [0, 300, 800, 1500, 2500, 3500, 5000].forEach(function (ms) { setTimeout(function () { dimsLine('t'); }, ms); });
     ['resize', 'orientationchange'].forEach(function (n) { window.addEventListener(n, function () { if (performance.now() < 8000) dimsLine(n); }); });
-    function lcLift() { clearInterval(lcT); if (lc) { lc.className = 'off'; setTimeout(function () { if (lc && lc.parentNode) lc.parentNode.removeChild(lc); lc = null; }, 400); } try { fitH(); } catch (e) {} }
-    if (lc) lcT = setInterval(function () {
-      lcN++;
-      if (sizeOk()) { if (++lcOk >= 2) lcLift(); } else { lcOk = 0; if (lcN === 2) { try { var mv = document.querySelector('meta[name=viewport]'), mc = mv.content; mv.content = mc + ', shrink-to-fit=no'; setTimeout(function () { mv.content = mc; }, 60); } catch (e) {} } fitH(); }
-      if (lcN > 50) lcLift();
-    }, 100);
-    var lcOk = 0;
+    var lcOk = 0, lcRun = 0;
+    function lcLift() { clearInterval(lcT); lcRun = 0; if (lc) { lc.className = 'off'; } try { fitH(); } catch (e) {} }
+    function lcKick() { try { var b = document.body; b.style.width = 'calc(100% - 1px)'; void b.offsetWidth; b.style.width = ''; void b.offsetWidth; } catch (e) {} }      // a one-pixel change forces a fresh layout and repaint
+    function lcStart(max) {      // curtain up, then wait until the size is right (twice in a row) or the time is over
+      if (!lc) return; clearInterval(lcT); lcN = 0; lcOk = 0; lcRun = 1; lc.className = '';
+      lcT = setInterval(function () {
+        lcN++;
+        if (sizeOk()) { if (++lcOk >= 2) lcLift(); } else { lcOk = 0; if (lcN === 2 && max > 30) { try { var mv = document.querySelector('meta[name=viewport]'), mc = mv.content; mv.content = mc + ', shrink-to-fit=no'; setTimeout(function () { mv.content = mc; }, 60); } catch (e) {} } fitH(); }
+        if (lcN === 3 || lcN === 8) lcKick();
+        if (lcN > max) lcLift();
+      }, 100);
+    }
+    lcStart(50);
+    // coming back to the app (it was only asleep, so nothing is loaded again): curtain up when it goes away, and again on return until the size has been right for a moment
+    function lcRes(tag) { try { lcRec('resume ' + tag + ' ' + (new Date().toISOString().slice(11, 23))); [0, 100, 300, 600, 1000, 1500, 2000, 3000].forEach(function (ms) { setTimeout(function () { dimsLine('r' + ms); }, ms); }); } catch (e) {} lcStart(30); lcKick(); }
+    document.addEventListener('visibilitychange', function () { if (document.hidden) { if (lc) { lc.style.transition = 'none'; lc.className = ''; void lc.offsetWidth; lc.style.transition = ''; } } else lcRes('visible'); });
+    window.addEventListener('pagehide', function () { if (lc) { lc.style.transition = 'none'; lc.className = ''; } });
+    window.addEventListener('pageshow', function (e) { if (e.persisted) lcRes('pageshow'); });
     fitH(); setInterval(function () { var vv = window.visualViewport, H = Math.round(vv && vv.height ? vv.height : window.innerHeight); if (H > 200 && Math.abs(document.body.getBoundingClientRect().height - H) > 2) fitH(); }, 1500);      // and a check every moment: if the app is not as tall as the screen, it is put right
   })();
   var drawRaf = 0; function drawSoon() { if (drawRaf) return; drawRaf = requestAnimationFrame(function () { drawRaf = 0; drawPage(null, 0); }); }      // at most one full redraw per frame
