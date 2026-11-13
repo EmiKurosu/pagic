@@ -275,7 +275,7 @@
 <div id="launch"></div>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 3500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v205</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v206</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2436,7 +2436,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v205', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: +$('frac').value, previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v206', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: +$('frac').value, previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2649,10 +2649,17 @@
     function sizeOk() {
       try {
         var vv = window.visualViewport, W = Math.round(vv && vv.width ? vv.width : window.innerWidth), H = Math.round(vv && vv.height ? vv.height : window.innerHeight), r = document.body.getBoundingClientRect();
+        var so = window.screen && screen.orientation && screen.orientation.type;      // the device's own orientation (it can be right while the page still has the old size)
+        if (so && navigator.standalone) { var portraitS = so.indexOf('portrait') === 0; if (portraitS !== (window.innerWidth < window.innerHeight) || portraitS !== (W < H)) return false; }
         if (typeof window.orientation === 'number') { var portrait = window.orientation === 0 || window.orientation === 180; if (portrait !== (window.innerWidth < window.innerHeight) || portrait !== (W < H)) return false; }
         return Math.abs(r.width - W) <= 2 && Math.abs(r.height - H) <= 2 && Math.abs(window.innerWidth - W) <= 2 && Math.abs(window.innerHeight - H) <= 2 && document.documentElement.clientWidth <= W + 2;
       } catch (e) { return true; }
     }
+    function dimsLine(tag) {      // start-up record (settings > "動作の記録を書き出す"): which sizes the iPad reports in the first seconds
+      try { var vv = window.visualViewport, r = document.body.getBoundingClientRect(); log('size ' + tag + ' ' + Math.round(performance.now()) + 'ms inner=' + window.innerWidth + 'x' + window.innerHeight + ' vv=' + (vv ? Math.round(vv.width) + 'x' + Math.round(vv.height) : '-') + ' body=' + Math.round(r.width) + 'x' + Math.round(r.height) + ' screen=' + screen.width + 'x' + screen.height + ' so=' + (screen.orientation ? screen.orientation.type : '-') + ' wo=' + window.orientation + ' standalone=' + (navigator.standalone ? 1 : 0) + ' ok=' + sizeOk()); } catch (e) {}
+    }
+    [0, 300, 800, 1500, 2500, 3500, 5000].forEach(function (ms) { setTimeout(function () { dimsLine('t'); }, ms); });
+    ['resize', 'orientationchange'].forEach(function (n) { window.addEventListener(n, function () { if (performance.now() < 8000) dimsLine(n); }); });
     function lcLift() { clearInterval(lcT); if (lc) { lc.className = 'off'; setTimeout(function () { if (lc && lc.parentNode) lc.parentNode.removeChild(lc); lc = null; }, 400); } try { fitH(); } catch (e) {} }
     if (lc) lcT = setInterval(function () {
       lcN++;
@@ -4463,7 +4470,8 @@
     try {
       n.style.top = ''; n.style.bottom = ''; n.style.maxWidth = ''; n.style.left = ''; n.style.transform = '';
       if (n.hidden || !b) return;
-      var r = b.getBoundingClientRect(); if (!r.height || !r.width) return;
+      var r = b.getBoundingClientRect(); if (!r.height || !r.width) { b = $('fsslow'); r = b ? b.getBoundingClientRect() : r; }      // full-screen mode has its own "slow" button
+      if (!r.height || !r.width) return;
       var cf = $('cfwrap'), cr = cf && cf.getBoundingClientRect(), L = r.right + 10, R = cr && cr.width && Math.abs(cr.top - r.top) < 40 ? cr.left - 10 : window.innerWidth - 10, span = R - L;
       if (span < 200) return;
       n.style.maxWidth = Math.min(window.innerWidth * 0.86, span) + 'px';
@@ -4741,10 +4749,16 @@
       }
     }
     function start() {
-      try { if (!ctx) { var AC = window.AudioContext || window.webkitAudioContext; ctx = new AC(); } if (ctx.state === 'suspended' && ctx.resume) ctx.resume(); } catch (e) { return; }
-      beat = 0; nextT = ctx.currentTime + 0.08; clearInterval(tm); tm = setInterval(tick, 25); on = true; ui();
+      try { if (!ctx) { var AC = window.AudioContext || window.webkitAudioContext; ctx = new AC(); } } catch (e) { return; }
+      try { if (navigator.audioSession) { navigator.audioSession.type = 'playback'; asSet = true; } } catch (e) {}      // iOS: play out loud even with the silent switch on / after the microphone was used (same as the playback of recordings)
+      function go() {
+        try { var sb = ctx.createBuffer(1, 1, 22050), ss = ctx.createBufferSource(); ss.buffer = sb; ss.connect(ctx.destination); ss.start(0); } catch (e) {}
+        beat = 0; nextT = ctx.currentTime + 0.1; clearInterval(tm); tm = setInterval(tick, 25); on = true; ui();
+      }
+      var pr = null; try { pr = ctx.state !== 'running' && ctx.resume ? ctx.resume() : null; } catch (e) {}
+      if (pr && pr.then) pr.then(go, go); else go();
     }
-    function stop() { clearInterval(tm); tm = 0; on = false; ui(); }
+    function stop() { clearInterval(tm); tm = 0; on = false; ui(); try { if (typeof asBack === 'function') asBack(); } catch (e) {} }
     function hold(btn, d) {
       var t1 = 0, t2 = 0;
       function end() { clearTimeout(t1); clearInterval(t2); }
