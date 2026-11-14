@@ -279,10 +279,10 @@
 </head>
 <body>
 <div id="launch"></div>
-<script>try { if (/[?&]fresh=/.test(location.search)) { var lg = (navigator.language || 'en').slice(0, 2), lt = document.getElementById('launch'); lt.style.cssText = 'display:flex;align-items:center;justify-content:center;font:15px/1.4 Inter,-apple-system,sans-serif;color:#8a8780'; lt.textContent = lg === 'ja' ? '更新しています…' : lg === 'de' ? 'Wird aktualisiert …' : 'Updating …'; } } catch (e) {}      /* after an update the plain screen says so, instead of showing the half-ready app */</script>
+<script>try { if (/[?&]fresh=/.test(location.search)) { var lg = (navigator.language || 'en').slice(0, 2), lt = document.getElementById('launch'); lt.style.cssText = 'display:flex;align-items:center;justify-content:center;font:15px/1.4 Inter,-apple-system,sans-serif;color:#8a8780'; lt.textContent = lg === 'ja' ? '更新しています…' : lg === 'de' ? 'Wird aktualisiert …' : 'Updating …'; try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again, and shows this text at every start */ } catch (e) {}      /* after an update the plain screen says so, instead of showing the half-ready app */</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v211</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v212</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2458,7 +2458,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v211', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v212', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2662,10 +2662,11 @@
   })();
   (function () {                                    // the app is exactly as tall as the visible screen (the home-screen app on iPad sometimes keeps an old, taller size after turning the iPad, waking it or changing the stand)
     function fitH() {
-      try { var vv = window.visualViewport, H = Math.round(vv && vv.height ? vv.height : window.innerHeight); if (H > 200) { document.body.style.height = H + 'px'; document.body.style.bottom = 'auto'; } window.scrollTo(0, 0); if (typeof drawPage === 'function' && typeof shownPage !== 'undefined' && shownPage != null) drawPage(null, 0); } catch (e) {}
+      try { var vv = window.visualViewport, H = Math.round(vv && vv.height ? vv.height : window.innerHeight); if (H > 200) { document.body.style.height = H + 'px'; document.body.style.bottom = 'auto'; } var W0 = Math.round(vv && vv.width ? vv.width : window.innerWidth); if (W0 > 200 && Math.abs(document.body.getBoundingClientRect().width - W0) > 2) { document.body.style.width = W0 + 'px'; document.body.style.right = 'auto'; } window.scrollTo(0, 0); if (typeof drawPage === 'function' && typeof shownPage !== 'undefined' && shownPage != null) drawPage(null, 0); } catch (e) {}
     }
     ['resize', 'orientationchange', 'pageshow', 'focus'].forEach(function (n) { window.addEventListener(n, function () { fitH(); setTimeout(fitH, 300); }); });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) { fitH(); setTimeout(fitH, 300); } });
+    document.addEventListener('visibilitychange', function () { try { if (document.hidden && typeof running !== 'undefined' && !running && typeof micKeep !== 'undefined' && micKeep) micRelease(micKeep); } catch (e) {} });      // after lock/sleep a kept microphone can be dead: let it go, ask fresh next time
     if (window.visualViewport) visualViewport.addEventListener('resize', fitH);
     var lc = document.getElementById('launch'), lcN = 0, lcT = 0;      // start-up: the home-screen app on iPad can begin with the size of the OTHER orientation for about three seconds. Until the size is right the screen stays plain; the check runs every 0.1 s (at most 3.5 s)
     function sizeOk() {
@@ -2785,6 +2786,7 @@
   })();
   function micGet() {
     clearTimeout(micTimer);
+    if (asSet) { asBack(); if (micKeep) { try { micKeep.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} micKeep = null; } }      // the metronome had switched the audio session to 'playback': the kept microphone would deliver silence, so start fresh
     if (micKeep && micKeep.getAudioTracks().length && micKeep.getAudioTracks().every(function (t) { return t.readyState === 'live' && !t.muted; })) { micKeep.getAudioTracks().forEach(function (t) { t.enabled = true; }); return Promise.resolve(micKeep); }
     if (micKeep) { try { micKeep.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} }      // the old microphone was ended from outside (orange indicator / system): throw it away and ask for a fresh one
     micKeep = null;
