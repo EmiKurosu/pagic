@@ -282,7 +282,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { var lg = (navigator.language || 'en').slice(0, 2), lt = document.getElementById('launch'); lt.style.cssText = 'display:flex;align-items:center;justify-content:center;font:15px/1.4 Inter,-apple-system,sans-serif;color:#8a8780'; lt.textContent = lg === 'ja' ? '更新しています…' : lg === 'de' ? 'Wird aktualisiert …' : 'Updating …'; } } catch (e) {}      /* after an update the plain screen says so, instead of showing the half-ready app */</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v210</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v211</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -1895,7 +1895,7 @@
     try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(fhRun); } catch (e) {} fhRun(); } catch (e) {}
   var wideKey = null, wideVal = false;
   function pageWide() { if (!pkg || !maxPage) return false; if (wideKey === pkg) return wideVal; var as = []; try { for (var q = 1; q <= maxPage; q++) { var r = pageRegion(q); if (r && r.y1 > r.y0) as.push((r.x1 - r.x0) / (r.y1 - r.y0)); } } catch (e) { return false; } if (!as.length) return false; as.sort(function (x, y) { return x - y; }); wideKey = pkg; wideVal = as[as.length >> 1] > 1.1; return wideVal; }      // a score whose pages are wider than tall (landscape): it is shown one page at a time, large, never two side by side
-  var twoUpOn = false, view2 = null;
+  var twoUpOn = false, view2 = null, twoUpLast = null;
   function viewW(c) { return twoUpOn ? Math.floor(c.width / 2) : c.width; }      // width of the part of the canvas that holds the page being played
   function playedRight() { return twoUpOn && (shownPage || 0) % 2 === 0; }      // two pages side by side like an open book: odd pages stand on the left, even pages on the right (1|2, 3|4, 5|6 ...); both are turned together after the right page; the last page, if it is odd, stands alone on the left
   function px0(c) { return playedRight() ? viewW(c) : 0; }      // left edge of the half that holds the page being played
@@ -1905,9 +1905,9 @@
     if (gp) { var odd = gp.q % 2 !== 0, bw = odd ? h : w, bh = odd ? w : h; w = bw * (1 - gp.l - gp.r); h = bh * (1 - gp.t - gp.b); }
     return w > 0 && h > 0 ? { w: w, h: h } : null;
   }
-  function spreadScale(k, c) {      // two pages side by side: both stand at the SAME size (the smaller of the two fits), whichever of them is being played
-    var f = document.body.classList.contains('full') ? 1 : 0.98, vw = viewW(c), p2 = k % 2 === 1 ? (k + 1 <= maxPage ? k + 1 : 0) : k - 1, sc = Infinity;
-    [k, p2].forEach(function (q) { if (q < 1 || q > maxPage) return; var dm = cropDims(q); if (dm) sc = Math.min(sc, Math.min(vw / dm.w, c.height / dm.h) * f); });
+  function spreadScale(k, c) {      // two pages side by side: ONE size for every page of the song (the smallest fit of all pages), so nothing grows or shrinks when the pages are turned or swiped
+    var f = document.body.classList.contains('full') ? 1 : 0.98, vw = viewW(c), sc = Infinity, q, dm;
+    for (q = 1; q <= maxPage; q++) { dm = cropDims(q); if (dm) sc = Math.min(sc, Math.min(vw / dm.w, c.height / dm.h) * f); }
     return sc === Infinity ? 1 : sc;
   }
   function drawSecond(g, c, d, kOv) {      // the other page of the spread (the partner: the next page when the played page is on the left, the one before when it is on the right; nothing after the last odd page), plain, in its half (no writing, no flag); it is cut and turned like the left one, and as large
@@ -1932,6 +1932,7 @@
   function drawPage(playBar, playFrac) {
     if (loadGate > 0) return;
     var c = $('page'), g = c.getContext('2d'), d = fit(c); twoUpOn = twoUpWanted();
+    if (twoUpOn) { if (twoUpLast !== shownPage) { if (Object.keys(adj).length) { Object.keys(adj).forEach(function (k) { delete adj[k]; }); viewSave(); } twoUpLast = shownPage; } } else twoUpLast = null;      // two pages: a zoom (made for writing) belongs to the page it was made on; when another page comes, every page is at the normal, same size again (old saved zooms are dropped too)
     g.fillStyle = '#ffffff'; g.fillRect(0, 0, c.width, c.height);
     var reg0 = shownPage != null ? pageRegion(shownPage) : null;
     if (!reg0 || !imgs[reg0.img] || !imgs[reg0.img].complete) { view = null; return; }
@@ -2457,7 +2458,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v210', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v211', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
