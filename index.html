@@ -282,7 +282,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { var lg = (navigator.language || 'en').slice(0, 2), lt = document.getElementById('launch'); lt.style.cssText = 'display:flex;align-items:center;justify-content:center;font:15px/1.4 Inter,-apple-system,sans-serif;color:#8a8780'; lt.textContent = lg === 'ja' ? '更新しています…' : lg === 'de' ? 'Wird aktualisiert …' : 'Updating …'; try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again, and shows this text at every start */ } catch (e) {}      /* after an update the plain screen says so, instead of showing the half-ready app */</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v212</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v214</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -1090,14 +1090,19 @@
     if (this.barStart && !silent && this.disp < this.runs.length - 1 && (rms === undefined || this.onset)) {      // dead reckoning: when the place stands still (or jumps about) although the player keeps playing, the time spent since the last place that really moved with the music tells where the player must be; if that is past the turn point, turn
       // in 'slow' mode the player is much slower than the reference (about 0.4 x measured) and the place the tracker reports is not reliable (it free-runs at the wrong speed, or jumps between look-alike places), so the stand-in speed is fixed and measured from the start of the page; it is not learnt from the place
       var d = this.dr || (this.dr = { tp: 0, w0: 0, rt0: null, pace: this.slow ? ((this.pagePace && this.pagePace[this.runs[this.disp][2]]) || this.slowPace) : 1, aTp: 0, aRt: 0, stall: 0 }), rt = this._sec(pos);
-      d.tp += this.dt; if (d.rt0 === null) { d.rt0 = rt; d.aRt = (this.slow && this.anchorPos !== undefined) ? this._sec(this.anchorPos) : rt; }      // slow mode: the clock runs from where the page really starts (the tracker's first place may already have drifted)
+      d.tp += this.dt; if (d.rt0 === null) { d.rt0 = rt; d.aRt = (this.slow && this.anchorPos !== undefined) ? this._sec(this.anchorPos) : rt; d.a0 = d.aRt; }      // slow mode: the clock runs from where the page really starts (the tracker's first place may already have drifted)
       if (d.tp - d.w0 >= 4) {
         var wl = d.tp - d.w0, dl = rt - d.rt0, ex = d.pace * wl;
-        if (this.slow) d.stall = d.tp; else if (dl >= 0.35 * ex && dl <= 3 * ex) { d.aRt = rt; d.aTp = d.tp; d.pace = this.slow ? Math.min(0.7, Math.max(0.5, 0.5 * d.pace + 0.5 * dl / wl)) : Math.min(1.8, Math.max(0.6, 0.5 * d.pace + 0.5 * dl / wl)); d.stall = 0; } else d.stall += wl;
+        if (this.slow) { d.stall = d.tp; if (dl >= 0.35 * ex && dl <= 1.6 * ex) { d.aRt = rt; d.aTp = d.tp; } }      // slowly: the speed stays fixed, but while the tracker moves at a believable speed the clock is set back to the tracker's place (every 4 s); a clock that only ran from the page start turned two bars too early for a player a little slower than the preset
+        else if (dl >= 0.35 * ex && dl <= 3 * ex) { d.aRt = rt; d.aTp = d.tp; d.pace = this.slow ? Math.min(0.7, Math.max(0.5, 0.5 * d.pace + 0.5 * dl / wl)) : Math.min(1.8, Math.max(0.6, 0.5 * d.pace + 0.5 * dl / wl)); d.stall = 0; } else d.stall += wl;
         d.w0 = d.tp; d.rt0 = rt;
       }
       var lb = this.runs[this.disp][1];
       if (d.stall >= 8) { var est = d.aRt + d.pace * (d.tp - d.aTp); if (est >= this._sec(lb + this.frac) && est < this._sec(lb + 1) + 15) return this._turn(t, 'turn', this.disp + 1, pos); }
+    }
+    if (this.slow && this.late && this.barStart && this.dr && silent && this.disp < this.runs.length - 1 && (this.silS || 0) >= 0.8) {      // slowly, latest turning place: the player has stopped (the page is played) and the clock is within about 3 s of the end of the page: turn now (a player a little slower than the preset never reaches the clock's end of the page before the last chord is over)
+      var dz = this.dr, estz = dz.aRt + dz.pace * (dz.tp - dz.aTp), lbz = this.runs[this.disp][1];
+      if (estz >= this._sec(lbz + 1) - 3 || dz.a0 + dz.pace * dz.tp >= this._sec(lbz + 1) + 2) return this._turn(t, 'turn', this.disp + 1, pos);
     }
     if (this.slow && this.disp < this.runs.length - 1) {      // slowly: the clock says the page is (nearly) played and the tracker, even if unsteady, has been at the end of the page (or past it) for 0.4 s: turn
       var lb2 = this.runs[this.disp][1];
@@ -2158,7 +2163,7 @@
   function goIdle() { var g = $('go'); g.textContent = _t('弾き始める'); g.classList.remove('slowgo'); }      // "slowly" is on: the start button says so (and is blue), so it cannot be forgotten
   function slowUI() { if (!running && !starting) goIdle(); Array.prototype.forEach.call(document.querySelectorAll('.slvbox'), function (x) { x.hidden = !slowOn; }); Array.prototype.forEach.call(document.querySelectorAll('.slv'), function (b) { var on = +b.getAttribute('data-lv') === slowLv; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); $('fsslow').classList.toggle('sel', slowOn); $('slowbtn').classList.toggle('sel', slowOn); $('slowbtn').setAttribute('aria-pressed', slowOn ? 'true' : 'false'); }
   slowUI();
-  var startRetried = false;
+  var startRetried = false, micFresh = false;
   function start() { micGaps = []; try { $('agmsg').hidden = true; } catch (e) {}
     if (running || starting) return; starting = true; shows = [];
     var AC = window.AudioContext || window.webkitAudioContext; ctx = preCtx && preCtx.state !== 'closed' ? preCtx : new AC(); preCtx = null;
@@ -2200,7 +2205,8 @@
         if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (l) { wake = l; }).catch(function () {});
         try { if (navigator.getBattery) navigator.getBattery().then(function (bt) { if (running && !bt.charging && bt.level < 0.2) toast(_t('⚠ バッテリーが残り{n}%です。充電しながら使ってください。').replace('{n}', Math.round(bt.level * 100))); }).catch(function () {}); } catch (e) {}      // (iPad Safari does not offer the battery level to web pages; this works where it does, e.g. Android)
         // watchdog: no sound arrives at all -> try the other capture method once, then say so
-        setTimeout(function () { if (running && ctx === myCtx && pager && pager.n === 0) { try { useSP(); } catch (x) {} } }, 6000);     // nothing arrives after 6 s: try the other capture method
+        setTimeout(function () { if (running && ctx === myCtx && pager && pager.n === 0) { try { useSP(); } catch (x) {} } }, 6000);
+        setTimeout(function () { if (running && ctx === myCtx && pager && pager.n === 0 && !micFresh) { micFresh = true; log('mic: no sound after 8 s, starting again with a fresh microphone'); stop(); if (window.__micDrop) window.__micDrop(); setTimeout(function () { start(); }, 400); } }, 8000);      // still nothing (e.g. after the iPad slept or another app had the microphone): one automatic fresh start before the error     // nothing arrives after 6 s: try the other capture method
         setTimeout(function () {                                                                                                         // still nothing after 12 s: say so
           if (!(running && ctx === myCtx && pager && pager.n === 0)) return;
           var tk = stream && stream.getAudioTracks()[0];
@@ -2458,7 +2464,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v212', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v214', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2666,7 +2672,7 @@
     }
     ['resize', 'orientationchange', 'pageshow', 'focus'].forEach(function (n) { window.addEventListener(n, function () { fitH(); setTimeout(fitH, 300); }); });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) { fitH(); setTimeout(fitH, 300); } });
-    document.addEventListener('visibilitychange', function () { try { if (document.hidden && typeof running !== 'undefined' && !running && typeof micKeep !== 'undefined' && micKeep) micRelease(micKeep); } catch (e) {} });      // after lock/sleep a kept microphone can be dead: let it go, ask fresh next time
+    document.addEventListener('visibilitychange', function () { try { if (!running && window.__micDrop) window.__micDrop(); } catch (e) {} });      // after lock/sleep a kept microphone can be dead: let it go, ask fresh next time
     if (window.visualViewport) visualViewport.addEventListener('resize', fitH);
     var lc = document.getElementById('launch'), lcN = 0, lcT = 0;      // start-up: the home-screen app on iPad can begin with the size of the OTHER orientation for about three seconds. Until the size is right the screen stays plain; the check runs every 0.1 s (at most 3.5 s)
     function sizeOk() {
@@ -2775,7 +2781,7 @@
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { manual(1); e.preventDefault(); }
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') { manual(-1); e.preventDefault(); }
   });
-  $('go').onclick = function () { running ? stop() : start(); };
+  $('go').onclick = function () { if (!running) micFresh = false; running ? stop() : start(); };
   /* the microphone: asked for once, then kept (switched off, not given back) while the app stays open, so that iOS does not ask again at every "弾き始める" */
   var micKeep = null, micTimer = null;
   var asSet = false;                               // true only after the app itself switched the audio session to 'playback'
@@ -2793,6 +2799,7 @@
     return navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 1 } }).then(function (s) { micKeep = s; return s; });
   }
   function micIdle(s) { try { s.getAudioTracks().forEach(function (t) { t.enabled = false; }); } catch (e) {} clearTimeout(micTimer); micTimer = setTimeout(function () { micRelease(s); }, 20 * 60 * 1000); }      // after 20 minutes of not playing the microphone is given back
+  window.__micDrop = function () { try { if (micKeep) micRelease(micKeep); } catch (e) {} };      // let go of the kept microphone (used after the app was in the background / the iPad slept)
   function micRelease(s) { try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} if (micKeep === s) micKeep = null; }
   var preCtx = null;                              // created inside the tap on the button: iOS only lets an AudioContext make sound if it was started by a tap
   function openPicker() { try { var AC = window.AudioContext || window.webkitAudioContext; preCtx = new AC(); if (preCtx.resume) preCtx.resume(); } catch (e) { preCtx = null; } $('file').click(); }
