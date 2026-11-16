@@ -290,7 +290,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v228</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v229</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2522,7 +2522,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v228', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v229', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2754,12 +2754,20 @@
     [0, 300, 800, 1500, 2500, 3500, 5000].forEach(function (ms) { setTimeout(function () { dimsLine('t'); }, ms); });
     ['resize', 'orientationchange'].forEach(function (n) { window.addEventListener(n, function () { if (performance.now() < 8000) dimsLine(n); }); });
     var lcOk = 0, lcRun = 0;
-    function lcLift() { clearInterval(lcT); lcRun = 0; if (lc) { lc.className = 'off'; } try { fitH(); } catch (e) {} }
+    function lcFit() {      // while the page still has the size of the OTHER orientation, centre the start-up picture on the real screen (taken from the device's own orientation), not on the old page
+      try {
+        if (!lc) return; var so = window.screen && screen.orientation && screen.orientation.type, S = Math.min(screen.width, screen.height), L = Math.max(screen.width, screen.height), pt;
+        if (so) pt = so.indexOf('portrait') === 0; else if (typeof window.orientation === 'number') pt = window.orientation === 0 || window.orientation === 180; else return;
+        if (!navigator.standalone || sizeOk() || Math.abs(Math.max(window.innerWidth, window.innerHeight) - L) > 80) { lc.style.inset = ''; lc.style.width = ''; lc.style.height = ''; return; }
+        lc.style.inset = 'auto'; lc.style.left = '0'; lc.style.top = '0'; lc.style.width = (pt ? S : L) + 'px'; lc.style.height = (pt ? L : S) + 'px';
+      } catch (e) {}
+    }
+    function lcLift() { clearInterval(lcT); lcRun = 0; if (lc) { lc.className = 'off'; setTimeout(function () { try { lc.style.inset = ''; lc.style.left = ''; lc.style.top = ''; lc.style.width = ''; lc.style.height = ''; } catch (e) {} }, 300); } try { fitH(); } catch (e) {} }
     function lcKick() { try { var b = document.body; b.style.width = 'calc(100% - 1px)'; void b.offsetWidth; b.style.width = ''; void b.offsetWidth; } catch (e) {} }      // a one-pixel change forces a fresh layout and repaint
     function lcStart(max) {      // curtain up, then wait until the size is right (twice in a row) or the time is over
-      if (!lc) return; clearInterval(lcT); lcN = 0; lcOk = 0; lcRun = 1; lc.className = '';
+      if (!lc) return; clearInterval(lcT); lcN = 0; lcOk = 0; lcRun = 1; lc.className = ''; lcFit();
       lcT = setInterval(function () {
-        lcN++;
+        lcN++; lcFit();
         if (sizeOk()) { if (++lcOk >= 2) lcLift(); } else { lcOk = 0; if (lcN === 2 && max > 30) { try { var mv = document.querySelector('meta[name=viewport]'), mc = mv.content; mv.content = mc + ', shrink-to-fit=no'; setTimeout(function () { mv.content = mc; }, 60); } catch (e) {} } fitH(); }
         if (lcN === 3 || lcN === 8) lcKick();
         if (lcN > max) lcLift();
