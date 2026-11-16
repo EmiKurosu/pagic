@@ -282,7 +282,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { var lg = (navigator.language || 'en').slice(0, 2), lt = document.getElementById('launch'); lt.style.cssText = 'display:flex;align-items:center;justify-content:center;font:15px/1.4 Inter,-apple-system,sans-serif;color:#8a8780'; lt.textContent = lg === 'ja' ? '更新しています…' : lg === 'de' ? 'Wird aktualisiert …' : 'Updating …'; try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again, and shows this text at every start */ } catch (e) {}      /* after an update the plain screen says so, instead of showing the half-ready app */</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v214</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v215</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -1063,7 +1063,7 @@
   };
   PageTurner.prototype.displayedPage = function () { return this.runs[this.disp][2]; };
   PageTurner.prototype._turn = function (t, kind, to, pos) { if (kind === 'resync' && Math.abs(to - this.disp) > 1 && this._noRepeat()) return null;      // no repeats in this piece: a jump over several pages cannot be real, it is the tracker being fooled by similar music, so the page stays
-  this.dr = null; this.st = 0; this.dwell = 0; this.silS = 0; this.aheadS = 0; this.endS = 0; this.nearT = -99; this.nearF = -1; this.crossS = 0; this.inLastS = 0; /* the time counted in the last bars of the page just left must not count for the next page */ this.anchorPos = kind === 'turn' ? this.runs[to][0] : pos; this.events.push({ t: t, kind: kind, from: this.disp, to: to, pos: pos }); this.disp = to; return kind; };
+  this.dr = null; this.pH = []; this.st = 0; this.dwell = 0; this.silS = 0; this.aheadS = 0; this.endS = 0; this.nearT = -99; this.nearF = -1; this.crossS = 0; this.inLastS = 0; /* the time counted in the last bars of the page just left must not count for the next page */ this.anchorPos = kind === 'turn' ? this.runs[to][0] : pos; this.events.push({ t: t, kind: kind, from: this.disp, to: to, pos: pos }); this.disp = to; return kind; };
   PageTurner.prototype._noRepeat = function () { if (this._nr === undefined) { var seen = {}, ok = true; this.runs.forEach(function (r) { if (seen[r[2]]) ok = false; seen[r[2]] = 1; }); this._nr = ok; } return this._nr; };
   PageTurner.prototype.update = function (t, pos, bps, conf, silent, match, rms) {
     if (this.unrec && this.unrec[this.disp]) return null;
@@ -1098,15 +1098,17 @@
         d.w0 = d.tp; d.rt0 = rt;
       }
       var lb = this.runs[this.disp][1];
-      if (d.stall >= 8) { var est = d.aRt + d.pace * (d.tp - d.aTp); if (est >= this._sec(lb + this.frac) && est < this._sec(lb + 1) + 15) return this._turn(t, 'turn', this.disp + 1, pos); }
+      if (d.stall >= 8) { var est = d.aRt + d.pace * (d.tp - d.aTp); if (est >= this._sec(lb + this.frac) + (this.slow && this.late ? 3 : 0) && est < this._sec(lb + 1) + 15 + (this.slow && this.late ? 6 : 0)) return this._turn(t, 'turn', this.disp + 1, pos); }
     }
     if (this.slow && this.late && this.barStart && this.dr && silent && this.disp < this.runs.length - 1 && (this.silS || 0) >= 0.8) {      // slowly, latest turning place: the player has stopped (the page is played) and the clock is within about 3 s of the end of the page: turn now (a player a little slower than the preset never reaches the clock's end of the page before the last chord is over)
       var dz = this.dr, estz = dz.aRt + dz.pace * (dz.tp - dz.aTp), lbz = this.runs[this.disp][1];
       if (estz >= this._sec(lbz + 1) - 3 || dz.a0 + dz.pace * dz.tp >= this._sec(lbz + 1) + 2) return this._turn(t, 'turn', this.disp + 1, pos);
     }
+    var pH = this.pH || (this.pH = []); pH.push([t, pos]); while (pH.length && pH[0][0] < t - 1.5) pH.shift();
+    var jumpOk = true; for (var jz = 0; jz < pH.length; jz++) if (pos - pH[jz][1] > 1.0) { jumpOk = false; break; }      // the tracker may hop to a look-alike place near the end of the page (once 1.7 bars in 0.2 s): a place reached by a jump of more than a bar within 1.5 s is not trusted for turning
     if (this.slow && this.disp < this.runs.length - 1) {      // slowly: the clock says the page is (nearly) played and the tracker, even if unsteady, has been at the end of the page (or past it) for 0.4 s: turn
       var lb2 = this.runs[this.disp][1];
-      if (!silent && conf >= this.confThr && pos >= (this.late ? lb2 + 1 : lb2 + this.frac - 0.15) && pos < lb2 + 2 && this._drOk()) { this.endS = (this.endS || 0) + this.dt; if (this.endS >= 0.4) { this.endS = 0; return this._turn(t, 'turn', this.disp + 1, pos); } } else this.endS = 0;
+      if (!silent && jumpOk && conf >= this.confThr && pos >= (this.late ? lb2 + 1 : lb2 + this.frac - 0.15) && pos < lb2 + 2 && this._drOk()) { this.endS = (this.endS || 0) + this.dt; if (this.endS >= 0.4) { this.endS = 0; return this._turn(t, 'turn', this.disp + 1, pos); } } else this.endS = 0;
     }
     { var conf0 = !silent && conf >= this.confThr && this.stable >= this.stableS;      // speed limit: a jump to a place the player cannot have reached since the last clearly-confirmed place (even at twice the usual pace) is not believed, and cannot turn a page
       // the limit is measured in seconds of the nominal reference, not in bars: the pseudo-bars of a page differ a lot in length (the last two bars are short), so a "bars per second" speed learned in a long bar would forbid the normal pace in the short ones
@@ -1135,7 +1137,7 @@
       if (cur0 === this.disp && pos >= lbN && pos < lbN + 1 && !silent && conf >= 0.55) this.inLastS = (this.inLastS || 0) + this.dt; else this.inLastS = 0;      // how long the tracker has been in the last bar without a break: a single frame (a spike) must not turn the page, and a place without any confirmation (the tracker's match is poor) has to stay in the last bar for 0.6 s first
       if (this.barStart && !this.late && cur0 === this.disp && this.disp < this.runs.length - 1 && pos >= lbN && pos < lbN + 1 && !silent && conf >= 0.55 && this.nearF >= 0 && t - this.nearF >= 1.0 && this.inLastS >= (this.stable < 0.3 ? 0.6 : 0.15) && (!this.slow || this._drOk())) {      // the same time rule with weaker evidence (the tracker has been in the last bars for 1 s already, 0.55 sure)
         var kb2 = Math.floor(pos), rr2 = bps * (this._sec(kb2 + 1) - this._sec(kb2)); if ((this._sec(lbN + 1) - this._sec(pos)) / Math.max(rr2, 0.25) <= this.endLeadS) return this._turn(t, 'turn', this.disp + 1, pos); }
-      if (cur0 === this.disp + 1 && this.disp < this.runs.length - 1 && pos < this.runs[cur0][0] + 1.5 && !silent && conf >= 0.55 && t - (this.nearT === undefined ? -99 : this.nearT) <= 6) { this.crossS = (this.crossS || 0) + this.dt; if (this.crossS >= 0.4) return this._turn(t, 'turn', cur0, pos); }
+      if (cur0 === this.disp + 1 && this.disp < this.runs.length - 1 && pos < this.runs[cur0][0] + 1.5 && !silent && conf >= 0.55 && (!this.slow || (jumpOk && this._drOk())) && t - (this.nearT === undefined ? -99 : this.nearT) <= 6) { this.crossS = (this.crossS || 0) + this.dt; if (this.crossS >= 0.4) return this._turn(t, 'turn', cur0, pos); }
       else if (cur0 <= this.disp) this.crossS = Math.max(0, (this.crossS || 0) - 0.5 * this.dt); }
     if (cur0 > this.disp && !silent && conf >= (cur0 - this.disp <= 2 ? 0.2 : 0.5)) { this.aheadS = (this.aheadS || 0) + this.dt; if (this.aheadS >= (cur0 === this.disp + 1 ? 6 : 10)) return this._turn(t, cur0 === this.disp + 1 ? 'turn' : 'resync', cur0, pos); } else if (cur0 <= this.disp) this.aheadS = 0;      // low confidence (many wrong notes) but the tracker's place has stayed on a later page for 6 s (10 s when more than one page ahead): believe it
     if (this.stable < (this.fastStart && t < 4 ? 0.5 : this.stableS) || silent) return null;      // started from a flag: the place is known, so the first turn need not wait for the full 1.2 s of evidence
@@ -2464,7 +2466,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v214', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v215', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
