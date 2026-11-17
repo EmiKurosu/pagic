@@ -293,7 +293,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v247</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v251</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -1015,6 +1015,7 @@
   }
   MultiAligner.prototype.step = function (chroma, silent) {
     var T = this.T, K = this.K, R = this.ref.R, B = this.B, N = this.N, i, j, k, p;
+    var adv = false;
     if (!silent) {
       N.fill(0);
       for (i = 0; i < K; i++) {                                    // 1) every tempo hypothesis moves forward by its own speed
@@ -1663,6 +1664,8 @@
       return (b.before + (b.mass ? acc : 0)) / total;
     };
     fn.info = { raw: bandsRaw.length, systems: bands.length, perSystem: nsPer };
+    fn.sysTop = function (py) { return bands.length ? bands[nearest(py)].y0 / s : 0; };
+    fn.sysIndex = function (py) { return bands.length ? nearest(py) : 0; };
     fn.isLastLine = function (py) {                                                                   // is this height on the last line of music of the page? (footnotes below it are lighter and do not count)
       if (bands.length < 2) return false; var ms = bands.map(function (b) { return b.mass; }).sort(function (x, y) { return x - y; }), med = ms[ms.length >> 1], li = bands.length - 1;
       while (li > 0 && bands[li].mass < 0.6 * med) li--; return nearest(py) >= li;
@@ -2153,8 +2156,11 @@
     try { if (!mapCache[shownPage]) mapCache[shownPage] = Song.inkMap(imgs[shownPage - 1]); var q = mapCache[shownPage].last && mapCache[shownPage].last(); if (q) { f0 = q.f0; nS = q.n || 0; } } catch (e) {}
     var tr0 = nS >= 2 ? tA + ((nS - 1) + 0.2) / nS * (tB - tA) : tA + f0 * (tB - tA);                      // the page time is split equally between the systems: start a little way into the last one
     var pbN = pager.turner.previewBars; if (pbN > 0) tr0 = bs[Math.max(r[0], last + 1 - pbN)];      // the curl starts this many bars before the end of the page (the setting "start of the page turn")
+    var jumpTop = null;      // this page ends in a repeat's jump (the next page shown is not the following one): the curl starts with the line that holds the jump's arrow, not with the page's last line
+    try { if (rn[2] !== shownPage + 1) { var rpj = (pkg.eff && pkgSrc ? pkgSrc : pkg).rep, mq = mapCache[shownPage], imj = imgs[shownPage - 1]; if (rpj && rpj.items && mq && mq.sysTop) rpj.items.forEach(function (it) { if (it.arrow && it.arrow.page === shownPage && !it.skip) { var ty = mq.sysTop(it.arrow.fy * imj.naturalHeight), fj = mq(0.05 * imj.naturalWidth, ty + 2); if (typeof fj === 'number' && !isNaN(fj)) { var tj0 = tA + Math.max(0, Math.min(0.97, fj)) * (tB - tA); if (jumpTop === null || tj0 < jumpTop) jumpTop = tj0; } } }); } } catch (e) {}
+    if (jumpTop !== null) tr0 = Math.min(tr0, jumpTop);
     tr0 = Math.max(tA, Math.min(tr0, tT - 1.2));
-    if (pbN > 0) tr0 = Math.max(tr0, tT - 10);      // however many bars were chosen, the curl starts at most 10 s (reference time) before the turn: a page made of only a few long sections would otherwise curl at its very beginning
+    if (pbN > 0 && jumpTop === null) tr0 = Math.max(tr0, tT - 10);      // however many bars were chosen, the curl starts at most 10 s (reference time) before the turn: a page made of only a few long sections would otherwise curl at its very beginning
     var key = disp + ':' + rn[2];
     if (tnow < tr0 || !(pbN > 0)) { peelKey = ''; setPeel(null); return; }
     if (peelKey !== key) { peelKey = key; peelMs = performance.now(); }
@@ -2555,6 +2561,8 @@
       g.beginPath(); if (g.roundRect) g.roundRect(bx, by, bw, bh, 9 * u); else g.rect(bx, by, bw, bh); g.fill(); g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.fillText(txt, bx + 11 * u, by + bh / 2 + u); g.restore();
     } catch (e) {}
   }
+  window.__pcs = function () { return { pcs: pkg && pkg.pcs, eff: !!(pkg && pkg.eff), order: pkg && pkg.order, bs: pager && pager.ref ? Array.prototype.slice.call(pager.ref.barStart) : null }; };
+  window.__peelOn = function () { return peel ? peel.sc : null; };
   window.__runRecord = function (n) { return runRecord(n || 200); };
   window.__probFake = function (r) { lastRun = r; probCheck(); drawPage(null, 0); };
   var micGaps = [];      // [from, to] (playing time, seconds) of the stretches in which no sound arrived from the microphone
@@ -2562,7 +2570,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v247', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v251', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2892,7 +2900,12 @@
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') { manual(1); e.preventDefault(); }
     else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') { manual(-1); e.preventDefault(); }
   });
-  $('go').onclick = function () { if (!running) { micFresh = false; window.__micAlt = false; } running ? stop() : start(); };
+  $('go').onclick = function () {
+    if (!running) { micFresh = false; window.__micAlt = false;
+      try { var mk0 = startPos && startPos.mark; if (mk0 && pkg && pkg.kind === 'song') { startFromTap(mk0.page, mk0.x, mk0.y); if (startCandN > 1) { askPass(function (ps) { if (ps) { mk0.pass = ps; start(); } }); return; } } } catch (e) {}
+    }
+    running ? stop() : start();
+  };
   /* the microphone: asked for once, then kept (switched off, not given back) while the app stays open, so that iOS does not ask again at every "弾き始める" */
   var micKeep = null, micTimer = null;
   var asSet = false;                               // true only after the app itself switched the audio session to 'playback'
@@ -4028,8 +4041,14 @@
     var rf = getRef(), bs = rf.barStart, kk = Math.min(j, i), tpos = bs[kk] + (startPos.pos - kk) * (bs[kk + 1] - bs[kk]), lastBarSec = bs[j + 1] - bs[j];      // counted in real bars (the last bar of the page is one real bar long)
     var inLast = false;                                                  // a flag on the page's last line of music: the next page is wanted at once (the time estimate from the picture is rough, the line is not)
     try { var mk = startPos.mark; if (mk) { if (!mapCache[startPos.page]) mapCache[startPos.page] = Song.inkMap(imgs[startPos.page - 1]); inLast = !!(mapCache[startPos.page].isLastLine && mapCache[startPos.page].isLastLine(mk.y)); } } catch (e) {}
+    if (!inLast) try {      // a flag on the line that holds the repeat's jump (the arrow), or below it, while the next bar is the jump's target: the jump target is wanted at once, just like a last line
+      var mk2 = startPos.mark, rp = (pkg.eff && pkgSrc ? pkgSrc : pkg).rep, nx = pkg.bar_page[pkg.order[j + 1]];
+      if (mk2 && rp && rp.items && nx !== pg + 1) { var mp = mapCache[startPos.page]; if (mp && mp.sysIndex) rp.items.forEach(function (it) { if (it.arrow && it.arrow.page === startPos.page && !it.skip) { var ay = it.arrow.fy * imgs[startPos.page - 1].naturalHeight; if (mp.sysIndex(mk2.y) >= mp.sysIndex(ay)) inLast = true; } }); }
+    } catch (e) {}
     if (!inLast && !(bs[j + 1] - tpos <= (pb + 0.3) * lastBarSec)) return false;
-    var lab = pkg.order[j + 1]; showPreview(lab, pkg.bar_page[lab]); return true;
+    var lab = pkg.order[j + 1];
+    if (pkg.kind === 'song') { if (!(twoUpOn && pkg.bar_page[lab] % 2 !== 1)) setPeel({ np: pkg.bar_page[lab], lab: lab, sc: 1, pg: startPos.page }); return true; }      // songs: the corner curls at once
+    showPreview(lab, pkg.bar_page[lab]); return true;
   }
   window.__setStartT = function (pg, fx, fy) { showPage(pg); var im = imgs[pg - 1]; setStart(fx * im.naturalWidth, fy * im.naturalHeight); return [startPos.pos, startCandN]; };
   function askPass(cb) {      // the flag stands in a repeated place: first or second time?
