@@ -290,7 +290,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v243</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v244</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2549,7 +2549,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v243', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v244', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3756,7 +3756,7 @@
     var sorted = rs.slice().sort(function (x, y) { return x - y; }), thr = 0.2 * (sorted[sorted.length >> 1] || 0), a0 = 0, b0 = n - 1;
     if (!W.capture && W.startT > 0) a0 = Math.max(0, Math.min(n - 1, Math.round((W.startT - t0N) / fsN)));      // playing was started in the middle of a long recording: only what comes from there is used (the part before it is not this page)
     if (rs.length === n && thr > 0) { while (a0 < n - 1 && rs[a0] < thr) a0++; while (b0 > a0 && rs[b0] < thr) b0--; }       // cut the silence before and after
-    S = S.slice(a0, b0 + 1); n = S.length; if (n * fsN < 0.8) throw new Error(_t('録音が短すぎます（もう少し長く弾いてください）'));
+    S = S.slice(a0, b0 + 1); n = S.length; if (n * fsN < 0.25) throw new Error(_t('録音が短すぎます（もう少し長く弾いてください）'));
     var Bo = new Array(ref.T); for (i = 0; i < ref.T; i++) Bo[i] = ref.R.subarray(i * 12, i * 12 + 12);
     var jA = p.order.indexOf('p' + K), jB = K < N ? p.order.indexOf('p' + (K + 1)) : -1; if (jA < 0 || (K < N && jB < 0)) throw new Error(_t('ページの数と、めくる場所の数が合いません'));
     var fA = Math.max(0, Math.round((ref.barStart[jA] - t0O) / fsO)), fB = K < N ? Math.min(ref.T, Math.round((ref.barStart[jB] - t0O) / fsO)) : ref.T;
@@ -3809,7 +3809,7 @@
     var fsN = W.ex.hop / W.sr, t0N = W.ex.nfft / 2 / W.sr, ref = new AutoPage.Reference(p), fsO = (p.rep && p.rep.fs) || (1024 / 22050), t0O = (p.rep && p.rep.t0) || (2048 / 22050), S = W.frames, rs = W.rms || [], n = S.length, i, q;
     var sorted = rs.slice().sort(function (x, y) { return x - y; }), thr = 0.2 * (sorted[sorted.length >> 1] || 0), a0 = 0, b0 = n - 1;
     if (rs.length === n && thr > 0) { while (a0 < n - 1 && rs[a0] < thr) a0++; while (b0 > a0 && rs[b0] < thr) b0--; }       // cut the silence before and after
-    S = S.slice(a0, b0 + 1); n = S.length; if (n * fsN < 0.8) throw new Error(_t('録音が短すぎます（もう少し長く弾いてください）'));
+    S = S.slice(a0, b0 + 1); n = S.length; if (n * fsN < 0.25) throw new Error(_t('録音が短すぎます（もう少し長く弾いてください）'));
     var flat = new Float32Array(n * 12); for (i = 0; i < n; i++) for (q = 0; q < 12; q++) flat[i * 12 + q] = S[i][q];
     var Bo = new Array(ref.T); for (i = 0; i < ref.T; i++) Bo[i] = ref.R.subarray(i * 12, i * 12 + 12);
     var icK = ref.order.indexOf('p' + K + 'c'), inK = ref.order.indexOf('p' + (K + 1)); if (icK < 0 || inK < 0) throw new Error(_t('ページの数と、めくる場所の数が合いません'));
@@ -3863,7 +3863,7 @@
   $('wauto').onclick = function () {
     var p = W && W.srcSong; if (!p) return;
     if (p.rep && p.rep.items && p.rep.items.length) { $('wstat').textContent = _t('繰り返しのある曲は、まだ自動で移せません。印を付けてください。'); return; }
-    if (!W.frames || W.frames.length < 50) { $('wstat').textContent = _t('先に録音を選んでください（録音で作る場合は、弾き終えてから押してください）。'); return; }
+    if (!W.frames || W.frames.length < 12) { $('wstat').textContent = _t('先に録音を選んでください（録音で作る場合は、弾き終えてから押してください）。'); return; }
     var m = $('wmedia'); try { m.pause(); } catch (e) {} $('wstat').textContent = _t('前の録音と、今の録音を照らし合わせています…');
     var K = +($('wpartsel') && $('wpartsel').value || 0);
     if (K > 0) { setTimeout(function () { try { wPartial(p, K); } catch (e) { $('wstat').textContent = _t('自動で付けられませんでした: ') + (e && e.message || e); } }, 30); return; }
