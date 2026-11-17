@@ -290,7 +290,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v242</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v243</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -1626,7 +1626,18 @@
     var srt = Array.prototype.slice.call(sm).sort(function (a, b) { return a - b; }), thr = Math.max(0.08 * (x1 - x0), 0.28 * (srt[Math.floor(h * 0.97)] || 1)), rs = runs(sm, thr), bands = [];
     rs.forEach(function (r) { var l = bands[bands.length - 1]; if (l && r[0] - l.y1 < 0.012 * h) l.y1 = r[1]; else bands.push({ y0: r[0], y1: r[1] }); });
     bands = bands.filter(function (b) { return b.y1 - b.y0 > 0.012 * h; });
-    if (bands.length >= 4 && bands.length % 2 === 0) { var pr = []; for (k = 0; k < bands.length; k += 2) pr.push({ y0: bands[k].y0, y1: bands[k + 1].y1 }); bands = pr; }     // grand staves: treble + bass = one system
+    var bandsRaw = bands.slice(), nsPer = 1, byBar = false;
+    (function () {      // the staves of one system are tied together by the barline at its left edge (a long vertical stroke): a violin + cello + piano system, a piano system, ... is found as one
+      var vx0 = Math.round(w * 0.025), vx1 = Math.round(w * 0.24), minL = Math.round(h * 0.05), ivs = [], xx2, yy2, a2, gap, run;
+      for (xx2 = vx0; xx2 < vx1; xx2++) { a2 = -1; gap = 0; for (yy2 = 0; yy2 < h; yy2++) { if (m[yy2 * w + xx2] || (m[yy2 * w + Math.min(w - 1, xx2 + 1)] && false)) { if (a2 < 0) a2 = yy2; gap = 0; } else if (a2 >= 0 && ++gap > 3) { run = yy2 - gap - a2; if (run >= minL) ivs.push([a2, yy2 - gap]); a2 = -1; gap = 0; } } if (a2 >= 0 && h - 1 - a2 >= minL) ivs.push([a2, h - 1]); }
+      if (!ivs.length) return; ivs.sort(function (p, q) { return p[0] - q[0]; });
+      var mg = [ivs[0].slice()]; for (xx2 = 1; xx2 < ivs.length; xx2++) { var L = mg[mg.length - 1]; if (ivs[xx2][0] <= L[1] + 0.012 * h) L[1] = Math.max(L[1], ivs[xx2][1]); else mg.push(ivs[xx2].slice()); }
+      var out = [], used = new Array(bands.length);
+      mg.forEach(function (L) { var inn = []; bands.forEach(function (bd, i) { var mid = (bd.y0 + bd.y1) / 2; if (!used[i] && mid >= L[0] - 0.01 * h && mid <= L[1] + 0.01 * h) { inn.push(bd); used[i] = 1; } }); if (inn.length) out.push({ y0: inn[0].y0, y1: inn[inn.length - 1].y1, n: inn.length }); });
+      bands.forEach(function (bd, i) { if (!used[i]) out.push({ y0: bd.y0, y1: bd.y1, n: 1 }); }); out.sort(function (p, q) { return p.y0 - q.y0; });
+      if (out.length >= 1 && out.length <= bands.length) { bands = out; byBar = true; nsPer = Math.max.apply(null, out.map(function (o) { return o.n; })); }
+    })();
+    if (!byBar && bands.length >= 4 && bands.length % 2 === 0) { var pr = []; for (k = 0; k < bands.length; k += 2) pr.push({ y0: bands[k].y0, y1: bands[k + 1].y1 }); bands = pr; nsPer = 2; }     // no barline found: grand staves, treble + bass = one system
     var total = 0;
     bands.forEach(function (b) { b.col = new Float32Array(w); b.mass = 0; for (var yy = b.y0; yy <= b.y1; yy++) for (var xx = x0; xx < x1; xx++) if (m[yy * w + xx]) { b.col[xx]++; b.mass++; } b.before = total; total += b.mass; });
     var s = gr.s;
@@ -1639,6 +1650,7 @@
       for (var xx = 0; xx <= lim; xx++) acc += b.col[xx];
       return (b.before + (b.mass ? acc : 0)) / total;
     };
+    fn.info = { raw: bandsRaw.length, systems: bands.length, perSystem: nsPer };
     fn.isLastLine = function (py) {                                                                   // is this height on the last line of music of the page? (footnotes below it are lighter and do not count)
       if (bands.length < 2) return false; var ms = bands.map(function (b) { return b.mass; }).sort(function (x, y) { return x - y; }), med = ms[ms.length >> 1], li = bands.length - 1;
       while (li > 0 && bands[li].mass < 0.6 * med) li--; return nearest(py) >= li;
@@ -2537,7 +2549,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v242', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v243', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
