@@ -127,7 +127,7 @@
   #padj label { display: grid; gap: 2px; font-size: 14px; } #padj label span.row { display: flex; justify-content: space-between; } #padj .ends { display: flex; justify-content: space-between; font-size: 11px; color: #b9bfcb; margin-top: -6px; }
   #padj input[type=range] { width: 100%; min-height: 30px; accent-color: var(--accent); }
   #padj button { min-height: 40px; font-size: 14px; padding: 0 10px; border-radius: 10px; background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.35); width: auto; }
-  #inkadj { position: absolute; top: 8px; right: 76px; z-index: 4; width: 168px; color: #111; padding: 0; display: grid; gap: 2px; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 5px #fff; }
+  #inkadj { position: absolute; top: 8px; right: 76px; z-index: 4; width: 186px; color: #111; background: #fff; border-radius: 12px; padding: 8px 9px; box-sizing: border-box; box-shadow: 0 2px 10px rgba(0,0,0,.18); display: grid; gap: 2px; }
   #inkadj[hidden] { display: none; }
   #inkadj #inkprev { flex: 1; min-width: 0; height: 44px; } #inkadjx { flex: none; width: 34px; min-height: 34px; padding: 0; border-radius: 17px; font-size: 20px; line-height: 1; background: rgba(31,35,43,.82); color: #fff; border: 2px solid rgba(255,255,255,.55); display: grid; place-items: center; text-shadow: none; }
   #inkadj label { display: grid; gap: 0; font-size: 12px; font-weight: 600; } #inkadj label span { display: flex; justify-content: space-between; }
@@ -290,7 +290,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v230</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v233</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2535,7 +2535,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v230', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v233', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2836,12 +2836,13 @@
     m.addEventListener('touchstart', function (e) {
       if (e.touches.length === 2 && view && shownPage != null && !(twoUpOn && document.body.classList.contains('playing')) && !hasStylus(e) && !penNear() && !ink.cur) {
         sx = null; var a = cpt(e.touches[0]), b = cpt(e.touches[1]), cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2, ad = adj[shownPage];
-        pz = { d0: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, z0: ad ? ad.z : 1, px: (cx - view.ox) / view.s + view.reg.x0, py: (cy - view.oy) / view.s + view.reg.y0 };
+        if (ink.on) { var dd = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY), big = false; for (var ti = 0; ti < 2; ti++) { var tt = e.touches[ti]; if ((tt.radiusX || 0) > 22 || (tt.radiusY || 0) > 22) big = true; } if (dd < 100 || big || Date.now() - penT < 1500) return; }      // writing: a resting palm (big contact, or two touches close together, or right after the pencil) is never a pinch
+        pz = { a0: ad ? { z: ad.z, cx: ad.cx, cy: ad.cy } : null, d0: Math.hypot(a[0] - b[0], a[1] - b[1]) || 1, z0: ad ? ad.z : 1, px: (cx - view.ox) / view.s + view.reg.x0, py: (cy - view.oy) / view.s + view.reg.y0 };
         try { var pc = $('page'); pzSnap = document.createElement('canvas'); pzSnap.width = pc.width; pzSnap.height = pc.height; pzSnap.getContext('2d').drawImage(pc, 0, 0); pzV = { s: view.s, ox: view.ox, oy: view.oy, z: ad ? ad.z : 1 }; } catch (er) { pzSnap = null; }      // the picture as it is now (page and writing): during the pinch only this picture is moved and scaled, which stays smooth however much is written on the page
       }
     }, { passive: true });
     m.addEventListener('touchmove', function (e) {
-      if (pz && (penNear() || hasStylus(e) || ink.cur)) { pz = null; return; }
+      if (pz && (penNear() || hasStylus(e) || ink.cur)) { var a00 = pz.a0; pz = null; pzSnap = null; pzV = null; if (pzRaf) { cancelAnimationFrame(pzRaf); pzRaf = 0; } if (a00) adj[shownPage] = a00; else delete adj[shownPage]; drawPage(null, 0); return; }      // the pencil came: the picture goes back to where it was before the palm began to pinch
       if (!pz || e.touches.length !== 2 || !view) return; var a = cpt(e.touches[0]), b = cpt(e.touches[1]), cx = (a[0] + b[0]) / 2, cy = (a[1] + b[1]) / 2;
       var z = Math.max(1, Math.min(5, pz.z0 * (Math.hypot(a[0] - b[0], a[1] - b[1]) / pz.d0))), s = view.s0 * z, c = $('page');
       adj[shownPage] = { z: z, cx: pz.px - (cx - px0(c) - viewW(c) / 2) / s, cy: pz.py - (cy - c.height / 2) / s };
@@ -3554,7 +3555,8 @@
   }
   $('wpartsel').onchange = function () { if (W) W.zf = null; wpartNote(); zfPinViews(); try { wstartUi(); } catch (e) {} };
   function wpartK() { var e = $('wpartsel'); return (W && W.srcSong && !W.partMerged && e && +e.value > 0) ? +e.value : 0; }      // "only this page turn" was chosen
-  function wnT() { if (wpartK()) return wpartK() >= W.imgs.length ? 0 : 1; return wseq() ? wpageSeq().filter(function (x, i) { return i > 0 && !x.ev; }).length : W.imgs.length - 1; }      // how many page turns are tapped
+  function wNoTurn() { var K = wpartK(); return !!(K && K < W.imgs.length && W.zf && W.zf.s && W.zf.e && W.zf.s.y !== null && W.zf.s.y !== undefined && W.zf.e.y !== null && W.zf.e.y !== undefined && W.zf.s.p === K && W.zf.e.p === K); }      // the playing begins and ends on page K itself: the page turn is not in the recording, nothing is tapped
+  function wnT() { if (wpartK()) return wpartK() >= W.imgs.length ? 0 : (wNoTurn() ? 0 : 1); return wseq() ? wpageSeq().filter(function (x, i) { return i > 0 && !x.ev; }).length : W.imgs.length - 1; }      // how many page turns are tapped
   function wPreK() { return 0; }      // (replaced by the several-pages view: wMulti)
   $('wprenext').onclick = function () { if (W) { W.preDone = true; wupdate(); } };
   function wpage() { if (wpartK()) return Math.min(W.imgs.length, wpartK() + (W.taps && W.taps.length ? 1 : 0)); if (wseq()) { var st = wstate(); return st.sq[st.ptr].p; } return Math.min(W.imgs.length, W.taps.length + 1); }     // page being played now
@@ -3623,7 +3625,7 @@
     $('wflagb').textContent = skp ? (wskipB() ? _t('ここで飛ばした') : _t('ここから飛ばす（[ の位置）')) : _t('ここから繰り返す（旗のマークの位置）'); $('warrowb').textContent = skp ? _t('ここまで飛ばした（] の位置）') : _t('矢印（繰り返し記号・第一括弧はここまで）に着いた');
     var t = $('wtap');
     if (k >= nT && pend) { t.disabled = true; t.textContent = _t('最後のページです'); $('wstat').textContent = _t('旗と矢印の印が、まだ残っています。'); }
-    else if (done) { t.disabled = true; t.textContent = _t('最後のページです'); $('wstat').textContent = (wpartK() && W.zf && W.zf.e) ? _t('めくる位置の印は付きました。赤いピンの所まで録音を聞かせたら、「できた（曲を作る）」を押してください。') : _t('印はすべて付きました。演奏を最後まで聞かせてから「できた」を押してください。'); }
+    else if (done) { t.disabled = true; t.textContent = wNoTurn() ? _t('この範囲では、めくる位置を押す必要はありません') : _t('最後のページです'); $('wstat').textContent = (wpartK() && W.zf && W.zf.e) ? _t('めくる位置の印は付きました。赤いピンの所まで録音を聞かせたら、「できた（曲を作る）」を押してください。') : _t('印はすべて付きました。演奏を最後まで聞かせてから「できた」を押してください。'); }
     else { t.disabled = false; t.textContent = _t('ここでめくりたい'); $('wstat').textContent = _t('{n} ページ目：このページを「めくりたい」と思う瞬間に、タップしてください').replace('{n}', p) + (showRep ? (pend.kind === 'sg' ? _t('　Segno の小節に着いた瞬間に、色つきのボタンを押します。') : pend.kind === 'cd' ? _t('　もう一度 To Coda の小節を弾き終えて、Coda へ飛ぶ瞬間に、色つきのボタンを押します。') : (pend.kind === 'fi' || pend.kind === 'dc' || pend.kind === 'tc') ? _t('　{m} の小節を、弾き終えた瞬間に、色つきのボタンを押します。').replace('{m}', daName(pend.r, pend.kind === 'fi' ? 'fine' : pend.kind)) : pend.kind === 'j' ? (pend.second ? _t('　もう一度、「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。') : _t('　「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。')) : pend.second ? (pend.kind === 'f' ? _t('　もう一度、旗の小節に戻った瞬間に、色つきのボタンを押します。') : _t('　もう一度、矢印の小節に着いた瞬間に、色つきのボタンを押します。')) : (pend.kind === 'f' ? (skp ? (wskipB() ? _t('　録音が、飛ばした部分を終えて、ここから楽譜通りに演奏する場所から始まる瞬間に、色つきのボタンを押します。') : _t('　「[」のボタン：録音が楽譜にない部分、楽譜と合わなくなる部分に入った瞬間に押します。')) : _t('　旗の位置（ここから繰り返す小節）に入った瞬間に、色つきのボタンを押します。')) : (skp ? _t('　「]」のボタン：録音の演奏が、楽譜と合わない部分を終えた、ここから楽譜通りに演奏する場所に着いた瞬間に押します。') : _t('　矢印の小節（繰り返し記号）に着いた瞬間に、色つきのボタンを押します。')))) : ''); }
 
     if (W.mic) { $('wdone').disabled = !done; if (W.micErr) { $('wstat').textContent = '⚠ ' + W.micErr; $('wtap').disabled = true; return; } if (!W.micOn && !done) { $('wstat').textContent = _t('マイクを準備しています…（許可の確認が出たら「許可」を押してください）'); } else if (!done) $('wstat').textContent = _t('● 録音中 ') + Math.round(W.now()) + _t(' 秒　') + (W.frames.length < 10 && W.micOn ? _t('⚠ まだ音が入ってきません。画面を1回タップしてみてください。 ') : '') + $('wstat').textContent; if (done) $('wstat').textContent = _t('印はすべて付きました。演奏を最後まで聞かせてから「できた」を押してください。'); return; }
@@ -3748,23 +3750,29 @@
     var us = 0, ue = 1;      // the pins, in pages: 0 = the top of page K, 1 = its end (= the top of the next page), -1 = the top of the page before
     if (!(W.zf && W.zf.s && W.zf.s.y !== null && W.zf.s.y !== undefined && W.zf.e && W.zf.e.y !== null && W.zf.e.y !== undefined)) throw new Error(_t('先に、「ここから弾く」のピンと「ここまで」のピンを置いてください。'));
     us = (W.zf.s.p - K) + fracOf(W.zf.s); ue = (W.zf.e.p - K) + fracOf(W.zf.e); if (us >= 1 || ue <= us) throw new Error(_t('「ここから」は「ここまで」より前に置いてください。')); if (K === N) ue = Math.min(1, ue);
-    if (K < N) { if (manualTap === undefined || manualTap === null) throw new Error(_t('めくる所を、録音を聞かせながらタップして付けてください。')); mt = (manualTap - t0N) / fsN - a0; if (mt < 20 || mt > n + 5) throw new Error(_t('めくる位置が、録音の範囲の外です。'));
+    var noTurn = K < N && (manualTap === undefined || manualTap === null) && wNoTurn(), tNoA = 0, tNoB = 0;
+    if (noTurn) {      // the recording lies between the two pins on page K and does not reach the turn: only the stretch between the pins is replaced, the rest of the page (and all marks outside the stretch) stay as they are
+      var tzS = zfTime(ref, p, W.zf.s), tzE = zfTime(ref, p, W.zf.e); if (typeof tzS !== 'number' || typeof tzE !== 'number' || !(tzE > tzS + 1)) throw new Error(_t('ピンの位置が近すぎるか、順番が逆です。弾き始めのピンは、弾き終わりのピンより前に置いてください。'));
+      fA = Math.max(fA, Math.round((tzS - t0O) / fsO)); fB = Math.min(fB, Math.round((tzE - t0O) / fsO)); if (fB - fA < 60) throw new Error(_t('ピンの位置が近すぎるか、順番が逆です。弾き始めのピンは、弾き終わりのピンより前に置いてください。'));
+      tNoA = t0O + fA * fsO; tNoB = t0O + fB * fsO; seg = S;
+    }
+    else if (K < N) { if (manualTap === undefined || manualTap === null) throw new Error(_t('めくる所を、録音を聞かせながらタップして付けてください。')); mt = (manualTap - t0N) / fsN - a0; if (mt < 20 || mt > n + 5) throw new Error(_t('めくる位置が、録音の範囲の外です。'));
       var Dp = mt / Math.max(0.03, 1 - us);      // frames of one page at the speed of this playing: from the start pin to the turn is (1 - us) of a page
       if (us > 0) pre = Math.round(us * Dp); else if (us < 0) { trim = Math.round(-us * Dp); if (trim > mt - 20) trim = 0; }
       mt -= trim; var durS = mt * fsN, bl = Math.max(1.5, Math.min(5, 0.07 * durS, 0.4 * durS)), cut = Math.min(n, trim + Math.round(mt + 0.45 * bl / fsN)); seg = S.slice(trim, cut); }
-    else { var Dl = n / Math.max(0.05, ue - us); if (us > 0) pre = Math.round(us * Dl); else if (us < 0) { trim = Math.round(-us * Dl); if (trim > n - 60) trim = 0; } if (ue < 1) post = Math.round((1 - ue) * Dl); seg = S.slice(trim); }
-    { var capF = Math.round(4 / fsO); if (pre > capF && us <= 0.3) pre = capF; if (post > capF && 1 - ue <= 0.3) post = capF; }      // a start / end pin near the top / bottom of the page (the first sound is on the first line): the bit before / after it is a margin, not a silent stretch of the page
-    if (pre > 0 || post > 0) { var sg2 = []; for (i = 0; i < pre; i++) sg2.push(zf0()); for (i = 0; i < seg.length; i++) sg2.push(seg[i]); for (i = 0; i < post; i++) sg2.push(zf0()); seg = sg2; if (mt !== null) mt += pre; }      // the part of the page before the start pin (or after the end pin) has no sound of its own yet: it stays silent
+    else if (!noTurn) { var Dl = n / Math.max(0.05, ue - us); if (us > 0) pre = Math.round(us * Dl); else if (us < 0) { trim = Math.round(-us * Dl); if (trim > n - 60) trim = 0; } if (ue < 1) post = Math.round((1 - ue) * Dl); seg = S.slice(trim); }
+    if (!noTurn) { var capF = Math.round(4 / fsO); if (pre > capF && us <= 0.3) pre = capF; if (post > capF && 1 - ue <= 0.3) post = capF; }      // a start / end pin near the top / bottom of the page (the first sound is on the first line): the bit before / after it is a margin, not a silent stretch of the page
+    if (!noTurn && (pre > 0 || post > 0)) { var sg2 = []; for (i = 0; i < pre; i++) sg2.push(zf0()); for (i = 0; i < seg.length; i++) sg2.push(seg[i]); for (i = 0; i < post; i++) sg2.push(zf0()); seg = sg2; if (mt !== null) mt += pre; }      // the part of the page before the start pin (or after the end pin) has no sound of its own yet: it stays silent
     var pgLens = [], stp = ref.barStart; for (i = 1; i <= N; i++) { var ia = p.order.indexOf('p' + i), ib = i < N ? p.order.indexOf('p' + (i + 1)) : stp.length - 1; if (ia >= 0 && ib > ia) pgLens.push(stp[ib] - stp[ia]); } pgLens.sort(function (x, y) { return x - y; });
     var medPg = pgLens.length ? pgLens[pgLens.length >> 1] : 30, segSec = seg.length * fsO, limSec = Math.max(100, 3 * medPg);
     if (segSec > limSec) throw new Error(_t('このページに入れようとしている録音が、長すぎます（約{n}秒）。録音の、このページより前の部分まで入っているようです。「録音の途中から聞かせる」で、このページが始まるあたりを選んで、やり直してください。').replace('{n}', Math.round(segSec)));      // a page is never minutes long: the recording was taken from its beginning, not from where this page starts
     var oldLen = fB - fA, delta = seg.length - oldLen, st = ref.barStart, ord = p.order, taps = [], pg;
-    { var tA0 = st[jA], tB0 = K < N ? st[jB] : st[st.length - 1], hit = false; ((p.rep && p.rep.items) || []).forEach(function (it) { ['tf', 'ta', 'tj', 'tdc', 'tsg', 'tfi', 'ttc', 'tc2', 'tj2', 'ta2'].forEach(function (kk) { if (typeof it[kk] === 'number' && it[kk] >= tA0 - 0.01 && it[kk] < tB0) hit = true; }); });
+    { var tA0 = noTurn ? tNoA : st[jA], tB0 = noTurn ? tNoB - 1.5 : (K < N ? st[jB] : st[st.length - 1]), hit = false; ((p.rep && p.rep.items) || []).forEach(function (it) { ['tf', 'ta', 'tj', 'tdc', 'tsg', 'tfi', 'ttc', 'tc2', 'tj2', 'ta2'].forEach(function (kk) { if (typeof it[kk] === 'number' && it[kk] >= tA0 - 0.01 && it[kk] < tB0) hit = true; }); });
       if (hit) throw new Error(_t('このページには、繰り返しの旗や矢印などの印があります。印のある所をまたがないように、そのページの前か後ろのページを選んでください。')); W.partShift = { tB: tB0, d: delta * fsO }; }
     for (pg = 1; pg < N; pg++) {
       var ic = ord.indexOf('p' + pg + 'c'), inx = ord.indexOf('p' + (pg + 1)); if (ic < 0 || inx < 0) throw new Error(_t('ページの数と、めくる場所の数が合いません'));
       var fo = (st[ic] + 0.55 * (st[inx] - st[ic]) - t0O) / fsO;
-      taps.push(t0O + (pg < K ? fo : pg === K ? fA + mt : fo + delta) * fsO);
+      taps.push(t0O + (pg < K ? fo : pg === K ? (noTurn ? fo + delta : fA + mt) : fo + delta) * fsO);
     }
     for (q = 0; q < taps.length; q++) { if (q && taps[q] < taps[q - 1] + 2) taps[q] = taps[q - 1] + 2; if (taps[q] < 2) taps[q] = 2; }
     var merged = [], mr = []; for (i = 0; i < fA; i++) { merged.push(Bo[i]); mr.push(1); } for (i = 0; i < seg.length; i++) { merged.push(seg[i]); mr.push(1); } for (i = fB; i < ref.T; i++) { merged.push(Bo[i]); mr.push(1); }
@@ -4021,7 +4029,9 @@
     q.push(p[n - 2], p[n - 1]); st.p = q; return st; }
   function inkClean(o) { var r = {}; Object.keys(o || {}).forEach(function (k) { if (Array.isArray(o[k])) r[k] = o[k].filter(inkOk).map(inkThin); }); return r; }      /* (a stroke whose points came out as one big comb was the palm's doing) */      // a damaged stroke (not a number, absurdly big) is dropped: it must never spoil the page
   function inkLoad() { ink.strokes = {}; if (!pkg) return; store.getKey(inkKey(), function (t) { try { if (t) ink.strokes = inkClean(JSON.parse(t) || {}); } catch (e) {} gateDone(); drawPage(null, 0); }); }
-  function inkSave() { npKey = ''; clearTimeout(ink.saveT); ink.saveT = setTimeout(function () { store.putKey(inkKey(), JSON.stringify(ink.strokes)); }, 500); }
+  function inkSave() { npKey = ''; clearTimeout(ink.saveT); ink.saveT = setTimeout(function () { if (ink.cur) { inkSave(); return; } inkFlush(); }, 2500); }      // saved once the pencil has rested for a moment, never in the middle of writing (the whole page set is turned into text, which takes a while on the iPad)
+  function inkFlush() { clearTimeout(ink.saveT); ink.saveT = 0; try { store.putKey(inkKey(), JSON.stringify(ink.strokes)); } catch (e) {} }
+  document.addEventListener('visibilitychange', function () { if (document.hidden && ink.saveT) inkFlush(); }); window.addEventListener('pagehide', function () { if (ink.saveT) inkFlush(); });
   /* ---------- page picture adjustment: brightness / contrast / tone, per page (and "same for all pages") ---------- */
   var pa = {}, paCache = [], paT = null, PA_PAPER = [250, 249, 245], PA_INK = 24;
   function paKey() { return 'padj:' + (pkg && pkg.title || '') + ':' + (pkg ? nk() : 0); }
@@ -4215,7 +4225,9 @@
     q.lineCap = 'round'; q.lineJoin = 'round'; q.strokeStyle = paColor(st.c); q.lineWidth = lw; q.translate(-x0, -y0); strokePath(q, st, v); q.setTransform(1, 0, 0, 1, 0, 0);
     g.save(); g.globalAlpha = al; if (st.h) g.globalCompositeOperation = 'multiply'; g.drawImage(scratch, 0, 0, w, h, x0, y0, w, h); g.restore();
   }
-  function drawInk(g, v, pg) { var list = ink.strokes[pg === undefined ? shownPage : pg]; if (!v || !list) return; for (var i = 0; i < list.length; i++) { try { if (inkOk(list[i])) drawOne(g, list[i], v); } catch (e) { try { g.restore(); } catch (e2) {} } } }      // one broken stroke is skipped, the page and the other strokes stay
+  function inkBB(st) { var p = st.p, bb = st._bb; if (bb && bb.n === p.length) return bb; var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (var i = 0; i < p.length; i += 2) { if (p[i] < x0) x0 = p[i]; if (p[i] > x1) x1 = p[i]; if (p[i + 1] < y0) y0 = p[i + 1]; if (p[i + 1] > y1) y1 = p[i + 1]; } bb = { n: p.length, x0: x0, y0: y0, x1: x1, y1: y1 }; try { Object.defineProperty(st, '_bb', { value: bb, writable: true, configurable: true, enumerable: false }); } catch (e) {} return bb; }      // (not saved with the stroke)
+  function inkSeen(st, v, W, H) { try { var b = inkBB(st), pad = (st.w || 1) * v.s + 4, xs = [vX(v, b.x0, b.y0), vX(v, b.x1, b.y0), vX(v, b.x0, b.y1), vX(v, b.x1, b.y1)], ys = [vY(v, b.x0, b.y0), vY(v, b.x1, b.y0), vY(v, b.x0, b.y1), vY(v, b.x1, b.y1)]; if (!(isFinite(xs[0]) && isFinite(ys[0]))) return true; return !(Math.max.apply(null, xs) + pad < 0 || Math.min.apply(null, xs) - pad > W || Math.max.apply(null, ys) + pad < 0 || Math.min.apply(null, ys) - pad > H); } catch (e) { return true; } }      // strokes that lie wholly outside the picture (zoomed in) are not drawn at all
+  function drawInk(g, v, pg) { var list = ink.strokes[pg === undefined ? shownPage : pg]; if (!v || !list) return; var cW = g.canvas.width, cH = g.canvas.height; for (var i = 0; i < list.length; i++) { try { if (inkOk(list[i]) && (list[i] === ink.cur || inkSeen(list[i], v, cW, cH))) drawOne(g, list[i], v); } catch (e) { try { g.restore(); } catch (e2) {} } } }      // one broken stroke is skipped, the page and the other strokes stay
   function inkPoint(e) {
     var c = $('page'), r = c.getBoundingClientRect(), d = c.width / r.width;
     var ip = vInv(view, (e.clientX - r.left) * d, (e.clientY - r.top) * d); return [ip[0], ip[1], d];
@@ -4242,10 +4254,10 @@
     function inkRedraw() {                                                                  // while writing, only the stroke in progress is redrawn (on its own layer), once per frame: the page itself is not redrawn
       if (inkRaf) return; inkRaf = requestAnimationFrame(function () { inkRaf = 0; if (!ink.cur || ink.cur.erase || !view) return; fit(ov); var og = ov.getContext('2d'); og.setTransform(1, 0, 0, 1, 0, 0); og.clearRect(0, 0, ov.width, ov.height); drawOne(og, ink.cur, view); });
     }
-    function up(e) { if (!ink.cur || (e && ink.cur.pid !== undefined && e.pointerId !== ink.cur.pid)) return; var was = ink.cur; ink.cur = null; delete was.pid; if (!was.erase) inkThin(was); if (inkRaf) { cancelAnimationFrame(inkRaf); inkRaf = 0; } inkSave(); if (!was.erase) { drawPage(null, 0); var og = ov.getContext('2d'); og.setTransform(1, 0, 0, 1, 0, 0); og.clearRect(0, 0, ov.width, ov.height); } }
+    function up(e) { if (!ink.cur || (e && ink.cur.pid !== undefined && e.pointerId !== ink.cur.pid)) return; var was = ink.cur; ink.cur = null; delete was.pid; if (!was.erase) inkThin(was); if (inkRaf) { cancelAnimationFrame(inkRaf); inkRaf = 0; } inkSave(); if (!was.erase) { var og = ov.getContext('2d'); if (!was.h && view && !peel) { try { var pgc = c.getContext('2d'); pgc.save(); pgc.setTransform(1, 0, 0, 1, 0, 0); drawOne(pgc, was, view); pgc.restore(); } catch (e3) { drawPage(null, 0); } } else drawPage(null, 0); og.setTransform(1, 0, 0, 1, 0, 0); og.clearRect(0, 0, ov.width, ov.height); } }      // the finished stroke is laid on the picture as it is (no redraw of everything written so far)
     c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up);
   })();
-  window.__inkStrokes = function () { return ink.strokes; };
+  window.__inkStrokes = function () { return ink.strokes; }; window.__drawPage = function () { drawPage(null, 0); };
   function paperFallback() { return 'rgb(' + PA_PAPER[0] + ',' + PA_PAPER[1] + ',' + PA_PAPER[2] + ')'; }
   function paperColorAt(x, y) {                  // the colour of the paper around a point: average of the brightest third of the pixels there
     try {
