@@ -293,7 +293,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v255</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v256β</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -1156,7 +1156,9 @@
         this.dwell = (this.dwell || 0) + this.dt; var lim = this.dwK * Math.min(8, Math.max(3, 2.5 / Math.max(bps, 0.01)));
         if (this.dwell > lim) { this.dwell = 0; return this._turn(t, 'turn', this.disp + 1, pos); }
       } else if (!silent) this.dwell = 0;
-      if (silent) { this.silS = (this.silS || 0) + this.dt; if (this.silS > 3) this.st = 0; }      // lost track near the end of the page: the tracker may jump around or stand still there, so the sound time spent in the last two bars is added up (a pause of 3 s starts it afresh); when it is clearly longer than those bars can take, turn
+      if (silent) { this.silS = (this.silS || 0) + this.dt; if (this.silS > 3) this.st = 0;
+        // the player has stopped inside the last bar of the page (rests: the position cannot advance without sound): the clock keeps running in the silence, and when it reaches the turning place the page turns
+        if (this.barStart && !this.slow && !this.late && cur0 === this.disp && this.disp < this.runs.length - 1 && pos >= lastB && pos < lastB + 1 && this.silS >= 0.5 && t - (this.nearT === undefined ? -99 : this.nearT) <= 8 && this._sec(lastB + this.frac) - this._sec(pos) <= this.silS) return this._turn(t, 'turn', this.disp + 1, pos); }      // lost track near the end of the page: the tracker may jump around or stand still there, so the sound time spent in the last two bars is added up (a pause of 3 s starts it afresh); when it is clearly longer than those bars can take, turn
       else { this.silS = 0; if (!this.slow && !this.late && cur0 === this.disp && this.disp < this.runs.length - 1 && pos >= lastB - 1 && pos < lastB + 1) {
         this.st = (this.st || 0) + this.dt; var lim2 = this._turnLimit(lastB);
         if (this.st > lim2) { this.st = 0; return this._turn(t, 'turn', this.disp + 1, pos); } } } }
@@ -2570,7 +2572,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v255', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v256β', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
