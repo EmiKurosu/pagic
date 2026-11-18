@@ -294,7 +294,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v265</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v267</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2036,7 +2036,8 @@
     if (!ed) drawReps(g, view, d);
     if (!ed) drawPeel(g, view, d);
     if (!ed) drawProb(g, view, d);
-    var mk = startPos.mark; if (mk && mk.page === shownPage && !(running && peel && peel.sc > 0)) {                      // the flag: "start here" (not on top of the curl: the next page is being shown there)
+    var mk = startPos.mark; if (mk && running && mk.page !== shownPage) mk.left = true; if (mk && mk.page === shownPage && !(running && mk.left) && !(running && peel && peel.sc > 0)) {      // once the playing has left the flag's page, the flag stays away when that page comes back (a repeat)
+                           // the flag: "start here" (not on top of the curl: the next page is being shown there)
       var fx = vX(view, mk.x, mk.y), fy = vY(view, mk.x, mk.y), u = d;
       var pk = pinPath(), ks = 2.2 * u;      // a map pin ("here"): its point is on the place that was tapped
       g.save(); g.lineJoin = 'round'; g.translate(fx, fy); g.scale(ks, ks); g.translate(-12, -21.5);
@@ -2575,7 +2576,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v265', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v267', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2681,7 +2682,7 @@
   function repApply() {                                       // rebuild the song as it will be played (only while stopped)
     pkg = Song.effective(pkgSrc, repOff); refCache = null; mapCache = {}; pvRect = {}; pager = null; tempo = null; slowMem = null; slowMemLoad();
     maxPage = Math.max.apply(null, Object.keys(pkg.bar_page).map(function (k) { return pkg.bar_page[k]; }));
-    var mk = startPos.mark; if (mk) { var sp = startFromTap(mk.page, mk.x, mk.y, mk.pass); startPos = { page: mk.page, pos: sp === null || sp === undefined ? 0 : sp, mark: mk }; } else startPos = { page: pkg.bar_page[pkg.order[0]], pos: 0, mark: null };
+    var mk = startPos.mark; if (mk) { mk.left = false; var sp = startFromTap(mk.page, mk.x, mk.y, mk.pass); startPos = { page: mk.page, pos: sp === null || sp === undefined ? 0 : sp, mark: mk }; } else startPos = { page: pkg.bar_page[pkg.order[0]], pos: 0, mark: null };
     showTempoInfo(); store.getKey(sig(), function (t0) { var go = function (t) { if (t && pkg) { try { tempo = null; /* learned bar timing is no longer used */ } catch (e) { tempo = null; } showTempoInfo(); } }; if (t0) go(t0); else store.getKey(sigOld(), go); });
     drawPage(null, 0);
   }
@@ -2930,6 +2931,13 @@
   });
   $('go').onclick = function () {
     if (!running) { micFresh = false; window.__micAlt = false;
+      try { if (startPos && startPos.mark) startPos.mark.left = false; } catch (e) {}
+      try {      // no flag: playing from the very beginning - when the beginning is played twice (a repeat back to the start), ask: first or second time?
+        if (!(startPos && startPos.mark) && pkg && pkg.kind === 'song' && pkg.eff && pkg.pcs && pkg.pcs.length > 1 && startPos && startPos.pos < 0.01) {
+          var t00 = pkg.pcs[0][0], cd0 = []; for (var q0 = 0; q0 < pkg.pcs.length; q0++) if (t00 >= pkg.pcs[q0][0] - 1e-6 && t00 < pkg.pcs[q0][1]) cd0.push(q0);
+          if (cd0.length > 1) { askPass(function (ps) { if (ps) { startPos = { page: startPos.page, pos: ps === 1 ? cd0[0] : cd0[cd0.length - 1], mark: null }; start(); } }); return; }
+        }
+      } catch (e) {}
       try { var mk0 = startPos && startPos.mark; if (mk0 && pkg && pkg.kind === 'song') { startFromTap(mk0.page, mk0.x, mk0.y); if (startCandN > 1) { askPass(function (ps) { if (ps) { mk0.pass = ps; start(); } }); return; } } } catch (e) {}
     }
     running ? stop() : start();
