@@ -294,7 +294,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v280</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v281</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2038,7 +2038,7 @@
     if (!ed) drawReps(g, view, d);
     if (!ed) drawPeel(g, view, d);
     if (!ed) drawProb(g, view, d);
-    var mk = startPos.mark; if (mk && running) { if (mk.page === shownPage) mk.seen = true; else if (mk.seen) mk.left = true; } if (mk && mk.page === shownPage && !(running && mk.left) && !(running && peel && peel.sc > 0)) {      // once the playing has left the flag's page, the flag stays away when that page comes back (a repeat)
+    var mk = startPos.mark; if (mk && mk.page === shownPage && !(running && mk.left) && !(running && peel && peel.sc > 0)) {      // once the playing has left the flag's page, the flag stays away when that page comes back (a repeat)
                            // the flag: "start here" (not on top of the curl: the next page is being shown there)
       var fx = vX(view, mk.x, mk.y), fy = vY(view, mk.x, mk.y), u = d;
       var pk = pinPath(), ks = 2.2 * u;      // a map pin ("here"): its point is on the place that was tapped
@@ -2051,7 +2051,8 @@
     }
     if (ed && fr) { view.frame = [ox + (bx + fr[0] * bw - reg.x0) * s, oy + (by + fr[1] * bh - reg.y0) * s, ox + (bx + (1 - fr[2]) * bw - reg.x0) * s, oy + (by + (1 - fr[3]) * bh - reg.y0) * s]; view.bw = bw; view.bh = bh; g.save(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1 * d; g.setLineDash([6 * d, 5 * d]); g.strokeRect(ox + (bx - reg.x0) * s, oy + (by - reg.y0) * s, bw * s, bh * s); g.restore(); geoOverlay(g, view, d); }
   }
-  function showPage(p) { if (pkg && pkg.kind === 'song') setTimeout(function () { var l = 'p' + (p + 1); if (pkg.rects[l] && pvRect[l] === undefined && imgs[pkg.rects[l].img]) previewRect(l); }, 400); if (peel && peel.pg !== undefined && peel.pg !== p) { peel = null; peelHold = null; peelAnim = false; peelKey = ''; peelLast = -1; }       /* a half-turned corner belongs to the page it was made for */ shownPage = p; shows.push([pager && pager.last ? Math.round(pager.last.t * 100) / 100 : -1, p, showWhy]); $('pg').textContent = 'p.' + p + ((pkg && pkg.recPg && pkg.recPg.indexOf(p) < 0) ? _t('・録音なし') : ''); $('msg').hidden = true; jumpUI(); paUI(); geoUI(); drawPage(null, 0); setTimeout(function () { try { var r = pageRegion(p + 1); if (r && paOf(p + 1)) paSrc(r.img, p + 1); } catch (e) {} }, 700); warmNear(p); }
+  function showPage(p) { try { var mk9 = startPos.mark; if (mk9 && running && p !== mk9.page) mk9.left = true; } catch (e) {}      // while playing, once another page has really been shown, the "start here" pin stays away (also when a repeat comes back to its page)
+    if (pkg && pkg.kind === 'song') setTimeout(function () { var l = 'p' + (p + 1); if (pkg.rects[l] && pvRect[l] === undefined && imgs[pkg.rects[l].img]) previewRect(l); }, 400); if (peel && peel.pg !== undefined && peel.pg !== p) { peel = null; peelHold = null; peelAnim = false; peelKey = ''; peelLast = -1; }       /* a half-turned corner belongs to the page it was made for */ shownPage = p; shows.push([pager && pager.last ? Math.round(pager.last.t * 100) / 100 : -1, p, showWhy]); $('pg').textContent = 'p.' + p + ((pkg && pkg.recPg && pkg.recPg.indexOf(p) < 0) ? _t('・録音なし') : ''); $('msg').hidden = true; jumpUI(); paUI(); geoUI(); drawPage(null, 0); setTimeout(function () { try { var r = pageRegion(p + 1); if (r && paOf(p + 1)) paSrc(r.img, p + 1); } catch (e) {} }, 700); warmNear(p); }
   var warmT = null, touchDown = false; ['touchstart'].forEach(function (n) { document.addEventListener(n, function () { touchDown = true; }, { passive: true, capture: true }); }); ['touchend', 'touchcancel'].forEach(function (n) { document.addEventListener(n, function () { touchDown = false; }, { passive: true, capture: true }); });
   function warmNear(p) {      // when the screen is quiet, the page before and the page after are drawn ahead of time (into the picture store), so that a swipe shows them at once
     clearTimeout(warmT); warmT = setTimeout(function () { try { if (!pkg || touchDown || peelAnim || shownPage !== p || typeof pz !== 'undefined' && pz) return; var sp = shownPage, sv = view, list = [p + 1, p - 1], i; for (i = 0; i < list.length; i++) { var q = list[i]; if (q < 1 || q > maxPage || !pageRegion(q)) continue; shownPage = q; drawPage(null, 0); } shownPage = sp; drawPage(null, 0); } catch (e) { shownPage = p; } }, 450); }
@@ -2582,7 +2583,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v280', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v281', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -4118,7 +4119,7 @@
     if (pkg.kind === 'song') { if (!(twoUpOn && pkg.bar_page[lab] % 2 !== 1)) setPeel({ np: pkg.bar_page[lab], lab: lab, sc: 1, pg: startPos.page }); return true; }      // songs: the corner curls at once
     showPreview(lab, pkg.bar_page[lab]); return true;
   }
-  window.__flagInfo = function () { var mk = startPos.mark; return mk ? { btn: mk.btn || null, page: mk.page } : null; }; window.__inkSet = function (v) { ink.on = !!v; };
+  window.__flagInfo = function () { var mk = startPos.mark; return mk ? { btn: mk.btn || null, page: mk.page, left: !!mk.left, seen: !!mk.seen, run: !!running, sp: shownPage } : null; }; window.__inkSet = function (v) { ink.on = !!v; };
   window.__setStartT = function (pg, fx, fy) { showPage(pg); var im = imgs[pg - 1]; setStart(fx * im.naturalWidth, fy * im.naturalHeight); return [startPos.pos, startCandN]; };
   function askPass(cb) {      // the flag stands in a repeated place: first or second time?
     var el = $('passq'); el.hidden = false; var done = function (v) { el.hidden = true; cb(v); };
