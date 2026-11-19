@@ -294,7 +294,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v284</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v285</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2583,7 +2583,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v284', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v285', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3887,7 +3887,7 @@
     if (segSec > limSec) throw new Error(_t('このページに入れようとしている録音が、長すぎます（約{n}秒）。録音の、このページより前の部分まで入っているようです。「録音の途中から聞かせる」で、このページが始まるあたりを選んで、やり直してください。').replace('{n}', Math.round(segSec)));      // a page is never minutes long: the recording was taken from its beginning, not from where this page starts
     var oldLen = fB - fA, delta = seg.length - oldLen, st = ref.barStart, ord = p.order, taps = [], pg;
     { var tA0 = noTurn ? tNoA : (startCut ? t0O + fA * fsO : st[jA]), tB0 = noTurn ? tNoB - 1.5 : (K < N ? st[jB] : st[st.length - 1]), hit = false; ((p.rep && p.rep.items) || []).forEach(function (it) { ['tf', 'ta', 'tj', 'tdc', 'tsg', 'tfi', 'ttc', 'tc2', 'tj2', 'ta2'].forEach(function (kk) { if (typeof it[kk] === 'number' && it[kk] >= tA0 - 0.01 && it[kk] < tB0) hit = (hit ? hit + ' ' : '') + kk + '=' + it[kk].toFixed(1); }); });
-      W.hitIds = {}; if (hit) ((p.rep && p.rep.items) || []).forEach(function (it) { ['tf', 'ta', 'tj', 'tdc', 'tsg', 'tfi', 'ttc', 'tc2', 'tj2', 'ta2'].forEach(function (kk) { if (typeof it[kk] === 'number' && it[kk] >= tA0 - 0.01 && it[kk] < tB0) W.hitIds[it.id] = 1; }); }); W.partShift = { tB: tB0, d: delta * fsO }; }
+      W.hitIds = {}; if (hit) ((p.rep && p.rep.items) || []).forEach(function (it) { ['tf', 'ta', 'tj', 'tdc', 'tsg', 'tfi', 'ttc', 'tc2', 'tj2', 'ta2'].forEach(function (kk) { if (typeof it[kk] === 'number' && it[kk] >= tA0 - 0.01 && it[kk] < tB0) W.hitIds[it.id] = 1; }); }); W.partShift = { tA: tA0, tB: tB0, d: delta * fsO }; }
     for (pg = 1; pg < N; pg++) {
       var ic = ord.indexOf('p' + pg + 'c'), inx = ord.indexOf('p' + (pg + 1)); if (ic < 0 || inx < 0) throw new Error(_t('ページの数と、めくる場所の数が合いません'));
       var fo = (st[ic] + 0.55 * (st[inx] - st[ic]) - t0O) / fsO;
@@ -3904,7 +3904,7 @@
   window.__wizPins = function (z) { if (W) { W.zf = z; zfRefresh(); } };
   var partInfoG = null;
   function partReps() {      // a page was replaced: the marks of the repeats stay, those after the page move by the change of its length
-    var sh = W.partShift || { tB: 1e9, d: 0 }, res = []; ((W.srcSong.rep && W.srcSong.rep.items) || []).forEach(function (it) { var c = JSON.parse(JSON.stringify(it)); ['tf', 'ta', 'tj', 'tdc', 'tsg', 'tfi', 'ttc', 'tc2', 'tj2', 'ta2'].forEach(function (kk) { if (typeof c[kk] === 'number' && c[kk] >= sh.tB - 1e-6) c[kk] += sh.d; }); res.push(c); }); return res;
+    var sh = W.partShift || { tB: 1e9, d: 0 }, res = []; ((W.srcSong.rep && W.srcSong.rep.items) || []).forEach(function (it) { var c = JSON.parse(JSON.stringify(it)); ['tf', 'ta', 'tj', 'tdc', 'tsg', 'tfi', 'ttc', 'tc2', 'tj2', 'ta2'].forEach(function (kk) { if (typeof c[kk] !== 'number') return; if (c[kk] >= sh.tB - 1e-6) c[kk] += sh.d; else if (sh.tA !== undefined && sh.tB > sh.tA + 0.5 && c[kk] >= sh.tA - 0.01) c[kk] = sh.tA + (c[kk] - sh.tA) * (sh.tB + sh.d - sh.tA) / (sh.tB - sh.tA); }); res.push(c); }); return res;
   }
   function wPartial(p, K, manualTap) {                       // only the part of the old reference around one page turn is replaced by the new (short) recording
     var fsN = W.ex.hop / W.sr, t0N = W.ex.nfft / 2 / W.sr, ref = new AutoPage.Reference(p), fsO = (p.rep && p.rep.fs) || (1024 / 22050), t0O = (p.rep && p.rep.t0) || (2048 / 22050), S = W.frames, rs = W.rms || [], n = S.length, i, q;
