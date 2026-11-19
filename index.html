@@ -294,7 +294,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v279</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v280</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2582,7 +2582,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v279', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v280', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -4358,7 +4358,22 @@
   }
   function inkBB(st) { var p = st.p, bb = st._bb; if (bb && bb.n === p.length) return bb; var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (var i = 0; i < p.length; i += 2) { if (p[i] < x0) x0 = p[i]; if (p[i] > x1) x1 = p[i]; if (p[i + 1] < y0) y0 = p[i + 1]; if (p[i + 1] > y1) y1 = p[i + 1]; } bb = { n: p.length, x0: x0, y0: y0, x1: x1, y1: y1 }; try { Object.defineProperty(st, '_bb', { value: bb, writable: true, configurable: true, enumerable: false }); } catch (e) {} return bb; }      // (not saved with the stroke)
   function inkSeen(st, v, W, H) { try { var b = inkBB(st), pad = (st.w || 1) * v.s + 4, xs = [vX(v, b.x0, b.y0), vX(v, b.x1, b.y0), vX(v, b.x0, b.y1), vX(v, b.x1, b.y1)], ys = [vY(v, b.x0, b.y0), vY(v, b.x1, b.y0), vY(v, b.x0, b.y1), vY(v, b.x1, b.y1)]; if (!(isFinite(xs[0]) && isFinite(ys[0]))) return true; return !(Math.max.apply(null, xs) + pad < 0 || Math.min.apply(null, xs) - pad > W || Math.max.apply(null, ys) + pad < 0 || Math.min.apply(null, ys) - pad > H); } catch (e) { return true; } }      // strokes that lie wholly outside the picture (zoomed in) are not drawn at all
-  function drawInk(g, v, pg) { var list = ink.strokes[pg === undefined ? shownPage : pg]; if (!v || !list) return; var cW = g.canvas.width, cH = g.canvas.height; for (var i = 0; i < list.length; i++) { try { if (inkOk(list[i]) && (list[i] === ink.cur || inkSeen(list[i], v, cW, cH))) drawOne(g, list[i], v); } catch (e) { try { g.restore(); } catch (e2) {} } } }      // one broken stroke is skipped, the page and the other strokes stay
+  function drawInkRaw(g, v, pg, only) { var list = ink.strokes[pg === undefined ? shownPage : pg]; if (!v || !list) return; var cW = g.canvas.width, cH = g.canvas.height; for (var i = 0; i < list.length; i++) { try { if (only === 'pen' && list[i].h) continue; if (only === 'hi' && !list[i].h) continue; if (inkOk(list[i]) && (list[i] === ink.cur || inkSeen(list[i], v, cW, cH))) drawOne(g, list[i], v); } catch (e) { try { g.restore(); } catch (e2) {} } } }      // one broken stroke is skipped, the page and the other strokes stay
+  var inkCache = [];      // a page with many strokes is drawn into a picture once and that picture is laid on the page (turning to a page with 600 strokes took more than half a second); at most 3 pictures are kept
+  function drawInk(g, v, pg) {
+    var p = pg === undefined ? shownPage : pg, list = ink.strokes[p]; if (!v || !list) return;
+    if (!ink.cur && list.length > 40) {
+      try {
+        var cW = g.canvas.width, cH = g.canvas.height, vk = ''; for (var kk in v) if (typeof v[kk] === 'number') vk += kk + ':' + v[kk] + ',';
+        var key = p + '|' + cW + 'x' + cH + '|' + vk + '|' + list.length + '|' + list[list.length - 1].p.length + '|' + JSON.stringify(pa[p] || 0), ce = null, ci;
+        for (ci = 0; ci < inkCache.length; ci++) if (inkCache[ci].page === p && inkCache[ci].cv.width === cW && inkCache[ci].cv.height === cH) { ce = inkCache[ci]; inkCache.splice(ci, 1); break; }
+        if (!ce || ce.list !== list || ce.key !== key) { if (!ce) { ce = { page: p, cv: document.createElement('canvas') }; ce.cv.width = cW; ce.cv.height = cH; } var q = ce.cv.getContext('2d'); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, cW, cH); drawInkRaw(q, v, p, 'pen'); ce.list = list; ce.key = key; }
+        inkCache.push(ce); while (inkCache.length > 3) { var old = inkCache.shift(); old.cv.width = old.cv.height = 1; }
+        g.drawImage(ce.cv, 0, 0); drawInkRaw(g, v, p, 'hi'); return;      // (the highlighter multiplies with the page, so it is drawn on the page itself, after the pen)
+      } catch (e) { inkCache = []; }
+    }
+    drawInkRaw(g, v, pg);
+  }      // one broken stroke is skipped, the page and the other strokes stay
   function inkPoint(e) {
     var c = $('page'), r = c.getBoundingClientRect(), d = c.width / r.width;
     var ip = vInv(view, (e.clientX - r.left) * d, (e.clientY - r.top) * d); return [ip[0], ip[1], d];
