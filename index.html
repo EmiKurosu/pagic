@@ -294,7 +294,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v281</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v282</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2583,7 +2583,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v281', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v282', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3281,7 +3281,7 @@
         var old = {}; (W.origReps || []).forEach(function (r) { old[r.id] = r; });
         var items = W.reps.map(function (r) {
           if (isDA(r)) { var od = old[r.id], sd = od && od.tdc !== undefined && daSame(r, od); return daTimes(r, daItem(r), function (kk) { return sd && od[kk] !== undefined ? od[kk] : est(r[kk === 'tsg' ? 'sg' : kk === 'tfi' ? 'fine' : kk === 'ttc' ? 'tc' : 'dc']); }); }
-          var o = old[r.id], same = o && o.tf !== undefined && JSON.stringify(o.flag) === JSON.stringify(r.flag) && JSON.stringify(o.arrow) === JSON.stringify(r.arrow) && JSON.stringify(o.jf) === JSON.stringify(r.jf);
+          var o = old[r.id], same = o && o.tf !== undefined && !(W.hitIds && W.hitIds[r.id] && !(r.skip && o.gap)) && JSON.stringify(o.flag) === JSON.stringify(r.flag) && JSON.stringify(o.arrow) === JSON.stringify(r.arrow) && JSON.stringify(o.jf) === JSON.stringify(r.jf);
           if (r.skip && o && o.gap && !same) throw new Error(_t('飛ばして演奏した録音の「飛ばす印」は、位置を変えられません。いったん消して、録音から作り直してください。'));
           var it = { id: r.id, color: r.color, flag: r.flag, arrow: r.arrow, tf: same ? o.tf : est(r.flag), ta: same ? o.ta : est(r.arrow) }; if (r.skip) { it.skip = true; if (o && o.gap) it.gap = true; } if (r.jf) { it.jf = r.jf; it.tj = same ? o.tj : est(r.jf); } return it;
         });
@@ -3881,7 +3881,7 @@
     if (segSec > limSec) throw new Error(_t('このページに入れようとしている録音が、長すぎます（約{n}秒）。録音の、このページより前の部分まで入っているようです。「録音の途中から聞かせる」で、このページが始まるあたりを選んで、やり直してください。').replace('{n}', Math.round(segSec)));      // a page is never minutes long: the recording was taken from its beginning, not from where this page starts
     var oldLen = fB - fA, delta = seg.length - oldLen, st = ref.barStart, ord = p.order, taps = [], pg;
     { var tA0 = noTurn ? tNoA : (startCut ? t0O + fA * fsO : st[jA]), tB0 = noTurn ? tNoB - 1.5 : (K < N ? st[jB] : st[st.length - 1]), hit = false; ((p.rep && p.rep.items) || []).forEach(function (it) { ['tf', 'ta', 'tj', 'tdc', 'tsg', 'tfi', 'ttc', 'tc2', 'tj2', 'ta2'].forEach(function (kk) { if (typeof it[kk] === 'number' && it[kk] >= tA0 - 0.01 && it[kk] < tB0) hit = (hit ? hit + ' ' : '') + kk + '=' + it[kk].toFixed(1); }); });
-      if (hit) throw new Error(_t('このページには、繰り返しの旗や矢印などの印があります。印のある所をまたがないように、そのページの前か後ろのページを選んでください。') + ' [' + hit + ' / ' + tA0.toFixed(1) + '〜' + tB0.toFixed(1) + 's' + (noTurn ? ' noTurn' : startCut ? ' cut' : '') + ']'); W.partShift = { tB: tB0, d: delta * fsO }; }
+      W.hitIds = {}; if (hit) ((p.rep && p.rep.items) || []).forEach(function (it) { ['tf', 'ta', 'tj', 'tdc', 'tsg', 'tfi', 'ttc', 'tc2', 'tj2', 'ta2'].forEach(function (kk) { if (typeof it[kk] === 'number' && it[kk] >= tA0 - 0.01 && it[kk] < tB0) W.hitIds[it.id] = 1; }); }); W.partShift = { tB: tB0, d: delta * fsO }; }
     for (pg = 1; pg < N; pg++) {
       var ic = ord.indexOf('p' + pg + 'c'), inx = ord.indexOf('p' + (pg + 1)); if (ic < 0 || inx < 0) throw new Error(_t('ページの数と、めくる場所の数が合いません'));
       var fo = (st[ic] + 0.55 * (st[inx] - st[ic]) - t0O) / fsO;
