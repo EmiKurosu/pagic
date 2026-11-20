@@ -295,7 +295,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v292</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v293</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2593,7 +2593,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v292', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v293', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2739,13 +2739,13 @@
       }
       if (isDA(r)) {                                                                   // D.C. / D.S. al Fine / al Coda: labels at the marks; the ✕ at the D.C. / D.S. label = not this time
         var lab = function (pt, kind) {
-          var x = vX(v, pt.fx * sz.w, pt.fy * sz.h), y = vY(v, pt.fx * sz.w, pt.fy * sz.h), w = 54 * u, h = 26 * u, im = pillImg(kind, r.color);
-          if (im.complete && im.naturalWidth) g.drawImage(im, x - w / 2, y - h / 2, w, h); return { x: x - w / 2 + w, y: y - h / 2 };
+          var x = vX(v, pt.fx * sz.w, pt.fy * sz.h), y = vY(v, pt.fx * sz.w, pt.fy * sz.h), w = 34 * u, h = 16 * u, im = pillImg(kind, r.color);
+          if (im.complete && im.naturalWidth) { g.save(); g.globalAlpha = 0.8; g.drawImage(im, x - w / 2, y - h / 2, w, h); g.restore(); } return { x: x - w / 2 + w, y: y - h / 2 };
         };
         daMarks(r).forEach(function (m) {
           if (!r[m] || r[m].page !== shownPage) return;
           if (m !== 'dc') { lab(r[m], PILLK[m]); return; }
-          var c0 = lab(r.dc, r.sg || daKind(r).indexOf('ds') === 0 ? 'DS' : 'D'), bx2 = c0.x + 6 * u, by2 = c0.y - 6 * u, br2 = 15 * u; g.globalAlpha = 1;
+          var c0 = lab(r.dc, r.sg || daKind(r).indexOf('ds') === 0 ? 'DS' : 'D'), bx2 = c0.x + 6 * u, by2 = c0.y - 6 * u, br2 = 11 * u; g.globalAlpha = 1;
           g.beginPath(); g.arc(bx2, by2, br2, 0, 7); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 2.2 * u; g.strokeStyle = '#b91c1c'; g.stroke();
           g.beginPath(); g.moveTo(bx2 - 5.5 * u, by2 - 5.5 * u); g.lineTo(bx2 + 5.5 * u, by2 + 5.5 * u); g.moveTo(bx2 + 5.5 * u, by2 - 5.5 * u); g.lineTo(bx2 - 5.5 * u, by2 + 5.5 * u); g.lineWidth = 3 * u; g.stroke();
           repHits.push({ id: r.id, page: shownPage, x: bx2, y: by2, r: br2 });
@@ -3217,7 +3217,7 @@
   function repSvg(kind, col, sz) {
     return kind === 'f'
       ? '<svg viewBox="0 0 24 24" width="' + sz + '" height="' + sz + '"><path d="M5 22V3" stroke="#222" stroke-width="2.4" stroke-linecap="round"/><path d="M5.6 3.6L20 8.2 5.6 13z" fill="' + col + '" stroke="#222" stroke-width="1.6" stroke-linejoin="round"/></svg>'
-      : kind.length <= 2 && 'DSFTC'.indexOf(kind) >= 0 ? pillSvg(kind, col, Math.round(sz * 1.9), sz)
+      : kind.length <= 2 && 'DSFTC'.indexOf(kind) >= 0 ? pillSvg(kind, col, Math.round(sz * 1.15), Math.round(sz * 0.6))
       : kind === 'e' ? '<svg viewBox="0 0 24 24" width="' + sz + '" height="' + sz + '"><path d="M21 3V17M21 17H3M9 11L3 17 9 23" fill="none" stroke="#222" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 3V17M21 17H3M9 11L3 17 9 23" fill="none" stroke="' + col + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       : kind === 'k' ? '<svg viewBox="0 0 24 24" width="' + sz + '" height="' + sz + '"><path d="M3 7V21M3 7H21M15 1L21 7 15 13" fill="none" stroke="#222" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 7V21M3 7H21M15 1L21 7 15 13" fill="none" stroke="' + col + '" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       : kind === 'j' ? '<svg viewBox="0 0 24 24" width="' + sz + '" height="' + sz + '"><path d="M3 5v14" stroke="#222" stroke-width="3" stroke-linecap="round"/><path d="M6 12h13M14 6l6 6-6 6" fill="none" stroke="#222" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 5v14" stroke="' + col + '" stroke-width="1.2" stroke-linecap="round"/><path d="M6 12h13M14 6l6 6-6 6" fill="none" stroke="' + col + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
