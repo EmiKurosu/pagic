@@ -297,7 +297,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v330</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v334</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -464,10 +464,6 @@
     <p>「ゆっくり」はオフにしてください。速さが大きく変わるページは、曲の一覧の「新しい演奏で覚え直す」で、そのページのお手本を新しい演奏に差し替えてください（ラルゴからプレストまであるショパンのバラード1番など）。</p>
     <h3>お手本よりかなり遅く弾いている</h3>
     <p>「ゆっくり」を押して、「かなり遅め」（お手本の約0.4倍）か「少し遅め」（約0.7倍）を選びます。アプリは速さを自動では切り替えません。弾き終わると、今回の速さ（お手本の何倍だったか）と、どの設定が近いかが表示されるので、次に弾くときの設定の参考にしてください。</p>
-    <h3>場所によって、速さがお手本とかなり違う（自分の速さを覚えさせる）</h3>
-    <p>一通り弾けるようになったが、本番のテンポではまだ弾けない、場所によってお手本よりかなり遅かったり、ほぼ同じだったりする、というときに使えます。「ゆっくり」で弾いたあと、「この速さをゆっくり用に覚える」を押すと、ページごとの速さが保存されます。</p>
-    <p>覚えた速さは、ボタンが増えるのではなく、「ゆっくり」で追うときに、そのページの基準の速さとして自動で使われます。覚えたページでは、「かなり遅め」「少し遅め」で選んだ速さより、覚えた速さが優先されます。ほかのページは、選んだ速さのままです。</p>
-    <p>覚えた速さは、「覚えた速さを消す」で、いつでも消せます。同じページを少し速く弾く日があっても基準は変わらないので、迷うときは覚えさせないほうが安全です。お手本の約0.85倍以上で弾いたページは、覚えさせられません。</p>
     <h2>それでも直らないとき</h2>
     <h3>お手本演奏に問題がないかを確かめる</h3>
     <p>何度弾いても、同じあたりでめくれないときは、お手本の録音に、音が入っていない部分があるかもしれません。音が入っていない部分は、追えないので、めくれません。</p>
@@ -2548,7 +2544,7 @@
         else { var near = (p >= 0.65 ? 1 : 0); rec = (p < 0.3 ? _t('「かなり遅め」より遅い速さです。') + ' ' : '') + _t('このテンポには、「ゆっくり」の「{b}」が合っています。').replace('{b}', _t(['かなり遅め', '少し遅め'][near])); }
         var d2 = document.createElement('div'); d2.textContent = rec; box.appendChild(d2); if (p < 0.85 && near !== slowLv) { var d6 = document.createElement('div'); d6.style.fontWeight = '700'; d6.textContent = _t('いま選んでいるのは「{a}」ですが、今回の速さには「{b}」が合っています。次は「{b}」を選んでください。').replace('{a}', _t(['かなり遅め', '少し遅め'][slowLv])).replace(/\{b\}/g, _t(['かなり遅め', '少し遅め'][near])); box.appendChild(d6); }
         if (r.pages && r.pages.length > 1) r.pages.forEach(function (q) { var nr = (q.pace >= 0.65 ? 1 : 0), n2 = (!window.LANG || window.LANG === 'ja') ? Math.round(q.pace * 100) / 10 : Math.round(q.pace * 100), d3 = document.createElement('div'); d3.textContent = ((!window.LANG || window.LANG === 'ja') && q.pace >= 0.95 && q.pace <= 1.05 ? q.page + 'ページ目：ほぼ同じ速さ' : (!window.LANG || window.LANG === 'ja') ? q.page + 'ページ目：約' + pacePct(q.pace) : _t('{p}ページ目：約{n}割').replace('{p}', q.page).replace('{n}', n2)) + (q.full === false ? ((!window.LANG || window.LANG === 'ja') ? '（途中まで）' : ' (part of the page)') : '') + (q.pace < 0.85 ? ' → ' + _t(['かなり遅め', '少し遅め'][nr]) : '');
-          if (sl && q.pace >= 0.2 && q.pace < 0.85 && q.full !== false) { d3.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px'; var d3t = document.createElement('span'); d3t.textContent = d3.textContent; d3.textContent = ''; d3.appendChild(d3t); var pb = document.createElement('button'); pb.type = 'button'; pb.style.cssText = 'width:auto;flex:none;padding:8px 16px;white-space:nowrap'; pb.textContent = (!window.LANG || window.LANG === 'ja') ? q.page + 'ページ目の速さを覚える' : _t('Remember page {p}').replace('{p}', q.page); pb.onclick = function () { var m = slowMem && slowMem.pages ? { pages: Object.assign({}, slowMem.pages), at: Date.now() } : { pages: {}, at: Date.now() }; m.pages[q.page] = Math.round(q.pace * 1000) / 1000; slowMem = m; store.putKey(slowKey(), JSON.stringify(m)); showTempoInfo(); pb.disabled = true; pb.textContent = _t('覚えました'); log(_t('ゆっくり用の速さを覚えました')); }; d3.appendChild(pb); }
+          if (false && sl && q.pace >= 0.2 && q.pace < 0.85 && q.full !== false) { d3.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px'; var d3t = document.createElement('span'); d3t.textContent = d3.textContent; d3.textContent = ''; d3.appendChild(d3t); var pb = document.createElement('button'); pb.type = 'button'; pb.style.cssText = 'width:auto;flex:none;padding:8px 16px;white-space:nowrap'; pb.textContent = (!window.LANG || window.LANG === 'ja') ? q.page + 'ページ目の速さを覚える' : _t('Remember page {p}').replace('{p}', q.page); pb.onclick = function () { var m = slowMem && slowMem.pages ? { pages: Object.assign({}, slowMem.pages), at: Date.now() } : { pages: {}, at: Date.now() }; m.pages[q.page] = Math.round(q.pace * 1000) / 1000; slowMem = m; store.putKey(slowKey(), JSON.stringify(m)); showTempoInfo(); pb.disabled = true; pb.textContent = _t('覚えました'); log(_t('ゆっくり用の速さを覚えました')); }; d3.appendChild(pb); }
           box.appendChild(d3); });
       } else { if (p < 0.7) { var nb = (p >= 0.65 ? 1 : 0), d5 = document.createElement('div'); d5.textContent = _t('お手本よりかなり遅い速さでした。次は「ゆっくり」を押して、「{b}」を選ぶと、追いやすくなります。').replace('{b}', _t(['かなり遅め', '少し遅め'][nb])); box.appendChild(d5); }
         var ja2 = !window.LANG || window.LANG === 'ja';
@@ -2571,7 +2567,7 @@
       } catch (e4) {} }
       var bs = document.createElement('div'); bs.className = 'pb';
       if (sl && slowMem) { var d4 = document.createElement('div'); d4.textContent = _t('ゆっくり用に覚えた速さ：') + slowMemText(); box.insertBefore(d4, bs); }
-      var okp = (r.pages || []).filter(function (q) { return q.pace >= 0.2 && q.pace < 0.85 && q.full !== false; }).map(function (q) { return q.page; }); if (sl && okp.length && !(r.pages && r.pages.length > 1)) { var sb = document.createElement('button'); sb.type = 'button'; sb.textContent = (!window.LANG || window.LANG === 'ja') ? (okp.length === 1 ? okp[0] + 'ページ目' : okp.length === 2 ? okp[0] + 'ページ目と' + okp[1] + 'ページ目' : okp.slice(0, -1).map(function (x) { return x + 'ページ目'; }).join('、') + 'と' + okp[okp.length - 1] + 'ページ目') + 'の速さをゆっくり用に覚える' : _t('Remember the speed of page(s) {p} for slowly').replace('{p}', okp.join(', ')); sb.onclick = function () { var m = slowMem && slowMem.pages ? { pages: Object.assign({}, slowMem.pages), at: Date.now() } : { pages: {}, at: Date.now() }; r.pages.forEach(function (q) { if (q.pace >= 0.2 && q.pace < 0.85 && q.full !== false) m.pages[q.page] = Math.round(q.pace * 1000) / 1000; }); slowMem = m; store.putKey(slowKey(), JSON.stringify(m)); showTempoInfo(); box.hidden = true; toast(_t('覚えました。次の「ゆっくり」から使います。')); log(_t('ゆっくり用の速さを覚えました')); }; bs.appendChild(sb); }
+      var okp = (r.pages || []).filter(function (q) { return q.pace >= 0.2 && q.pace < 0.85 && q.full !== false; }).map(function (q) { return q.page; }); if (false && sl && okp.length && !(r.pages && r.pages.length > 1)) { var sb = document.createElement('button'); sb.type = 'button'; sb.textContent = (!window.LANG || window.LANG === 'ja') ? (okp.length === 1 ? okp[0] + 'ページ目' : okp.length === 2 ? okp[0] + 'ページ目と' + okp[1] + 'ページ目' : okp.slice(0, -1).map(function (x) { return x + 'ページ目'; }).join('、') + 'と' + okp[okp.length - 1] + 'ページ目') + 'の速さをゆっくり用に覚える' : _t('Remember the speed of page(s) {p} for slowly').replace('{p}', okp.join(', ')); sb.onclick = function () { var m = slowMem && slowMem.pages ? { pages: Object.assign({}, slowMem.pages), at: Date.now() } : { pages: {}, at: Date.now() }; r.pages.forEach(function (q) { if (q.pace >= 0.2 && q.pace < 0.85 && q.full !== false) m.pages[q.page] = Math.round(q.pace * 1000) / 1000; }); slowMem = m; store.putKey(slowKey(), JSON.stringify(m)); showTempoInfo(); box.hidden = true; toast(_t('覚えました。次の「ゆっくり」から使います。')); log(_t('ゆっくり用の速さを覚えました')); }; bs.appendChild(sb); }
       if (sl && slowMem) { var xb = document.createElement('button'); xb.type = 'button'; xb.textContent = _t('覚えた速さを消す'); xb.onclick = function () { slowMem = null; store.putKey(slowKey(), ''); showTempoInfo(); box.hidden = true; toast(_t('覚えた速さを消しました')); }; bs.appendChild(xb); }
       if (false) { var lb = document.createElement('button'); lb.type = 'button'; lb.textContent = _t('各小節の時間配分を覚えさせる'); lb.onclick = function () { box.hidden = true; applyPlayed(learn); }; bs.appendChild(lb); }
       var cb = document.createElement('button'); cb.type = 'button'; cb.textContent = _t('閉じる'); cb.onclick = function () { box.hidden = true; }; bs.appendChild(cb); box.appendChild(bs); box.hidden = false;
@@ -2627,7 +2623,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v330', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v334', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3059,7 +3055,7 @@
   function sig() { if (!pkg) return 'tempo:'; return 'tempo:' + (pkg.title || '') + ':' + pkg.order.length; }      /* no length in the key: re-learning a page changes it and used to lose the learned tempo */
   function sigOld() { return 'tempo:' + (pkg.title || '') + ':' + pkg.order.length + ':' + pkg.T; }
   function slowKey() { return sig() + ':slow'; }
-  function slowMemLoad() { var k = slowKey(); store.getKey(k, function (t) { if (k !== slowKey()) return; slowMem = null; try { if (t) { var m = JSON.parse(t); if (m && m.pages && Object.keys(m.pages).length) slowMem = m; } } catch (e) {} showTempoInfo(); }); }
+  function slowMemLoad() { slowMem = null; return; var k = slowKey(); store.getKey(k, function (t) { if (k !== slowKey()) return; slowMem = null; try { if (t) { var m = JSON.parse(t); if (m && m.pages && Object.keys(m.pages).length) slowMem = m; } } catch (e) {} showTempoInfo(); }); }
   function slowMemText() { if (!slowMem) return ''; var ja = !window.LANG || window.LANG === 'ja'; return Object.keys(slowMem.pages).sort(function (a, b) { return a - b; }).map(function (p) { return ja ? p + 'ページ目：約' + (+slowMem.pages[p]).toFixed(2) + '倍' : _t('{p}ページ目：約{n}割').replace('{p}', p).replace('{n}', Math.round(slowMem.pages[p] * 100)); }).join(' / '); }
   function showTempoInfo() {
     var sm = slowMem ? '\n' + _t('ゆっくり用に覚えた速さ：') + slowMemText() : '';
@@ -3141,6 +3137,7 @@
       W.imgs = p.images.map(function (d, i) { var r = p.rects && p.rects['p' + (i + 1)]; return { data: d, w: p.sizes[i].w, h: p.sizes[i].h, thumb: d, name: p.names && p.names[i] || ('p.' + (i + 1)), rect: r ? { x0: r.x0, x1: r.x1, y0: r.y0, y1: r.y1 } : null }; });
       $('wapplybox').hidden = $('wapplybox1').hidden = false; W.srcSong = p; W.origReps = (p.rep && p.rep.items) ? JSON.parse(JSON.stringify(p.rep.items)) : [];
       if (p.rep && p.rep.items) W.reps = p.rep.items.map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; });
+      else if (p.repMarks && p.repMarks.length) W.reps = p.repMarks.map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; });      // a song made without a recording keeps the positions of its marks (the times come with the recording)
       var ps = $('wpartsel'); ps.innerHTML = '';
       if (p.recPg) { var firstNo = 0; var oall = document.createElement('option'); oall.value = '0'; oall.textContent = _t('全曲を通して覚える'); ps.appendChild(oall); for (var kr = 1; kr <= W.imgs.length; kr++) { var orr = document.createElement('option'); orr.value = '' + kr; var rec = p.recPg.indexOf(kr) >= 0; orr.textContent = _t('{a}ページ目の録音を登録する').replace('{a}', fwNum(kr)) + (rec ? _t('（登録ずみ・やり直し）') : _t('（まだ録音がありません）')); if (!rec && !firstNo) firstNo = kr; ps.appendChild(orr); } ps.value = '' + (preK || firstNo || 1); }
       else { var o0 = document.createElement('option'); o0.value = '0'; o0.textContent = _t('全ページ'); ps.appendChild(o0);
@@ -3165,7 +3162,7 @@
         if (p.replacedFrom) delete p.replacedFrom; libAdd(p); wclose(); try { libRender(); $('lib').hidden = false; } catch (e) {} toast(_t('曲をまるごとコピーしました。直したい所は、「覚え直す」で差し替えてください。'), false, 5000); return;
       }
       W.imgs = p.images.map(function (d, i) { var r = p.rects && p.rects['p' + (i + 1)]; return { data: d, w: p.sizes[i].w, h: p.sizes[i].h, thumb: d, name: p.names && p.names[i] || ('p.' + (i + 1)), rect: r ? { x0: r.x0, x1: r.x1, y0: r.y0, y1: r.y1 } : null }; });
-      W.reps = (p.rep && p.rep.items) ? p.rep.items.map(function (r, i) { return { id: 'c' + Date.now().toString(36) + i, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; }) : []; W.rev = {};
+      W.reps = ((p.rep && p.rep.items) || p.repMarks) ? ((p.rep && p.rep.items) || p.repMarks).map(function (r, i) { return { id: 'c' + Date.now().toString(36) + i, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; }) : []; W.rev = {};
       if (!$('wtitle').value.trim()) $('wtitle').value = (p.title || '') + _t('（コピー）');
       store.getKey('mode:' + (p.title || '') + ':' + (p.nkey || p.order.length), function (mv) { if (W && !W.redoId) $('wtempomode').value = mv === 'wide' ? 'wide' : 'single'; });
       try { repSort(); } catch (e) {} wthumbs(); wcheck(); wreplist(); $('wcopysel').hidden = true;
@@ -4118,7 +4115,7 @@
     if (!W || W.imgs.length < 1) return;
     var N = W.imgs.length, L = 10, fs = 1024 / 22050, nf = Math.round(N * L / fs), i, fr = [], rm = [];
     for (i = 0; i < nf; i++) { fr.push(new Float32Array(12)); rm.push(0); }
-    W.noRecNew = true; W.sr = 22050; W.ex = { hop: 1024, nfft: 4096 }; W.frames = fr; W.rms = rm; W.reps = []; W.rev = {}; W.om = []; W.taps = []; for (i = 1; i < N; i++) W.taps.push(i * L); W.log = W.taps.map(function (x) { return { k: 't', t: x }; });
+    W.keepMarks = (W.reps || []).map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; }); W.noRecNew = true; W.sr = 22050; W.ex = { hop: 1024, nfft: 4096 }; W.frames = fr; W.rms = rm; W.reps = []; W.rev = {}; W.om = []; W.taps = []; for (i = 1; i < N; i++) W.taps.push(i * L); W.log = W.taps.map(function (x) { return { k: 't', t: x }; });
     $('wdone').disabled = false; $('wdone').onclick();
   };
   $('wdone').onclick = function () {
@@ -4163,7 +4160,7 @@
           frames: frames, rms: rmsA, frameSec: ex.hop / W.sr, t0: ex.nfft / 2 / W.sr, marks: marks, title: $('wtitle').value.trim() || _t('新しい曲'),
           images: W.imgs.map(function (i) { return i.data; }), sizes: W.imgs.map(function (i) { return { w: i.w, h: i.h }; }), firstBars: W.imgs.map(function (i) { return i.rect; }),
           repeats: reps
-        }); p.names = W.imgs.map(function (i) { return i.name || ''; }); if (W.noRecNew) p.recPg = []; else if (W.srcSong && W.srcSong.recPg && partKd) { var rg = W.srcSong.recPg.filter(function (x) { return x !== partKd; }); if (partKd && W.pageFull !== false) rg.push(partKd); p.recPg = rg.sort(function (x, y) { return x - y; }); } if (partKd) { var rp0 = (W.srcSong && W.srcSong.redoPg || []).filter(function (x) { return x !== partKd; }); rp0.push(partKd); p.redoPg = rp0; } else if (W.srcSong && W.srcSong.redoPg) p.redoPg = W.srcSong.redoPg.slice();      /* pages re-learned from the player's own playing */
+        }); p.names = W.imgs.map(function (i) { return i.name || ''; }); if (W.noRecNew) { p.recPg = []; if (W.keepMarks && W.keepMarks.length) p.repMarks = W.keepMarks; } else if (W.srcSong && W.srcSong.recPg && partKd) { var rg = W.srcSong.recPg.filter(function (x) { return x !== partKd; }); if (partKd && W.pageFull !== false) rg.push(partKd); p.recPg = rg.sort(function (x, y) { return x - y; }); } if (partKd) { var rp0 = (W.srcSong && W.srcSong.redoPg || []).filter(function (x) { return x !== partKd; }); rp0.push(partKd); p.redoPg = rp0; } else if (W.srcSong && W.srcSong.redoPg) p.redoPg = W.srcSong.redoPg.slice();      /* pages re-learned from the player's own playing */
         var contW = function () {
           var text = JSON.stringify(p), oldId = W.redoId, dId = W.draftId; clearTimeout(draftT); wclose();
           if (dId) { lib = lib.filter(function (x) { return x.id !== dId; }); store.delKey('song:' + dId); libSave(); }
@@ -5028,6 +5025,11 @@
   }
   var LIB_GRP = [      // [one word, the other spellings (no accents, lower case), the katakana / kanji spellings]: all of them count as the same word in the song search
     ['sonata', 'sonate sonaten sonatas sonates', 'ソナタ ソナテ ゾナーテ'], ['sonatina', 'sonatine sonatinen sonatinas sonatines', 'ソナチネ ソナティーナ ソナティネ'],
+    ['elegie', 'elegy elegia elegien elegies elegi', 'エレジー エレジ エレジィ 悲歌 哀歌'], ['romance', 'romanze romanza romances romanzen', 'ロマンス ロマンツェ ロマンツァ ロマンセ'], ['lied', 'lieder song songs', 'リート リーダー'], ['serenade', 'serenata serenaden serenades', 'セレナーデ セレナード セレナータ 小夜曲'],
+    ['intermezzo', 'intermezzi', 'インテルメッツォ インテルメッツオ 間奏曲'], ['capriccio', 'caprice kapriccio capricci capricen', 'カプリッチョ カプリース カプリス 奇想曲'], ['berceuse', 'wiegenlied lullaby', 'ベルスーズ 子守歌 子守唄'], ['humoresque', 'humoreske humoresken', 'ユーモレスク'],
+    ['arabesque', 'arabeske arabesken arabesques', 'アラベスク'], ['tarantella', 'tarantelle tarantellen', 'タランテラ タランテッラ'], ['march', 'marsch marche marcia marches maerche', 'マーチ 行進曲 マルシュ マルチ'], ['pastorale', 'pastoral pastorella', 'パストラール パストラーレ 田園'],
+    ['sarabande', 'sarabanda sarabanden', 'サラバンド サラバンダ'], ['allemande', 'allemanda', 'アルマンド アルマンド'], ['courante', 'corrente', 'クーラント コレンテ'], ['gigue', 'giga gigen', 'ジーグ ジーガ ジグ'], ['invention', 'inventionen inventions', 'インヴェンション インベンション 発明曲'],
+    ['traumerei', 'dream reverie', 'トロイメライ 夢'], ['liebestraum', 'liebestraume', 'リーベストラウム 愛の夢'], ['campanella', '', 'カンパネラ'], ['elise', 'elisa', 'エリーゼのために エリーゼ'], ['pathetique', 'pathetisch pathetic', '悲愴'], ['appassionata', '', '熱情'], ['moonlight', 'mondschein mondscheinsonate clair', '月光'],
     ['etude', 'etuden etudes studie studien', 'エチュード エチュ エテュード エチュ-ド 練習曲 エチュードー'], ['ballade', 'balladen ballad ballata ballades balada balladen', 'バラード バラーデ バラータ バラッド バラァド'],
     ['opera', 'oper opern operas', 'オペラ オーパー'], ['barcarolle', 'barcarole barcarola barkarole barkarolle barcaroles', 'バルカローレ バルカロール バルカロラ バルカロレ 舟歌'],
     ['prelude', 'praeludium praludium preludio preludes praeludien praludien preludien', 'プレリュード プレリュ プレルーディオ プレリュディウム 前奏曲'], ['fugue', 'fuge fuga fugen fugues', 'フーガ フーゲ フュージュ フーグ'],
@@ -5042,22 +5044,39 @@
     ['chopin', 'frederic fryderyk', 'ショパン'], ['beethoven', '', 'ベートーヴェン ベートーベン ベートーヴェーン'], ['bach', '', 'バッハ'], ['mozart', '', 'モーツァルト モーツアルト'], ['liszt', 'list', 'リスト'], ['schumann', '', 'シューマン'],
     ['brahms', '', 'ブラームス'], ['debussy', '', 'ドビュッシー ドビュシー'], ['ravel', '', 'ラヴェル ラベル'], ['schubert', '', 'シューベルト'], ['rachmaninoff', 'rachmaninov rachmaninow rakhmaninov', 'ラフマニノフ ラフマニノフ'],
     ['scriabin', 'skrjabin scriabine skriabin', 'スクリャービン スクリャビン'], ['haydn', '', 'ハイドン'], ['mendelssohn', 'mendelssohnbartholdy', 'メンデルスゾーン'], ['tchaikovsky', 'tschaikowsky tchaikovski chaikovsky tschaikowski', 'チャイコフスキー チャイコフスキイ'],
-    ['prokofiev', 'prokofjew prokofieff prokofiew', 'プロコフィエフ'], ['faure', '', 'フォーレ'], ['grieg', '', 'グリーグ'], ['satie', '', 'サティ'], ['scarlatti', '', 'スカルラッティ'], ['handel', 'haendel', 'ヘンデル ハンデル'], ['czerny', '', 'ツェルニー チェルニー'],
+    ['prokofiev', 'prokofjew prokofieff prokofiew', 'プロコフィエフ'], ['faure', '', 'フォーレ'], ['grieg', '', 'グリーグ'], ['satie', '', 'サティ'], ['scarlatti', '', 'スカルラッティ'], ['handel', 'haendel', 'ヘンデル ハンデル'], ['czerny', 'tscherny cerny czerni tschernij czerney', 'ツェルニー チェルニー ツェルニイ チェルニイ'],
     ['clementi', '', 'クレメンティ'], ['gershwin', '', 'ガーシュウィン ガーシュイン'], ['saintsaens', 'saintsaens', 'サンサーンス サン=サーンス サン・サーンス'], ['albeniz', '', 'アルベニス'], ['granados', '', 'グラナドス'],
-    ['paganini', '', 'パガニーニ'], ['moszkowski', 'moszkowsky', 'モシュコフスキ モシュコフスキー'], ['kreisler', '', 'クライスラー'], ['bartok', 'bartok', 'バルトーク'], ['janacek', '', 'ヤナーチェク'], ['sibelius', '', 'シベリウス']
+    ['paganini', '', 'パガニーニ'], ['moszkowski', 'moszkowsky', 'モシュコフスキ モシュコフスキー'], ['kreisler', '', 'クライスラー'], ['bartok', 'bartok', 'バルトーク'], ['janacek', '', 'ヤナーチェク'], ['sibelius', '', 'シベリウス'],
+    ['beyer', 'bayer beier baier', 'バイエル バイヤー'], ['hanon', 'hannon', 'ハノン'], ['burgmuller', 'burgmueller burgmuler', 'ブルグミュラー ブルクミュラー ブルグミューラー ブルクミューラー'], ['kuhlau', 'kulau kuhlaw', 'クーラウ クーラウ'], ['diabelli', '', 'ディアベッリ ディアベリ'],
+    ['kabalevsky', 'kabalewski kabalevski kabalewsky', 'カバレフスキー カバレフスキイ'], ['khachaturian', 'chatschaturjan khachaturyan katschaturjan chatschaturian katchaturian', 'ハチャトゥリアン ハチャトゥリャン カチャトゥリアン'], ['shostakovich', 'schostakowitsch shostakovitch chostakovitch shostakowitsch szostakowicz schostakowitch', 'ショスタコーヴィチ ショスタコービチ ショスタコーヴィッチ ショスタコヴィッチ ショスタコビッチ'],
+    ['dvorak', 'dvorzak dworschak dworak dvoržak dworzak', 'ドヴォルザーク ドヴォルジャーク ドボルザーク ドヴォジャーク ドボルジャーク'], ['smetana', '', 'スメタナ'], ['weber', '', 'ウェーバー ウェーバ ヴェーバー ウェバー'], ['hummel', '', 'フンメル フメル'], ['dussek', 'dusik duschek', 'ドゥセク デュセク'],
+    ['mussorgsky', 'mussorgski moussorgski mussorgskij musorgsky mussorgskiy modest', 'ムソルグスキー ムソルグスキイ ムソルグスキ ムゾルグスキー ムゾルグスキイ ムソルグスキー'], ['borodin', 'borodine', 'ボロディン'], ['rimsky', 'rimski rimskij rimskiy', 'リムスキー'], ['korsakov', 'korsakow korsakoff', 'コルサコフ コルサコフ'],
+    ['glinka', '', 'グリンカ'], ['balakirev', 'balakirew balakireff', 'バラキレフ バラキレエフ'], ['medtner', 'metner medtnerr', 'メトネル メトネール メトネル'], ['glazunov', 'glasunow glazunow glazounov', 'グラズノフ グラズーノフ'],
+    ['stravinsky', 'strawinsky strawinski stravinski strawinskij stravinskij', 'ストラヴィンスキー ストラヴィンスキイ ストラビンスキー ストラビンスキイ'], ['hindemith', '', 'ヒンデミット ヒンデミツト'], ['schoenberg', 'schonberg arnold schoenburg', 'シェーンベルク シェーンベルグ シェーンベルク シェーンベルグ'],
+    ['berg', '', 'ベルク ベルグ'], ['webern', '', 'ウェーベルン ヴェーベルン'], ['ligeti', '', 'リゲティ'], ['messiaen', '', 'メシアン メシアン'], ['poulenc', '', 'プーランク'], ['milhaud', '', 'ミヨー ミヨ'], ['ibert', '', 'イベール'], ['dukas', '', 'デュカス デュカ'], ['chabrier', '', 'シャブリエ'],
+    ['bizet', '', 'ビゼー'], ['franck', 'frank cesar', 'フランク'], ['massenet', '', 'マスネ マスネー'], ['gounod', '', 'グノー'], ['berlioz', '', 'ベルリオーズ ベルリオーズ'], ['couperin', '', 'クープラン'], ['rameau', '', 'ラモー'], ['purcell', '', 'パーセル パーセル'],
+    ['vivaldi', '', 'ヴィヴァルディ ヴィヴァルディー ビバルディ ヴィバルディ'], ['pachelbel', '', 'パッヘルベル パッヘルベル パッヘルベル'], ['telemann', '', 'テレマン テレマン'], ['buxtehude', '', 'ブクステフーデ ブクステフーデ'], ['soler', '', 'ソレール ソレル'], ['tarrega', '', 'タレガ タルレガ'],
+    ['rodrigo', '', 'ロドリーゴ ロドリゴ'], ['falla', '', 'ファリャ ファヤ ファリア'], ['turina', '', 'トゥリーナ'], ['mompou', '', 'モンポウ'], ['villalobos', 'villa lobos heitor', 'ヴィラ=ロボス ヴィラロボス ヴィラ・ロボス ヴィラロボス ヴィラ=ロボス'],
+    ['piazzolla', 'piazolla', 'ピアソラ ピアゾラ'], ['joplin', '', 'ジョプリン ジョップリン'], ['chaminade', '', 'シャミナード'], ['wagner', '', 'ワーグナー ヴァーグナー ワグナー'], ['verdi', '', 'ヴェルディ ベルディ'], ['puccini', '', 'プッチーニ プッチニ'],
+    ['rossini', '', 'ロッシーニ'], ['bellini', '', 'ベッリーニ ベリーニ'], ['donizetti', '', 'ドニゼッティ'], ['mahler', '', 'マーラー マーラ'], ['bruckner', '', 'ブルックナー'], ['strauss', 'strauß', 'シュトラウス ストラウス'], ['reger', '', 'レーガー レガー'],
+    ['copland', '', 'コープランド コプランド'], ['bernstein', '', 'バーンスタイン バーンシュタイン'], ['barber', '', 'バーバー'], ['ives', '', 'アイヴズ アイブス'], ['einaudi', '', 'エイナウディ'], ['yiruma', '', 'イルマ'], ['hisaishi', '', '久石譲 久石'], ['sakamoto', 'ryuichi', '坂本龍一 坂本'],
+    ['moscheles', '', 'モシェレス'], ['cramer', '', 'クラーマー クラマー'], ['kohler', 'koehler', 'ケーラー ケラー'], ['heller', '', 'ヘラー ヘレル'], ['gurlitt', '', 'グルリット'], ['pischna', '', 'ピシュナ'], ['lemoine', '', 'ルモワンヌ ルモアンヌ']
   ], LIB_SYN = {}, LIB_KATA = [];
-  LIB_GRP.forEach(function (g) { g[1].split(' ').forEach(function (w) { if (w) LIB_SYN[w] = g[0]; }); g[2].split(' ').forEach(function (w) { if (w) LIB_KATA.push([w, g[0]]); }); });
+  function libKn(w) { return String(w).replace(/[ぁ-ゖ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) + 96); }).replace(/[ーッ・＝=]/g, ''); }      // the long-vowel mark, the small tsu and the dots in katakana do not matter (ドゥセク / ドゥセック, ベートーヴェン / ベートヴェン)
+  LIB_GRP.forEach(function (g) { g[1].split(' ').forEach(function (w) { if (w) LIB_SYN[w] = g[0]; }); g[2].split(' ').forEach(function (w) { w = libKn(w); if (w) LIB_KATA.push([w, g[0]]); }); });
   LIB_KATA.sort(function (a, b) { return b[0].length - a[0].length; });
   function libToks(t) {      // lower case, full-width -> half-width, no accents (ä->a, é->e, ß->ss), punctuation is a separator; other spellings of the same word (German / English / French / Italian / Japanese) count as one word
     t = String(t || ''); try { t = t.normalize('NFKC').toLowerCase().replace(/ß/g, 'ss').normalize('NFD').replace(/[̀-ͯ]/g, '').normalize('NFC'); } catch (e) { t = t.toLowerCase(); }
+    t = t.replace(/第\s*(\d+)\s*(番目|番|号)?/g, ' $1 ').replace(/(\d+)\s*(番目|番|号)/g, ' $1 ');      // 第1番 / 1番 / 1号 = 1
+    t = libKn(t);
     LIB_KATA.forEach(function (k) { if (t.indexOf(k[0]) >= 0) t = t.split(k[0]).join(' ' + k[1] + ' '); });
     return t.split(/[^a-z0-9぀-ヿ㐀-鿿]+/).filter(Boolean).map(function (w) { w = LIB_SYN[w] || w; return /^[a-z]{5,}$/.test(w) ? w.replace(/(en|es|er|s|n|e|i|a)$/, '') : w; });      // singular / plural and other endings do not matter (Ballade / Balladen / Ballades / Ballads, Sonata / Sonate): a long word is cut back to its stem
   }
   function libMatch(title, q) {
     var tt = libToks(title).join(''), ws = String(q || '').split(/[\s　]+/), i, k, ok, x;
     for (i = 0; i < ws.length; i++) {
-      var tk = libToks(ws[i]); if (!tk.length) continue; x = tk.join('');
-      ok = tt.indexOf(x) >= 0 || (x.length >= 5 && /[a-z]$/.test(x) && tt.indexOf(x.slice(0, -1)) >= 0);      // a different last letter is allowed in longer words (Sonata / Sonate, Ballade / Ballad)
+      var tk = libToks(ws[i]); if (!tk.length) continue; ok = true;
+      tk.forEach(function (x) { if (!(tt.indexOf(x) >= 0 || (x.length >= 5 && /[a-z]$/.test(x) && tt.indexOf(x.slice(0, -1)) >= 0))) ok = false; });      // every part of what was typed has to be in the title (ballade1 = ballade and 1)      // a different last letter is allowed in longer words (Sonata / Sonate, Ballade / Ballad)
       if (!ok) return false;
     }
     return true;
@@ -5171,7 +5190,7 @@
   };
   $('prepshow').onclick = function () { prepState = null; $('prep').hidden = true; try { setFull(true); } catch (e) {} };
   (function () { var t = null; function rel(b) { clearTimeout(t); b.style.opacity = ''; b.style.borderColor = ''; } ['honbanx', 'honbanx2'].forEach(function (id) { var b = $(id); b.onpointerdown = function () { clearTimeout(t); b.style.opacity = '1'; b.style.borderColor = 'var(--warn)'; t = setTimeout(function () { try { localStorage.setItem('honban', '0'); } catch (e) {} rel(b); honbanApply(); try { if (document.body.classList.contains('full')) setFull(false); } catch (e) {} try { $('agmsg').hidden = false; } catch (e) {} }, 1500); }; b.onpointerup = function () { rel(b); }; b.onpointercancel = function () { rel(b); }; }); })();
-  setInterval(function () { try { $('hbstart').hidden = !(document.body.classList.contains('honban') && pkg && !$('go').classList.contains('on')); } catch (e) {} }, 400);      // concert screen: a reminder in the middle of the score until the start button has been pressed
+  var hbDone = false; setInterval(function () { try { var hb = document.body.classList.contains('honban'); if (!hb) hbDone = false; else if ($('go').classList.contains('on')) hbDone = true; $('hbstart').hidden = !(hb && pkg && !hbDone && !$('go').classList.contains('on')); } catch (e) {} }, 400);      // concert screen: a reminder in the middle of the score until the start button has been pressed once (it does not come back after stopping)
   honbanApply(); try { if (document.body.classList.contains('honban')) setTimeout(function () { try { setFull(true); } catch (e) {} }, 400); } catch (e) {}
   $('helpbtn').onclick = function () { $('help').hidden = false; $('help').scrollTop = 0; };
   $('helpclose').onclick = function () { $('help').hidden = true; };
