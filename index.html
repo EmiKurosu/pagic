@@ -297,7 +297,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v337</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v338</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2473,7 +2473,7 @@
     store.getKey('refprev:' + id, function (t) {
       try {
         var pv = JSON.parse(t), np = Object.assign({}, pkgSrc); np.T = pv.T; np.chroma = pv.chroma; np.frame_bars = pv.frame_bars; np.bar_start = pv.bar_start; if (pv.refRev) np.refRev = pv.refRev; else delete np.refRev; if (pv.rep) np.rep = pv.rep;
-        store.putKey('song:' + id, JSON.stringify(np), function () { if (curId !== id) return; pkgSrc = np; repApply(); sec.innerHTML = ''; var d = document.createElement('div'); d.innerHTML = '<b></b>'; d.firstChild.textContent = _t('お手本を、前の状態に戻しました。'); sec.appendChild(d); toast(_t('お手本を戻しました')); });
+        store.putKey('song:' + id, JSON.stringify(np), function () { if (curId !== id) return; pkgSrc = np; repApply(); sec.innerHTML = ''; var d = document.createElement('div'); d.innerHTML = '<b></b>'; d.firstChild.textContent = _t('お手本を、前の状態に戻しました。'); sec.appendChild(d); try { var xb2 = document.createElement('button'); xb2.type = 'button'; xb2.textContent = _t('閉じる'); xb2.onclick = function () { $('pacebar').hidden = true; }; sec.appendChild(xb2); } catch (e) {} toast(_t('お手本を戻しました')); });
       } catch (e) { btn.disabled = false; toast(_t('戻せませんでした')); }
     });
   }
@@ -2623,7 +2623,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v337', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v338', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3115,6 +3115,7 @@
   /* ---------- close the settings / delete the saved score ---------- */
   var det = document.querySelector('details');
   $('closesettings').onclick = function () { det.open = false; try { recPlayClose(); } catch (e) {} };
+  $('pacebar').addEventListener('click', function (e) { try { if (e.target.closest && e.target.closest('button, input, select, a')) return; var bs = this.querySelectorAll('button, input, select, a'), onlyClose = true; Array.prototype.forEach.call(bs, function (b) { if (b.textContent !== _t('閉じる')) onlyClose = false; }); if (onlyClose) this.hidden = true; } catch (x) {} });      // a message with nothing to decide, only a close button (e.g. after the reference was put back): one tap anywhere on it closes it
   document.addEventListener('pointerdown', function (e) { if (det.open && !det.contains(e.target) && !(e.target.closest && e.target.closest('#pacebar'))) det.open = false; });      // the message after playing stays usable while the settings are open
   det.addEventListener('toggle', function () { document.body.classList.toggle('setopen', det.open); });
   /* ---------- make a song from page photos + a reference recording ---------- */
