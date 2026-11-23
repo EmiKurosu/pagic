@@ -1,0 +1,75 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2つの窓 試験</title>
+<style>
+:root{color-scheme:light dark;--bg:#f6f5f2;--fg:#1d1d1f;--card:#fff;--line:#d9d9de;--acc:#1a56db}
+@media (prefers-color-scheme:dark){:root{--bg:#161618;--fg:#f2f2f4;--card:#222226;--line:#3a3a40;--acc:#7aa7ff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Inter,"Hiragino Sans",sans-serif;padding:20px 16px 90px;line-height:1.6}
+h1{font-size:22px;margin:0 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:12px 0}
+.big{font-size:84px;font-weight:700;text-align:center;line-height:1.1;margin:8px 0}
+button{font:inherit;font-size:18px;padding:12px 18px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg);margin:4px 6px 4px 0}
+button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+.ok{color:#188038;font-weight:700}.ng{color:#c5221f;font-weight:700}
+small{opacity:.75}
+#x{position:fixed;right:16px;bottom:16px}
+</style></head><body>
+<h1 id="ttl">2つの窓 試験</h1>
+<div id="who"></div>
+<div class="big" id="num">0</div>
+
+<div id="boxA" class="card" hidden>
+ <b>窓A（この窓）</b>
+ <p>
+  <button class="p" id="open">窓Bを開く</button>
+  <button id="plus">ページ ＋1</button>
+  <button id="minus">ページ −1</button>
+ </p>
+ <small>窓Bを開いたら、窓Bの上のバー（またはマルチタスクのメニュー）から「ディスプレイに移動」で、モニターへ動かしてください。窓Aのページを動かすと、窓Bの数字も、同時に変わるはずです。</small>
+</div>
+
+<div id="boxB" class="card" hidden>
+ <b>窓B（受け取る側）</b>
+ <p>窓Aの数字が、ここに届いているかを表示します。</p>
+ <p>最後に受け取った時刻：<span id="last">まだ届いていません</span></p>
+ <p>届いた経路：<span id="via">—</span></p>
+ <p><button id="fs">全画面にする</button></p>
+</div>
+
+<div class="card">
+ <b>この窓の情報</b>
+ <p id="info"></p>
+</div>
+
+<div class="card" id="res" hidden><b>結果</b><p id="resp"></p></div>
+<button id="x" onclick="window.close()">閉じる</button>
+
+<script>
+(function(){
+  var isB=/[?&]b=1/.test(location.search), id=isB?'B':'A', n=0, got=false;
+  var $=function(i){return document.getElementById(i)};
+  $('who').textContent = isB ? 'この窓は「窓B」です。' : 'この窓は「窓A」です（先に開いた窓）。';
+  $('boxA').hidden=isB; $('boxB').hidden=!isB;
+  var bc=null; try{ bc=new BroadcastChannel('pagic-2win-test'); }catch(e){}
+  function show(v,via){ n=v; $('num').textContent=v; if(isB){ got=true; $('last').textContent=new Date().toLocaleTimeString(); $('via').textContent=via; $('res').hidden=false; $('resp').innerHTML='<span class="ok">届きました。2つの窓は連動できます。</span>'; } }
+  function send(v){ n=v; $('num').textContent=v; var m={v:v,t:Date.now()}; try{ if(bc) bc.postMessage(m); }catch(e){} try{ localStorage.setItem('pagic-2win-v',JSON.stringify(m)); }catch(e){} }
+  if(bc) bc.onmessage=function(e){ if(isB && e.data && typeof e.data.v==='number') show(e.data.v,'BroadcastChannel'); };
+  window.addEventListener('storage',function(e){ if(isB && e.key==='pagic-2win-v' && e.newValue){ try{ show(JSON.parse(e.newValue).v,'localStorage（予備の経路）'); }catch(x){} } });
+  if(!isB){
+    $('plus').onclick=function(){ send(n+1) }; $('minus').onclick=function(){ send(Math.max(0,n-1)) };
+    $('open').onclick=function(){
+      var w=null; try{ w=window.open(location.pathname+'?b=1','pagic_test_b'); }catch(e){}
+      $('res').hidden=false; $('resp').innerHTML = w ? '窓Bが開きました。窓Bで、数字が届くか、確かめてください。' : '<span class="ng">窓Bを開けませんでした（ポップアップがブロックされた可能性があります）。</span>';
+    };
+    setInterval(function(){ if(n>=0) try{ if(bc) bc.postMessage({v:n,t:Date.now()}); }catch(e){} },2000);   // keeps B up to date
+  } else {
+    $('fs').onclick=function(){ try{ document.documentElement.requestFullscreen(); }catch(e){} };
+    setTimeout(function(){ if(!got){ $('res').hidden=false; $('resp').innerHTML='<span class="ng">まだ何も届いていません。</span>窓Aの「ページ ＋1」を押してみてください。それでも届かなければ、2つの窓は連動できません。'; } },6000);
+  }
+  function info(){
+    var s=screen, st=''; try{ st=(window.matchMedia('(display-mode: standalone)').matches?'ホーム画面のアプリとして開いています':'ブラウザ（Safari）で開いています'); }catch(e){}
+    $('info').innerHTML='画面の大きさ：'+s.width+' × '+s.height+'<br>窓の大きさ：'+innerWidth+' × '+innerHeight+'<br>窓の位置：'+(window.screenX||0)+', '+(window.screenY||0)+'<br>'+st+'<br>BroadcastChannel：'+(bc?'使えます':'使えません');
+  }
+  info(); setInterval(info,1000);
+})();
+</script></body></html>
