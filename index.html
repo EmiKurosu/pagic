@@ -297,7 +297,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v368</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v369</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -336,6 +336,7 @@
     <div class="mclr"><button type="button" class="pclose" id="metmin" aria-label="小さくする" title="小さくする"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg></button><button type="button" class="pclose" id="metx" aria-label="閉じる">×</button></div>
   </div>
   <div id="padj" hidden>
+    <div class="pgnav" style="display:flex;gap:8px;align-items:center;justify-content:center"><button type="button" id="padjprev" aria-label="前のページ">◀</button><b id="padjpg">p.1</b><button type="button" id="padjnext" aria-label="次のページ">▶</button></div>
     <label><span class="row"><span>明るさ</span></span><span class="sl"><input type="range" id="padjb" min="-50" max="50" step="1" value="0"><b id="padjbv">0</b></span><span class="ends"><span>暗く</span><span>明るく</span></span></label>
     <label><span class="row"><span>コントラスト</span></span><span class="sl"><input type="range" id="padjc" min="-50" max="50" step="1" value="0"><b id="padjcv">0</b></span><span class="ends"><span>弱く</span><span>強く</span></span></label>
     <label><span class="row"><span>色調</span></span><span class="sl"><input type="range" id="padjt" min="-50" max="50" step="1" value="0"><b id="padjtv">0</b></span><span class="ends"><span>寒色</span><span>暖色</span></span></label>
@@ -345,6 +346,7 @@
     <button type="button" class="pclose" id="padjx" aria-label="閉じる">×</button>
   </div>
   <div id="pgeo" hidden>
+    <div class="pgnav" style="display:flex;gap:8px;align-items:center;justify-content:center"><button type="button" id="geoprev" aria-label="前のページ">◀</button><b id="geopg">p.1</b><button type="button" id="geonext" aria-label="次のページ">▶</button></div>
     <div class="rot"><button type="button" id="geoL" aria-label="左に90度回す"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/></svg></button><button type="button" id="geoR" aria-label="右に90度回す"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></button></div>
     <div class="gm"><button type="button" id="gm0" class="on"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l16-5"/><path d="M5 20h14" stroke-dasharray="2 3"/><path d="M12 4v3"/></svg><span>傾き</span></button><button type="button" id="gm1"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10l4 14H3z"/></svg><span>上下</span></button><button type="button" id="gm2"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7v10l14 4V3z"/></svg><span>左右</span></button></div>
     <div id="dial"><canvas id="dialc"></canvas><b id="dialv">0</b></div>
@@ -2717,7 +2719,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v368', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v369', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2915,7 +2917,7 @@
   function manual(delta) {
     if (!pkg) return;
     pendingTurn = null;
-    var cur = shownPage || 1; if (twoUpOn && Math.abs(delta) === 1) { var L = cur % 2 === 1 ? cur : cur - 1; delta = delta * 2; cur = L; if (delta > 0 && L + 2 > maxPage) return; }      // two pages side by side: ONE swipe moves a whole spread (1|2 -> 3|4), it lands on the left page
+    var cur = shownPage || 1; if (twoUpOn && Math.abs(delta) === 1 && $('padj').hidden && !geoEdit()) { var L = cur % 2 === 1 ? cur : cur - 1; delta = delta * 2; cur = L; if (delta > 0 && L + 2 > maxPage) return; }      // two pages side by side: ONE swipe moves a whole spread (1|2 -> 3|4), it lands on the left page
     var p = Math.min(maxPage, Math.max(1, cur + delta)); hidePreview(); showWhy = 'swipe'; showPage(p); showWhy = 'auto';
     if (pager) { var rs = pager.turner.runs, cr = pager.turner.runOf[Math.min(Math.max(Math.floor(pager.last.pos || 0), 0), pkg.order.length - 1)], bk = -1; for (var k = 0; k < rs.length; k++) if (rs[k][2] === p && (bk < 0 || Math.abs(k - cr) < Math.abs(bk - cr))) bk = k; if (bk >= 0) { pager.turner.disp = bk; pager.turner.previewed = -1; } }   // the follower continues from the page you chose
   }
@@ -4570,12 +4572,17 @@
     var a = pa[shownPage] || { b: 0, c: 0, t: 0 };
     $('padjb').value = a.b; $('padjc').value = a.c; $('padjt').value = a.t;
     ['b', 'c', 't'].forEach(function (k) { var v = a[k]; $('padj' + k + 'v').textContent = (v > 0 ? '+' : '') + v; });
-    $('adjt').classList.toggle('sel', !$('padj').hidden);
+    $('adjt').classList.toggle('sel', !$('padj').hidden); editNavUI();
   }
   function paAuto() {                            // every page gets the change it needs (worked out when the page is shown), so that all pages look alike
     if (!pkg) return; for (var p = 1; p <= maxPage; p++) { var a = pa[p] = pa[p] || { b: 0, c: 0, t: 0 }; a.A = 1; }
     paUI(); paSave(); drawPage(null, 0); toast(_t('全ページを揃えました'));
   }
+  function editNavUI() {      // the page being adjusted (tone / crop): which one it is, and the buttons to move to the other page of the pair
+    ['padj', 'geo'].forEach(function (k) { var l = $(k + 'pg'); if (!l) return; l.textContent = 'p.' + (shownPage || 1) + ' / ' + maxPage; $(k + 'prev').disabled = (shownPage || 1) <= 1; $(k + 'next').disabled = (shownPage || 1) >= maxPage; });
+  }
+  function editStep(d) { if (!pkg) return; var p = Math.min(maxPage, Math.max(1, (shownPage || 1) + d)); if (p === shownPage) return; pendingTurn = null; hidePreview(); showWhy = 'swipe'; showPage(p); showWhy = 'auto'; }
+  ['padj', 'geo'].forEach(function (k) { $(k + 'prev').onclick = function () { editStep(-1); }; $(k + 'next').onclick = function () { editStep(1); }; });
   var gmode = 0;                                   // 0 = straighten, 1 = vertical perspective, 2 = horizontal perspective
   var GM = [{ k: 'f', min: -15, max: 15, ppu: 14, fmt: function (v) { return (v > 0 ? '+' : '') + v.toFixed(1) + '°'; } },
             { k: 'v', min: -100, max: 100, ppu: 2.2, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } },
@@ -4595,7 +4602,7 @@
   function geoUI() {
     var g = geo[shownPage] || GZ; if (!$('dial')) return;
     for (var k = 0; k < 3; k++) $('gm' + k).classList.toggle('on', k === gmode);
-    var on = geoEdit(); $('geoov').hidden = !on; $('geot').classList.toggle('sel', on); dialDraw();
+    editNavUI(); var on = geoEdit(); $('geoov').hidden = !on; $('geot').classList.toggle('sel', on); dialDraw();
   }
   function geoSet(fn) { var g = geo[shownPage] = geo[shownPage] || { q: 0, f: 0, l: 0, t: 0, r: 0, b: 0, v: 0, h: 0 }; fn(g); delete adj[shownPage]; viewSave(); geoUI(); geoSave(); drawPage(null, 0); }
   $('geoL').onclick = function () { geoSet(function (g) { g.q = (g.q + 3) % 4; g.l = g.t = g.r = g.b = 0; }); };
