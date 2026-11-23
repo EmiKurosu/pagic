@@ -297,7 +297,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v350</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v352</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2624,7 +2624,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v350', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v352', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -2705,7 +2705,7 @@
   var sndHold = 100, sndT = 0, sndState = null, cfEls = null;
   function cfAll(w, c, t) { if (!cfEls) cfEls = Array.prototype.slice.call(document.querySelectorAll('.cfw')).map(function (e) { return [e.querySelector('.cfb i'), e.querySelector('.cfn')]; }); cfEls.forEach(function (q) { q[0].style.width = w; q[0].style.background = c; if (q[1].textContent !== t) q[1].textContent = t; }); }
   function sndSet(st) { if (st === sndState) return; sndState = st; var e = $('snd'); e.textContent = st === 'ok' ? _t('音は十分に聞こえています') : st === 'small' ? _t('音が小さすぎます') : ''; e.style.color = st === 'small' ? 'var(--warn)' : ''; e.style.fontWeight = st === 'small' ? '700' : ''; }
-  var mSm = 1, mSmT = 0, lostT = 0, rmsHold = 1, rmsT = 0;
+  var mSm = 1, mSmT = 0, lostT = 0, rmsHold = 1, rmsT = 0; var cvPrev = 1;
   function tick() {
     peelCalc(); var wasPl = document.body.classList.contains('playing'); document.body.classList.toggle('playing', !!running); if (wasPl !== !!running) { if (running) { Object.keys(adj).forEach(function (k) { delete adj[k]; }); viewSave(); } drawSoon(); }      // when playing starts (one page or two), a zoom made for writing is dropped for good (the page stands at its normal size); it does not come back afterwards
     if (pager && running) {
@@ -2713,14 +2713,14 @@
       $('bar').textContent = L.silent && pager.n < 12 ? '–' : labText(lab, idx);
       var fl = pager.gate && pager.gate.floor, w = fl ? Math.min(100, Math.max(0, Math.round(16 * Math.log2(Math.max(1, (L.rms || 0) / fl))))) : Math.min(100, Math.round(Math.sqrt(L.rms || 0) * 220)), nowT = performance.now();      // the sound level is only said in words (a moving bar is distracting): the loudest of the last seconds counts
       sndHold = Math.max(w, sndHold - 10 * Math.min(0.2, (nowT - sndT) / 1000)); sndT = nowT; rmsHold = Math.max(L.rms || 0, rmsHold * Math.pow(0.7, Math.min(0.2, (nowT - rmsT) / 1000))); rmsT = nowT;      // (an absolute level too: far below normal playing, 'enough' must not be said just because the room is quiet)
-      sndSet(pager.n < 12 || (pkg.recPg && pkg.recPg.indexOf(pkg.bar_page[lab]) < 0) || (pager.turner.unrec && pager.turner.unrec[pager.turner.disp]) ? '' : (sndHold < 16 || rmsHold < 0.0015) ? 'small' : 'ok');
+      sndSet(pager.n < 12 || (pkg.recPg && pkg.recPg.indexOf(pkg.bar_page[lab]) < 0) || (pager.turner.unrec && pager.turner.unrec[pager.turner.disp]) ? '' : ((sndHold < 16 || rmsHold < 0.0015) && cvPrev <= 0.5) ? 'small' : 'ok');      // 'too small' is said only when the following is also going badly (quiet playing that is followed well needs no warning)
       mSm += ((L.silent ? mSm : (L.match || 0)) - mSm) * Math.min(1, (nowT - mSmT) / 1500); mSmT = nowT;      // the bar must not say 30 % while the sound matches nothing: when the sound fits the score badly for a while, the bar falls to 0
       var tu0 = pager.turner, rk = -1, q0; for (q0 = 0; q0 < tu0.runs.length; q0++) if (idx >= tu0.runs[q0][0] && idx <= tu0.runs[q0][1]) { rk = q0; break; }
       var lostPg = !L.silent && rk >= 0 && rk !== tu0.disp, bSec = pager.ref && pager.ref.barStart ? pager.ref.barStart[Math.min(idx + 1, pager.ref.barStart.length - 1)] - pager.ref.barStart[idx] : 0;
       if (lostPg) { if (!lostT) lostT = nowT; } else lostT = 0;      // the follower says it is on another page than the one shown (the turn did not come) or sits in a bar that is far too long: it is not following -> red 0 %
       var lpm = pager._lpm || (pager._lpm = (pager.ref && pager.ref.barStart) ? refLongPages(pager.ref, pkg.order, pkg.bar_page) : []), pgL = pkg.bar_page[lab], longPg = lpm.some(function (q) { return q.page === pgL; });      // the page the follower sits on is far longer than the other pages: the reference is broken there
       var notF = (lostT && nowT - lostT > 3500) || longPg;
-      var cv = (L.silent || notF) ? 0 : Math.max(0, Math.min(1, L.conf)) * Math.max(0, Math.min(1, mSm / 0.45)), pw = Math.round(100 * cv) + '%', pc = cv <= 0.3 ? '#e53935' : cv <= 0.5 ? '#fb8c00' : cv <= 0.75 ? '#fdd835' : '#43a047', pt = L.silent ? '' : pw; cfAll(pw, pc, pt);
+      var cv = (L.silent || notF) ? 0 : Math.max(0, Math.min(1, L.conf)) * Math.max(0, Math.min(1, mSm / 0.45)), pw = Math.round(100 * cv) + '%', pc = cv <= 0.3 ? '#e53935' : cv <= 0.5 ? '#fb8c00' : cv <= 0.75 ? '#fdd835' : '#43a047', pt = L.silent ? '' : pw; cvPrev = cv; cfAll(pw, pc, pt);
     } else { sndSet(''); sndHold = 100; cfAll('0', '', ''); }
     requestAnimationFrame(tick);
   }
@@ -3161,9 +3161,10 @@
     store.getKey('song:' + id, function (t) {
       var p; try { p = JSON.parse(t); } catch (x) { p = null; } if (!p || p.kind !== 'song' || !W || W.redoId) return;
       if (wcopyFull) {      // the whole song: page pictures, repeats, reference recording and turn marks are copied; afterwards single places can be replaced with "relearn"
-        wcopyFull = false; p.title = (p.title || '') + _t('（コピー）'); var tn = $('wtitle').value.trim(); if (tn) p.title = tn;
-        if (p.replacedFrom) delete p.replacedFrom; libAdd(p); wclose(); try { libRender(); $('lib').hidden = false; } catch (e) {} toast(_t('曲をまるごとコピーしました。直したい所は、「覚え直す」で差し替えてください。'), false, 5000); return;
+        wcopyFull = false; var srcT = p.title || '', srcN = p.nkey || p.order.length; p.title = (p.title || '') + _t('（コピー）'); var tn = $('wtitle').value.trim(); if (tn) p.title = tn;
+        if (p.replacedFrom) delete p.replacedFrom; libAdd(p); ['geo:', 'padj:'].forEach(function (pf) { store.getKey(pf + srcT + ':' + srcN, function (v) { if (v) store.putKey(pf + p.title + ':' + (p.nkey || p.order.length), v); }); });      // the trimming / tilt and the colour tone of the pages go with the copy wclose(); try { libRender(); $('lib').hidden = false; } catch (e) {} toast(_t('曲をまるごとコピーしました。直したい所は、「覚え直す」で差し替えてください。'), false, 5000); return;
       }
+      W.copyUD = {}; ['geo:', 'padj:'].forEach(function (pf) { store.getKey(pf + (p.title || '') + ':' + (p.nkey || p.order.length), function (v) { if (v && W) W.copyUD[pf] = v; }); });      // trimming / tilt and colour tone of the copied pages: given to the new song when it is made
       W.imgs = p.images.map(function (d, i) { var r = p.rects && p.rects['p' + (i + 1)]; return { data: d, w: p.sizes[i].w, h: p.sizes[i].h, thumb: d, name: p.names && p.names[i] || ('p.' + (i + 1)), rect: r ? { x0: r.x0, x1: r.x1, y0: r.y0, y1: r.y1 } : null }; });
       W.reps = ((p.rep && p.rep.items) || p.repMarks) ? ((p.rep && p.rep.items) || p.repMarks).map(function (r, i) { return { id: 'c' + Date.now().toString(36) + i, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; }) : []; W.rev = {};
       if (!$('wtitle').value.trim()) $('wtitle').value = (p.title || '') + _t('（コピー）');
@@ -4164,10 +4165,11 @@
           repeats: reps
         }); p.names = W.imgs.map(function (i) { return i.name || ''; }); if (W.noRecNew) { p.recPg = []; if (W.keepMarks && W.keepMarks.length) p.repMarks = W.keepMarks; } else if (W.srcSong && W.srcSong.recPg && partKd) { var rg = W.srcSong.recPg.filter(function (x) { return x !== partKd; }); if (partKd && W.pageFull !== false) rg.push(partKd); p.recPg = rg.sort(function (x, y) { return x - y; }); } if (partKd) { var rp0 = (W.srcSong && W.srcSong.redoPg || []).filter(function (x) { return x !== partKd; }); rp0.push(partKd); p.redoPg = rp0; } else if (W.srcSong && W.srcSong.redoPg) p.redoPg = W.srcSong.redoPg.slice();      /* pages re-learned from the player's own playing */
         var contW = function () {
-          var text = JSON.stringify(p), oldId = W.redoId, dId = W.draftId; clearTimeout(draftT); wclose();
+          var text = JSON.stringify(p), oldId = W.redoId, dId = W.draftId, cud = W.copyUD; clearTimeout(draftT); wclose();
           if (dId) { lib = lib.filter(function (x) { return x.id !== dId; }); store.delKey('song:' + dId); libSave(); }
           replaceAfterSave = oldId || null;       // the redone song takes the place of the old one (same name, so its handwriting stays) - but the old one is removed only after the new one is safely stored
           store.putKey('mode:' + p.title + ':' + (p.nkey || p.order.length), $('wtempomode').value === 'wide' ? 'wide' : 'single'); try { store.putKey('tempo:' + (p.title || '') + ':' + p.order.length, ''); } catch (e3) {}      /* the new playing is now the reference: tempos learned from the earlier reference no longer apply */
+          if (cud && !oldId && Object.keys(cud).length) p.userdata = cud;      // (boot stores it under the new song's name and takes it off again)
           partInfoG = null; boot(p, text); probRedone(partKd); backupPrompt(p, text); if (partKd && W.pageFull === false) setTimeout(function () { toast(_t('このページには、まだ録音のない部分が残っているので、「録音のないページ」のままです。')); }, 600);
           $('msg').hidden = false; $('msg').textContent = _t('曲ができました。「弾き始める」を押して弾いてみてください。'); setTimeout(function () { if (!running) $('msg').hidden = true; }, 5000);
         };
@@ -4581,8 +4583,8 @@
   ['touchstart', 'touchmove', 'touchend', 'touchcancel', 'click', 'dblclick'].forEach(function (n) { $('inkadj').addEventListener(n, function (e) { e.stopPropagation(); }, false); });      // touching the width / opacity bars must not reach the page (a slide on the bar turned the page)
   $('inkwr').oninput = function () { if (ink.eraser) ink.wEr = +this.value; else if (ink.cover) ink.wCov = +this.value; else { (ink.cs[ink.color] = ink.cs[ink.color] || {}).w = +this.value; } adjSave(); adjUI(); };
   $('inkar').oninput = function () { if (ink.cover) ink.aCov = +this.value; else { (ink.cs[ink.color] = ink.cs[ink.color] || {}).a = +this.value; } adjSave(); adjUI(); };
-  $('inke').onclick = function () { ink.eraser = !ink.eraser; ink.panelOff = false; inkUI(); };
-  $('inkc').onclick = function () { ink.cover = !ink.cover; ink.eraser = false; ink.panelOff = false; inkUI(); };
+  $('inke').onclick = function () { ink.eraser = true; ink.cover = false; ink.panelOff = false; inkUI(); };      // pressing the eraser / the tape again keeps it (it no longer goes back to the last pen); a colour dot goes back to writing
+  $('inkc').onclick = function () { ink.cover = true; ink.eraser = false; ink.panelOff = false; inkUI(); };
   $('inku').onclick = function () { var l = ink.strokes[shownPage]; if (l && l.length) { l.pop(); inkSave(); drawPage(null, 0); } };
   inkUI();
   function setFull(on) {
