@@ -94,6 +94,10 @@
   #pgbar { position: absolute; top: 8px; left: 8px; z-index: 3; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
   #pgbar button { min-height: 40px; width: 40px; padding: 0; border-radius: 20px; display: grid; place-items: center; background: rgba(31,35,43,.82); color: #fff; border: 2px solid rgba(255,255,255,.35); }
   #pgbar #adjt, #pgbar #geot { min-height: 56px; width: 56px; border-radius: 28px; } #pgbar button.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  #editnav { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 5; display: flex; gap: 10px; align-items: center; background: rgba(31,35,43,.94); color: #fff; border: 1px solid rgba(255,255,255,.35); border-radius: 12px; padding: 6px 10px; }
+  #editnav[hidden] { display: none; }
+  #editnav button { min-height: 44px; min-width: 48px; }
+  #editnav b { min-width: 70px; text-align: center; font-size: 17px; }
   #padj { position: absolute; top: 8px; left: 76px; z-index: 4; width: 270px; background: rgba(31,35,43,.94); color: #fff; border: 1px solid rgba(255,255,255,.35); border-radius: 12px; padding: 10px 12px; display: grid; gap: 8px; }
   #padj[hidden], #pgeo[hidden] { display: none; }
   #metp { position: absolute; top: 8px; right: 76px; z-index: 4; width: 280px; background: rgba(31,35,43,.94); color: #fff; border: 1px solid rgba(255,255,255,.35); border-radius: 12px; padding: 10px 12px; display: grid; gap: 10px; }
@@ -297,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v372</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v376</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -335,8 +339,8 @@
     <div class="mrow"><button type="button" id="mettap">タップ</button><button type="button" id="metgo">スタート</button></div>
     <div class="mclr"><button type="button" class="pclose" id="metmin" aria-label="小さくする" title="小さくする"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg></button><button type="button" class="pclose" id="metx" aria-label="閉じる">×</button></div>
   </div>
+  <div id="editnav" hidden><button type="button" id="enprev" aria-label="前のページ">◀</button><b id="enpg">p.1</b><button type="button" id="ennext" aria-label="次のページ">▶</button></div>
   <div id="padj" hidden>
-    <div class="pgnav" style="display:flex;gap:8px;align-items:center;justify-content:center"><button type="button" id="padjprev" aria-label="前のページ">◀</button><b id="padjpg">p.1</b><button type="button" id="padjnext" aria-label="次のページ">▶</button></div>
     <label><span class="row"><span>明るさ</span></span><span class="sl"><input type="range" id="padjb" min="-50" max="50" step="1" value="0"><b id="padjbv">0</b></span><span class="ends"><span>暗く</span><span>明るく</span></span></label>
     <label><span class="row"><span>コントラスト</span></span><span class="sl"><input type="range" id="padjc" min="-50" max="50" step="1" value="0"><b id="padjcv">0</b></span><span class="ends"><span>弱く</span><span>強く</span></span></label>
     <label><span class="row"><span>色調</span></span><span class="sl"><input type="range" id="padjt" min="-50" max="50" step="1" value="0"><b id="padjtv">0</b></span><span class="ends"><span>寒色</span><span>暖色</span></span></label>
@@ -346,7 +350,6 @@
     <button type="button" class="pclose" id="padjx" aria-label="閉じる">×</button>
   </div>
   <div id="pgeo" hidden>
-    <div class="pgnav" style="display:flex;gap:8px;align-items:center;justify-content:center"><button type="button" id="geoprev" aria-label="前のページ">◀</button><b id="geopg">p.1</b><button type="button" id="geonext" aria-label="次のページ">▶</button></div>
     <div class="rot"><button type="button" id="geoL" aria-label="左に90度回す"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/></svg></button><button type="button" id="geoR" aria-label="右に90度回す"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></button></div>
     <div class="gm"><button type="button" id="gm0" class="on"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l16-5"/><path d="M5 20h14" stroke-dasharray="2 3"/><path d="M12 4v3"/></svg><span>傾き</span></button><button type="button" id="gm1"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10l4 14H3z"/></svg><span>上下</span></button><button type="button" id="gm2"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7v10l14 4V3z"/></svg><span>左右</span></button></div>
     <div id="dial"><canvas id="dialc"></canvas><b id="dialv">0</b></div>
@@ -567,10 +570,10 @@
 </div>
 <div id="rtdlg" hidden style="position:fixed;inset:0;z-index:45;background:var(--bg);overflow:auto;padding:14px 14px 90px">
   <h2 style="margin:0 0 6px;font-size:20px">番号つきの印と演奏順（試作）</h2>
-  <small style="display:block;line-height:1.5;margin-bottom:8px">楽譜の記号を、見えたとおりに置くと、弾く順番を計算して確かめられます。ピアノ2台（Primo / Secondo）の楽譜では、印は上の段（Primo）に置いてください。<br>室内楽の楽譜では、印はピアノの段に置いてください。印の右の「#数字」は、アプリが読む順番です（楽譜の上から下、左から右）。あなたが考える順番と違うときは、印を消して、置き直してください。同じ数字の印は、同じ場所として扱います。ここで置いた印は、まだ録音とはつながっていません（順番の確認だけです）。</small>
+  <small style="display:block;line-height:1.5;margin-bottom:8px">楽譜の記号を、見えたとおりに置くと、弾く順番を計算して確かめられます。ピアノ2台（Primo / Secondo）の楽譜では、印は上の段（Primo）に置いてください。<br>室内楽の楽譜では、印はピアノの段に置いてください。括弧のある曲では、「第1括弧の始め」と、最後の括弧より前の括弧の「終わり」を置けば足ります（括弧が2つなら「第1括弧の終わり」だけ、3つなら「第1・第2括弧の終わり」だけ。最後の括弧の終わりは要りません。前の括弧の終わりを置けば、次の括弧の始めも省けます）。印のすぐ右の小さな数字は、アプリが読む順番です（楽譜の上から下、左から右）。印をタップすると、名前が大きな字で出ます。印は、ドラッグで動かせます。ここで置いた印は、まだ録音とはつながっていません（順番の確認だけです）。</small>
   <div id="rttools" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><button type="button" id="rtprev">◀</button><b id="rtpgno">p.1</b><button type="button" id="rtnext">▶</button><span id="rttoolnote" style="color:var(--dim);font-size:14px"></span></div>
-  <div id="rtpg" style="position:relative;display:inline-block;max-width:100%;touch-action:manipulation;line-height:0"><img id="rtimg" alt="楽譜のページ" style="max-width:100%;max-height:64vh;display:block"></div>
+  <div style="text-align:center"><div id="rtpg" style="position:relative;display:inline-block;max-width:100%;touch-action:manipulation;line-height:0"><img id="rtimg" alt="楽譜のページ" style="max-width:100%;max-height:64vh;display:block"></div></div>
   <div id="rtset" style="display:grid;gap:6px;margin:10px 0"></div>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>弾く順番</b><button type="button" id="rtplay">通し再生</button><button type="button" id="rtstop" hidden>止める</button><span id="rtplaymsg" style="color:var(--dim)"></span></div>
   <div id="rtwarn" style="color:var(--warn);line-height:1.5"></div>
@@ -1917,6 +1920,7 @@
      total: end of the score,
      groups: [ { id, start, end, n, ends, dsRepeat } ],     // a repeat: start .. end (n passes, 2 if not given), or with numbered endings: ends = [a1, a2, ..., aN, aEnd]
                                                               // (ending k = a_k .. a_(k+1), the last ending stops at aEnd; an ending may be long, a whole section can stand in the 2nd ending)
+                                                              // endAt (optional): endAt[k-1] = where ending k ends (the repeat sign); the jump back to the start is made there, not at the start of the next ending
                                                               // dsRepeat: false = when the piece is played again after a D.S. / D.C. this repeat is NOT taken ("Straight")
      segno: { 1: pos, 2: pos }, coda: { 1: pos, 2: pos },
      toCoda: { 1: pos, 2: pos },                              // jumps to the Coda of the same number, only after the D.S. / D.C. of that number, and on the last pass of the repeat it stands in
@@ -1934,7 +1938,7 @@
     var ev = []; groups.forEach(function (o) { ev.push({ pos: o.g.start, k: 'gstart', o: o }); });      // every place where something can happen: { pos, k: kind, o: group, i: ending number, n }
     groups.forEach(function (o) {
       var g = o.g;
-      if (g.ends) { for (var i = 0; i < o.N; i++) ev.push({ pos: g.ends[i], k: 'ending', o: o, i: i + 1 }); }
+      if (g.ends) { for (var i = 0; i < o.N; i++) { ev.push({ pos: g.ends[i], k: 'ending', o: o, i: i + 1 }); if (g.endAt && g.endAt[i] !== undefined && i + 1 < o.N) ev.push({ pos: g.endAt[i], k: 'eend', o: o, i: i + 1 }); } }
       else ev.push({ pos: g.end, k: 'rep', o: o });
     });
     Object.keys(toC).forEach(function (n) { ev.push({ pos: toC[n], k: 'tocoda', n: +n }); });
@@ -1953,7 +1957,9 @@
         else if (nx.k === 'ending') {
           var o = nx.o, p = pass[o.g.id], g = o.g;
           if (nx.i === 1) { if (p > 1) jump(g.ends[p - 1], 'ending' + p); }
-          else if (p === nx.i - 1 && p < o.N) { jump(g.start, 'repeat'); pass[g.id] = p + 1; }
+          else if (p === nx.i - 1 && p < o.N && !(g.endAt && g.endAt[nx.i - 2] !== undefined)) { jump(g.start, 'repeat'); pass[g.id] = p + 1; }      // (when the end of the ending is marked, the jump back is made there)
+        } else if (nx.k === 'eend') {
+          var oe = nx.o; if (pass[oe.g.id] === nx.i && nx.i < oe.N) { jump(oe.g.start, 'repeat'); pass[oe.g.id] = nx.i + 1; }
         } else if (nx.k === 'rep') {
           var o2 = nx.o, p2 = pass[o2.g.id];
           if (p2 < o2.n) { if (recOnce(o2)) dupNow[o2.g.id] = true; jump(o2.g.start, 'repeat'); pass[o2.g.id] = p2 + 1; }
@@ -2087,7 +2093,7 @@
     return sc === Infinity ? 1 : sc;
   }
   function drawSecond(g, c, d, kOv) {      // the other page of the spread (the partner: the next page when the played page is on the left, the one before when it is on the right; nothing after the last odd page), plain, in its half (no writing, no flag); it is cut and turned like the left one, and as large
-    var k = kOv || shownPage || 0, pr = kOv ? k % 2 === 0 : playedRight(), p2 = k % 2 === 1 ? (k + 1 <= maxPage ? k + 1 : 0) : k - 1, vw = viewW(c), x0 = pr ? 0 : vw, wd = c.width - vw, v2; if (!kOv) view2 = null; g.fillStyle = '#d9d6cf'; g.fillRect(x0, 0, wd, c.height);
+    var k = kOv || shownPage || 0, pr = kOv ? k % 2 === 0 : playedRight(), p2 = k % 2 === 1 ? (k + 1 <= maxPage ? k + 1 : 0) : k - 1, vw = viewW(c), x0 = pr ? 0 : vw, wd = c.width - vw, v2; if (!kOv) view2 = null; var tp = (p2 >= 1 && p2 <= maxPage) ? p2 : k, rt = tp >= 1 && tp <= maxPage ? pageRegion(tp) : null; g.fillStyle = (rt && imgs[rt.img] && imgs[rt.img].complete) ? pageTone(rt.img, tp) : '#fff'; g.fillRect(x0, 0, wd, c.height);      // the space around the page is the colour of its own paper
     if (p2 < 1 || p2 > maxPage) return; var r0 = pageRegion(p2); if (!r0 || !imgs[r0.img] || !imgs[r0.img].complete) return;
     var gp = geoOf(p2), reg = r0, th = 0, ka = 0, kb = 0, pcx = (r0.x0 + r0.x1) / 2, pcy = (r0.y0 + r0.y1) / 2;
     if (gp) { var w0 = r0.x1 - r0.x0, h0 = r0.y1 - r0.y0, odd = gp.q % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, bx = pcx - bw / 2, by = pcy - bh / 2;
@@ -2720,7 +2726,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v372', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v376', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3326,41 +3332,63 @@
   }
 
   /* ---------- numbered marks and the order they give (trial): marks are placed on the pages, AutoRoute.route() works out the order ---------- */
-  var RT_TOOLS = [['rs', 0, '🚩 繰り返しの始め'], ['re', 0, '← 繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['e2', 0, '第2括弧の始め'], ['e3', 0, '第3括弧の始め'], ['ee', 0, '最後の括弧の終わり'],
+  var RT_TOOLS = [['rs', 0, '繰り返しの始め'], ['re', 0, '繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['f1', 0, '第1括弧の終わり'], ['e2', 0, '第2括弧の始め'], ['f2', 0, '第2括弧の終わり'], ['e3', 0, '第3括弧の始め'],
     ['sg', 1, 'セーニョ①'], ['sg', 2, 'セーニョ②'], ['ds', 1, 'D.S.①'], ['ds', 2, 'D.S.②'], ['dc', 0, 'D.C.'], ['tc', 1, 'to Coda ①'], ['tc', 2, 'to Coda ②'], ['cd', 1, 'Coda ①'], ['cd', 2, 'Coda ②'], ['del', 0, '印を消す']];
-  var RT_SHORT = { rs: '🚩', re: '←', e1: '[1.', e2: '[2.', e3: '[3.', ee: ']', sg: '𝄋', ds: 'D.S.', dc: 'D.C.', tc: 'to⊕', cd: '⊕' }, CIRC = ['', '①', '②', '③', '④'];
-  var rtTool = null, rtPage = 1, rtTimer = null, rtFrame = null;
-  function rtLabel(k, n) { return RT_SHORT[k] + (n ? CIRC[n] : ''); }
-  function rtMarks() { if (!W) return []; if (!W.rt) { W.rt = { marks: [], gs: {} }; try { var s = JSON.parse(localStorage.getItem('pagic-rt:' + ($('wtitle').value.trim() || '')) || 'null'); if (s && s.marks) W.rt = s; } catch (e) {} } return W.rt.marks; }
+  var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり', f2: '第2括弧の終わり', f3: '第3括弧の終わり', sg: 'セーニョ', ds: 'D.S.', dc: 'D.C.', tc: 'to Coda ', cd: 'Coda ' }, CIRC = ['', '①', '②', '③', '④'];
+  var rtTool = null, rtPage = 1, rtTimer = null, rtFrame = null, rtTipT = null;
+  function rtName(k, n) { return RT_NAME[k] + (n ? CIRC[n] : ''); }
+  function rtNo(n) { return n >= 1 && n <= 20 ? String.fromCharCode(0x2460 + n - 1) : '(' + n + ')'; }
+  function rtGlyph(k, n) {      // thin, small, see-through marks that cover as little of the music as possible: the point that counts is the tip / the line at (ax, ay)
+    var C = '#c0392b', S = 'stroke="' + C + '" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"', T = function (x, y, t, fs) { return '<text x="' + x + '" y="' + y + '" font-family="Inter,sans-serif" font-weight="700" font-size="' + (fs || 11) + '" fill="' + C + '" stroke="none">' + t + '</text>'; }, d;
+    var i = k.charAt(1);
+    if (k === 'rs') d = { w: 18, h: 22, ax: 3, ay: 11, b: '<path ' + S + ' d="M3 1V21"/><path d="M3 2L15 6.5L3 11Z" fill="' + C + '" stroke="none"/>' };
+    else if (k === 're') d = { w: 26, h: 18, ax: 23, ay: 9, b: '<path ' + S + ' d="M23 1V17M22 9H4M9 4L4 9L9 14"/>' };
+    else if (k === 'e1' || k === 'e2' || k === 'e3') d = { w: 20, h: 18, ax: 3, ay: 9, b: '<path ' + S + ' d="M3 17V2H15"/>' + T(6, 14, i, 9) };
+    else if (k === 'f1' || k === 'f2' || k === 'f3') d = { w: 20, h: 18, ax: 17, ay: 9, b: '<path ' + S + ' d="M5 2H17V17"/>' + T(6, 14, i, 9) };
+    else if (k === 'sg') d = { w: 22, h: 22, ax: 8, ay: 11, b: T(0, 17, '§', 20) + T(13, 8, n, 9) };
+    else if (k === 'cd') d = { w: 24, h: 22, ax: 9, ay: 11, b: '<circle cx="9" cy="11" r="5.5" ' + S + '/><path ' + S + ' d="M9 2V20M1 11H17"/>' + T(15, 8, n, 9) };
+    else if (k === 'tc') d = { w: 40, h: 22, ax: 17, ay: 11, b: T(0, 15, 'to', 11) + '<circle cx="27" cy="11" r="5" ' + S + '/><path ' + S + ' d="M27 3V19M20 11H34"/>' + T(33, 8, n, 9) };
+    else d = { w: 34, h: 18, ax: 14, ay: 9, b: T(0, 14, k === 'dc' ? 'D.C.' : 'D.S.', 12) + (n ? T(27, 8, n, 9) : '') };
+    return d;
+  }
+  function rtMarks() { if (!W) return []; if (!W.rt) { W.rt = { marks: [], gs: {} }; try { var s = JSON.parse(localStorage.getItem('pagic-rt:' + ($('wtitle').value.trim() || '')) || 'null'); if (s && s.marks) { s.marks = s.marks.filter(function (m) { return m.k !== 'ee'; }); W.rt = s; } } catch (e) {} } return W.rt.marks; }
   function rtSave() { try { localStorage.setItem('pagic-rt:' + ($('wtitle').value.trim() || ''), JSON.stringify(W.rt)); } catch (e) {} }
-  function rtRank(marks) {      // reading order along the score: page, then the row on the page (marks at about the same height), then left to right; marks that stand at the same spot share one position
+  function rtRank(marks) {      // reading order along the score: page, then the row on the page (marks within a tenth of the page height of the row's top mark), then left to right; marks that stand at the same spot share one position
     var byPage = {}; marks.forEach(function (m) { (byPage[m.page] = byPage[m.page] || []).push(m); });
     var order = [], pos = {}, cnt = 0;
     Object.keys(byPage).map(Number).sort(function (a, b) { return a - b; }).forEach(function (pg) {
       var L = byPage[pg].slice().sort(function (a, b) { return a.fy - b.fy; }), rows = [], r = null;
-      L.forEach(function (m) { if (!r || m.fy - r.last > 0.06) { r = { list: [], last: m.fy }; rows.push(r); } r.list.push(m); r.last = m.fy; });
-      rows.forEach(function (rw) { rw.list.sort(function (a, b) { return a.fx - b.fx; }); var prev = null; rw.list.forEach(function (m) { if (prev && m.fx - prev.fx < 0.08) pos[m.id] = pos[prev.id]; else { cnt++; pos[m.id] = cnt * 10; } prev = m; order.push(m); }); });
+      L.forEach(function (m) { if (!r || m.fy - r.top > 0.10) { r = { list: [], top: m.fy }; rows.push(r); } r.list.push(m); });
+      rows.forEach(function (rw) { rw.list.sort(function (a, b) { return a.fx - b.fx; }); var prev = null; rw.list.forEach(function (m) { if (prev && m.fx - prev.fx < 0.05) pos[m.id] = pos[prev.id]; else { cnt++; pos[m.id] = cnt * 10; } prev = m; order.push(m); }); });
     });
     return { pos: pos, total: (cnt + 1) * 10, order: order };
   }
   function rtBuild() {      // -> { m: input of AutoRoute.route, warn: [...], rk }
     var marks = rtMarks(), rk = rtRank(marks), P = rk.pos, warn = [], gs = (W.rt && W.rt.gs) || {}, byPos = function (a, b) { return P[a.id] - P[b.id]; };
-    var L = marks.slice().sort(byPos), groups = [], segno = {}, coda = {}, toCoda = {}, ds = [], lastRs = null, used = {};
+    var L = marks.slice().sort(byPos), groups = [], segno = {}, coda = {}, toCoda = {}, ds = [], lastRs = null, usedRe = {};
     L.forEach(function (m) { if (m.k === 'sg' && segno[m.n] === undefined) segno[m.n] = P[m.id]; if (m.k === 'cd' && coda[m.n] === undefined) coda[m.n] = P[m.id]; if (m.k === 'tc' && toCoda[m.n] === undefined) toCoda[m.n] = P[m.id]; if (m.k === 'ds') ds.push({ pos: P[m.id], n: m.n, m: m }); if (m.k === 'dc') ds.push({ pos: P[m.id], n: 0, m: m }); });
-    function first(k, after) { var f = null; L.forEach(function (m) { if (!f && m.k === k && P[m.id] > after) f = m; }); return f; }
+    function first(k, after, before) { var f = null; L.forEach(function (m) { if (!f && m.k === k && P[m.id] > after && (before === undefined || P[m.id] <= before)) f = m; }); return f; }
     L.forEach(function (m) {
       if (m.k === 'rs') lastRs = m;
-      else if (m.k === 're') { var st = lastRs ? P[lastRs.id] : 0, id = lastRs ? lastRs.id : 'start', s = gs[id] || {}; groups.push({ id: id, start: st, end: P[m.id], n: s.n || 2, dsRepeat: !s.straight, recOnce: s.once || [] }); lastRs = null; }
+      else if (m.k === 're') { if (usedRe[m.id]) return; var st = lastRs ? P[lastRs.id] : 0, id = lastRs ? lastRs.id : 'start', s = gs[id] || {}; groups.push({ id: id, start: st, end: P[m.id], n: s.n || 2, dsRepeat: !s.straight, recOnce: s.once || [] }); lastRs = null; }
       else if (m.k === 'e1') {
-        var st2 = lastRs ? P[lastRs.id] : 0, id2 = lastRs ? lastRs.id : 'start', e2 = first('e2', P[m.id]), e3 = e2 ? first('e3', P[e2.id]) : null, last = e3 || e2 || m, ee = first('ee', P[last.id]), s2 = gs[id2] || {};
-        var ends = [P[m.id]]; if (e2) ends.push(P[e2.id]); if (e3) ends.push(P[e3.id]); ends.push(ee ? P[ee.id] : rk.total);
-        groups.push({ id: id2, start: st2, ends: ends, dsRepeat: !s2.straight, recOnce: s2.once || [] }); lastRs = null;
+        // endings: the start of the first one is needed; the end of every ending but the last tells where it stops (and so where the next one starts); the end of the LAST ending is not needed
+        var st2 = lastRs ? P[lastRs.id] : 0, id2 = lastRs ? lastRs.id : 'start', s2 = gs[id2] || {}, a = [P[m.id]], endAt = [], k, em, lim, N = 1;
+        for (k = 2; k <= 3; k++) {
+          var ek = first('e' + k, a[k - 2]), fk = first('f' + (k - 1), a[k - 2]); if (!ek && !fk) break;
+          a[k - 1] = ek ? P[ek.id] : P[fk.id]; N = k;
+        }
+        for (k = 1; k <= N; k++) {      // the end of ending k: its "終わり" mark - or a repeat sign "←" that stands inside the ending (the way the repeat sign is written in the score)
+          lim = a[k] !== undefined ? a[k] : undefined; em = first('f' + k, a[k - 1], lim) || first('re', a[k - 1], lim); if (em) { endAt[k - 1] = P[em.id]; if (em.k === 're') usedRe[em.id] = true; }
+        }
+        var lastF = first('f' + N, a[N - 1]), ends = a.slice(); ends.push(lastF ? P[lastF.id] : rk.total);
+        groups.push({ id: id2, start: st2, ends: ends, endAt: endAt, dsRepeat: !s2.straight, recOnce: s2.once || [] }); lastRs = null;
       }
     });
     ds.forEach(function (d) { if (d.n && segno[d.n] === undefined) { warn.push('D.S.' + CIRC[d.n] + 'に対応するセーニョ' + CIRC[d.n] + 'がありません。曲の頭に戻ります。'); } });
     Object.keys(toCoda).forEach(function (n) { if (coda[n] === undefined) warn.push('to Coda ' + CIRC[n] + 'に対応するCoda ' + CIRC[n] + 'がありません。'); });
     Object.keys(coda).forEach(function (n) { if (toCoda[n] === undefined) warn.push('Coda ' + CIRC[n] + 'に対応するto Coda ' + CIRC[n] + 'がありません。'); });
-    var ne1 = marks.filter(function (m) { return m.k === 'e1'; }).length; if (marks.some(function (m) { return (m.k === 'e2' || m.k === 'e3') && !marks.some(function (q) { return q.k === 'e1'; }); })) warn.push('第2・第3括弧だけがあります。第1括弧の始めも置いてください。');
+    if (marks.some(function (m) { return (m.k === 'e2' || m.k === 'e3') && !marks.some(function (q) { return q.k === 'e1'; }); })) warn.push('第2・第3括弧だけがあります。第1括弧の始めも置いてください。');
     return { m: { total: rk.total, groups: groups, segno: segno, coda: coda, toCoda: toCoda, ds: ds.map(function (d) { return { pos: d.pos, n: d.n }; }) }, warn: warn, rk: rk, groupsAt: groups };
   }
   function rtPageAt(pos, rk, marks, isEnd) {      // the page and height a position stands at (0 = the beginning of the score, the total = its end)
@@ -3383,26 +3411,34 @@
     rtFrame = frames; $('rtwarn').textContent = warn.join(' ');
   }
   function rtGo(f) { if (!f) return; rtPage = f.page; rtShow(f); }
+  function rtTip(m, text) {      // tap a (small) mark: its name in big letters for a moment, like a magnifier
+    var box = $('rtpg'); Array.prototype.forEach.call(box.querySelectorAll('.rtt'), function (e) { e.remove(); }); clearTimeout(rtTipT);
+    var t = document.createElement('div'); t.className = 'rtt'; t.textContent = text; t.style.cssText = 'position:absolute;left:' + (m.fx * 100) + '%;top:' + (m.fy * 100) + '%;transform:translate(-50%,-150%);background:rgba(255,255,255,.96);color:#111;border:2px solid #c0392b;border-radius:10px;padding:4px 12px;font:700 20px/1.4 Inter,sans-serif;white-space:nowrap;pointer-events:none;z-index:5;line-height:1.4';
+    box.appendChild(t); rtTipT = setTimeout(function () { t.remove(); }, 3000);
+  }
   function rtShow(f) {
     var im = W.imgs[rtPage - 1]; if (!im) return; var img = $('rtimg'); if (img.dataset.k !== '' + rtPage) { img.src = im.data; img.dataset.k = '' + rtPage; }
-    $('rtpgno').textContent = 'p.' + rtPage + ' / ' + W.imgs.length; var box = $('rtpg'); Array.prototype.slice.call(box.querySelectorAll('.rtm,.rtl')).forEach(function (e) { e.remove(); });
-    var rkn = rtRank(rtMarks());      // the number on a mark = its place in the order the app reads the marks (marks at the same spot share a number)
-    rtMarks().forEach(function (m) { if (m.page !== rtPage) return; var d = document.createElement('div'); d.className = 'rtm'; d.textContent = rtLabel(m.k, m.n); var nb = document.createElement('span'); nb.textContent = rkn.pos[m.id] / 10; nb.style.cssText = 'display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;border-radius:11px;background:#c0392b;color:#fff;font:700 14px/22px Inter,sans-serif;margin-right:5px'; d.insertBefore(nb, d.firstChild);
-      d.style.cssText = 'position:absolute;left:' + (m.fx * 100) + '%;top:' + (m.fy * 100) + '%;transform:translate(-50%,-100%);background:#fff;border:2px solid #c0392b;color:#c0392b;border-radius:14px;padding:0 8px 0 3px;font:700 16px/1.5 Inter,sans-serif;white-space:nowrap;touch-action:none;pointer-events:' + (rtTool && rtTool !== 'del' ? 'none' : 'auto');
+    $('rtpgno').textContent = 'p.' + rtPage + ' / ' + W.imgs.length; var box = $('rtpg'); Array.prototype.slice.call(box.querySelectorAll('.rtm,.rtl,.rtt')).forEach(function (e) { e.remove(); });
+    var rkn = rtRank(rtMarks());      // the small number to the right of a mark = its place in the order the app reads the marks (marks at the same spot share a number)
+    rtMarks().forEach(function (m) {
+      if (m.page !== rtPage) return; var g = rtGlyph(m.k, m.n), pad = 6, no = rkn.pos[m.id] / 10, d = document.createElement('div'); d.className = 'rtm';
+      d.innerHTML = '<svg width="' + g.w + '" height="' + g.h + '" viewBox="0 0 ' + g.w + ' ' + g.h + '" style="display:block;flex:none;overflow:visible">' + g.b + '</svg><span style="font:700 10px/1 Inter,sans-serif;color:#c0392b;margin-left:1px;align-self:flex-start;margin-top:-2px">' + rtNo(no) + '</span>';
+      d.style.cssText = 'position:absolute;left:' + (m.fx * 100) + '%;top:' + (m.fy * 100) + '%;transform:translate(' + (-g.ax - pad) + 'px,' + (-g.ay - pad) + 'px);padding:' + pad + 'px;display:flex;align-items:center;opacity:.6;touch-action:none;line-height:0;pointer-events:' + (rtTool && rtTool !== 'del' ? 'none' : 'auto');
       d.onclick = function (e) { e.stopPropagation(); if (rtTool === 'del') { W.rt.marks = W.rt.marks.filter(function (q) { return q.id !== m.id; }); rtSave(); rtShow(); rtRun(); rtSettings(); } };
-      d.onpointerdown = function (e) {      // no tool chosen: drag the mark to move it (the number shows where it now stands in the order)
-        if (rtTool) return; e.preventDefault(); e.stopPropagation(); var r = $('rtimg').getBoundingClientRect(), moved = false; try { d.setPointerCapture(e.pointerId); } catch (x) {}
+      d.onpointerdown = function (e) {      // no tool chosen: drag the mark to move it; a tap without moving shows its name big
+        if (rtTool) return; e.preventDefault(); e.stopPropagation(); var r = $('rtimg').getBoundingClientRect(), moved = false; d.style.opacity = '1'; try { d.setPointerCapture(e.pointerId); } catch (x) {}
         d.onpointermove = function (ev) { moved = true; m.fx = Math.min(1, Math.max(0, Math.round((ev.clientX - r.left) / r.width * 1000) / 1000)); m.fy = Math.min(1, Math.max(0, Math.round((ev.clientY - r.top) / r.height * 1000) / 1000)); d.style.left = (m.fx * 100) + '%'; d.style.top = (m.fy * 100) + '%'; };
-        d.onpointerup = d.onpointercancel = function () { d.onpointermove = d.onpointerup = d.onpointercancel = null; if (moved) { rtSave(); rtShow(); rtRun(); rtSettings(); } };
+        d.onpointerup = d.onpointercancel = function () { d.onpointermove = d.onpointerup = d.onpointercancel = null; d.style.opacity = '.6'; if (moved) { rtSave(); rtShow(); rtRun(); rtSettings(); } else rtTip(m, rtName(m.k, m.n) + '　' + rtNo(no)); };
       };
       box.appendChild(d); });
-    if (f) [['sy', '#1e9e4a'], ['ey', '#d12']].forEach(function (c) { if (f[c[0]] === null || f[c[0]] === undefined) return; var l = document.createElement('div'); l.className = 'rtl'; l.style.cssText = 'position:absolute;left:0;right:0;top:' + (f[c[0]] * 100) + '%;height:4px;background:' + c[1] + ';opacity:.8;pointer-events:none'; box.appendChild(l); });
+    if (f) [['sy', '#1e9e4a'], ['ey', '#d12']].forEach(function (c) { if (f[c[0]] === null || f[c[0]] === undefined) return; var l = document.createElement('div'); l.className = 'rtl'; l.style.cssText = 'position:absolute;left:0;right:0;top:' + (f[c[0]] * 100) + '%;height:3px;background:' + c[1] + ';opacity:.8;pointer-events:none'; box.appendChild(l); });
   }
   function rtSettings() {      // per repeat: how often it is played, no repeat after D.S. (Straight), the visits at which the recording did not repeat it
-    var box = $('rtset'); box.innerHTML = ''; var gs = W.rt.gs, bd = rtBuild();
+    var box = $('rtset'); box.innerHTML = ''; var gs = W.rt.gs, bd = rtBuild(), marks = rtMarks();
     bd.groupsAt.forEach(function (g) {
-      var m = rtMarks().filter(function (q) { return q.id === g.id; })[0], s = gs[g.id] = gs[g.id] || {}, row = document.createElement('div'); row.style.cssText = 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:8px 10px';
-      var nm = document.createElement('b'); nm.textContent = (m ? 'p.' + m.page + ' の繰り返し' : '曲の頭からの繰り返し') + (g.ends ? '（括弧' + (g.ends.length - 1) + 'つ）' : ''); row.appendChild(nm);
+      var m = marks.filter(function (q) { return q.id === g.id; })[0], s = gs[g.id] = gs[g.id] || {}, row = document.createElement('div'); row.style.cssText = 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:8px 10px';
+      var sgm = marks.filter(function (q) { return q.k === 'sg' && bd.rk.pos[q.id] === g.start; })[0];
+      var nm = document.createElement('b'); nm.textContent = (sgm ? 'セーニョ' + CIRC[sgm.n] + 'の繰り返し' : m ? 'p.' + m.page + ' の繰り返し' : '曲の頭に戻る繰り返し（始めの印がない「繰り返しの終わり」があります）') + (g.ends ? '（括弧' + (g.ends.length - 1) + 'つ）' : ''); row.appendChild(nm);
       var c1 = document.createElement('label'), k1 = document.createElement('input'); k1.type = 'checkbox'; k1.checked = !!s.straight; k1.onchange = function () { s.straight = k1.checked; rtSave(); rtRun(); }; c1.appendChild(k1); c1.appendChild(document.createTextNode(' D.S.で戻ったときは繰り返さない（Straight）')); row.appendChild(c1);
       var c2 = document.createElement('label'), k2 = document.createElement('input'); k2.type = 'text'; k2.size = 4; k2.value = (s.once || []).join(','); k2.placeholder = '例 1'; k2.style.cssText = 'font:16px Inter,sans-serif;padding:4px 6px'; k2.onchange = function () { s.once = k2.value.split(/[,、 ]+/).map(Number).filter(function (x) { return x > 0; }); rtSave(); rtRun(); }; c2.appendChild(document.createTextNode('録音では繰り返していない回（何回目に通るとき）：')); c2.appendChild(k2); row.appendChild(c2);
       box.appendChild(row);
@@ -3413,7 +3449,7 @@
     RT_TOOLS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t[2]; b.dataset.k = t[0] + t[1]; b.style.cssText = 'min-height:40px;padding:0 10px;font-size:15px'; b.onclick = function () { rtTool = rtTool === t[0] + ':' + t[1] ? null : t[0] === 'del' ? 'del' : t[0] + ':' + t[1]; rtToolUi(); rtShow(); }; box.appendChild(b); });
     rtToolUi();
   }
-  function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の丸い数字は、アプリが読む順番。印はドラッグで動かせます）' : rtTool === 'del' ? '消したい印をタップ' : 'この印を置く場所を、楽譜でタップ'; }
+  function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の右の数字は、アプリが読む順番）' : rtTool === 'del' ? '消したい印をタップ' : 'この印を置く場所を、楽譜でタップ'; }
   $('rtpg').addEventListener('click', function (e) {
     if (!rtTool || rtTool === 'del' || e.target.className === 'rtm') return; var r = $('rtimg').getBoundingClientRect(), k = rtTool.split(':');
     var fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height; if (!(fx >= 0 && fx <= 1 && fy >= 0 && fy <= 1)) return;
@@ -4587,11 +4623,11 @@
     if (!pkg) return; for (var p = 1; p <= maxPage; p++) { var a = pa[p] = pa[p] || { b: 0, c: 0, t: 0 }; a.A = 1; }
     paUI(); paSave(); drawPage(null, 0); toast(_t('全ページを揃えました'));
   }
-  function editNavUI() {      // the page being adjusted (tone / crop): which one it is, and the buttons to move to the other page of the pair
-    ['padj', 'geo'].forEach(function (k) { var l = $(k + 'pg'); if (!l) return; l.textContent = 'p.' + (shownPage || 1) + ' / ' + maxPage; $(k + 'prev').disabled = (shownPage || 1) <= 1; $(k + 'next').disabled = (shownPage || 1) >= maxPage; });
+  function editNavUI() {      // the page being adjusted (tone / crop): shown at the top of the score while one of the two screens is open, with the buttons to move to the other page
+    var on = !$('padj').hidden || geoEdit(), p = shownPage || 1; $('editnav').hidden = !on; $('enpg').textContent = 'p.' + p + ' / ' + maxPage; $('enprev').disabled = p <= 1; $('ennext').disabled = p >= maxPage;
   }
   function editStep(d) { if (!pkg) return; var p = Math.min(maxPage, Math.max(1, (shownPage || 1) + d)); if (p === shownPage) return; pendingTurn = null; hidePreview(); showWhy = 'swipe'; showPage(p); showWhy = 'auto'; }
-  ['padj', 'geo'].forEach(function (k) { $(k + 'prev').onclick = function () { editStep(-1); }; $(k + 'next').onclick = function () { editStep(1); }; });
+  $('enprev').onclick = function () { editStep(-1); }; $('ennext').onclick = function () { editStep(1); };
   var gmode = 0;                                   // 0 = straighten, 1 = vertical perspective, 2 = horizontal perspective
   var GM = [{ k: 'f', min: -15, max: 15, ppu: 14, fmt: function (v) { return (v > 0 ? '+' : '') + v.toFixed(1) + '°'; } },
             { k: 'v', min: -100, max: 100, ppu: 2.2, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } },
