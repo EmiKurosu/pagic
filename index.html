@@ -297,7 +297,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v347</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v350</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -613,7 +613,7 @@
       </div>
 <div style="display:grid;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px">
         <b>方法A：録音ファイル・動画ファイルを使う</b>
-        <div><button type="button" id="wpickaud">直近の録音から選ぶ</button><input type="file" id="waud" accept="audio/*,.m4a,.mp3,.wav,.aac,.mp4,.mov" hidden><input type="file" id="waudlib" accept="video/*" hidden></div>
+        <div><div id="wpickmenu" style="display:grid;gap:6px"></div><input type="file" id="waud" accept="audio/*,.m4a,.mp3,.wav,.aac,.mp4,.mov" hidden><input type="file" id="waudlib" accept="video/*" hidden></div>
         <small>ボイスメモなどの録音は、先に共有ボタンから「ファイルに保存」を選んで書き出しておいてください。</small>
         <div id="waudinfo"><small>まだ選んでいません</small></div>
         <div id="wstartbox" hidden style="display:none;gap:6px;border:1px solid var(--line);border-radius:12px;padding:10px">
@@ -2624,7 +2624,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v347', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v350', title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3123,7 +3123,7 @@
   /* ---------- make a song from page photos + a reference recording ---------- */
   var W = null;                                    // wizard state
   var TAP_DELAY = 0.35;                            // seconds a person needs to react
-  function wshow(which) { ['wsetup', 'wtapview', 'wbusy'].forEach(function (k) { $(k).hidden = k !== which; }); }
+  function wshow(which) { ['wsetup', 'wtapview', 'wbusy'].forEach(function (k) { $(k).hidden = k !== which; }); if (which === 'wsetup') { try { wpickBuild(); } catch (e) {} } }
   function wopen() {
     if (running) stop();
     W = { imgs: [], file: null, frames: null, ex: null, sr: 0, capture: false, marks: [], taps: [], rate: 1, ready: false, analyzing: false, reps: [], rev: {}, log: [], repStep: 0, repCur: null, repPage: 1 };
@@ -3588,17 +3588,15 @@
   $('chkredo').onclick = function () { var e = chkEntry; chkEntry = null; $('chkdlg').hidden = true; if (e) wredo(e); };
   function wGotFile(f) { if (!f || !W) return; W.file = f; wcheck(); wanalyze(f).then(wcheck); }
   ['waud', 'waudlib'].forEach(function (id) { $(id).onchange = function () { var f = this.files[0]; this.value = ''; wGotFile(f); }; });
-  $('wpickaud').onclick = function () {      // where the model playing comes from: the latest saved playing of the app, a file, the photo library, the camera
-    var old = $('wpickmenu'); if (old) { old.remove(); return; }
-    var m = document.createElement('div'); m.id = 'wpickmenu'; m.style.cssText = 'display:grid;gap:6px;margin-top:6px'; var self = this;
-    var add = function (label, fn) { var b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.onclick = function () { m.remove(); fn(); }; m.appendChild(b); };
-    (recIdx || []).slice(-5).reverse().forEach(function (last) { add(recLabel(last), function () {      // the saved playings of the app (the last 5), newest first
+  function wpickBuild() {      // where the model playing comes from, shown at once: the last 5 saved playings of the app (newest first), a file, the photo library
+    var m = $('wpickmenu'); if (!m) return; m.innerHTML = '';
+    var add = function (label, fn) { var b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.onclick = fn; m.appendChild(b); };
+    (recIdx || []).slice(-5).reverse().forEach(function (last) { add(recLabel(last), function () {
       store.getKey(last.k, function (o) { if (!o || !o.buf) { toast(_t('保存した録音を読み込めませんでした')); return; } var ext = /mp4|m4a|aac/.test(o.mime || '') ? 'm4a' : /webm/.test(o.mime || '') ? 'webm' : 'audio', f; try { f = new File([o.buf], 'pagic-rec.' + ext, { type: o.mime }); } catch (e) { f = new Blob([o.buf], { type: o.mime }); f.name = 'pagic-rec.' + ext; } wGotFile(f); });
     }); });
     add(_t('ファイルを選択'), function () { $('waud').click(); });
     add(_t('写真ライブラリ'), function () { $('waudlib').click(); });
-    self.parentNode.insertBefore(m, self.nextSibling);
-  };
+  }
   $('wmic').onclick = function () {
     if (wPinsMissing()) return;
     if (W.imgs.length < 2 && !(W.srcSong && W.srcSong.recPg)) return;
@@ -3836,9 +3834,8 @@
     else { t.disabled = false; t.textContent = _t('ここでめくりたい'); $('wstat').textContent = _t('{n} ページ目：このページを「めくりたい」と思う瞬間に、タップしてください').replace('{n}', p) + (showRep ? (pend.kind === 'sg' ? _t('　Segno の小節に着いた瞬間に、色つきのボタンを押します。') : pend.kind === 'cd' ? _t('　もう一度 To Coda の小節を弾き終えて、Coda へ飛ぶ瞬間に、色つきのボタンを押します。') : (pend.kind === 'fi' || pend.kind === 'dc' || pend.kind === 'tc') ? _t('　{m} の小節を、弾き終えた瞬間に、色つきのボタンを押します。').replace('{m}', daName(pend.r, pend.kind === 'fi' ? 'fine' : pend.kind)) : pend.kind === 'j' ? (pend.second ? _t('　もう一度、「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。') : _t('　「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。')) : pend.second ? (pend.kind === 'f' ? _t('　もう一度、旗の小節に戻った瞬間に、色つきのボタンを押します。') : _t('　もう一度、矢印の小節に着いた瞬間に、色つきのボタンを押します。')) : (pend.kind === 'f' ? (skp ? (wskipB(pend.r) ? _t('　録音が、飛ばした部分を終えて、ここから楽譜通りに演奏する場所から始まる瞬間に、色つきのボタンを押します。') : _t('　「[」のボタン：録音が楽譜にない部分、楽譜と合わなくなる部分に入った瞬間に押します。')) : _t('　旗の位置（ここから繰り返す小節）に入った瞬間に、色つきのボタンを押します。')) : (skp ? _t('　「]」のボタン：録音の演奏が、楽譜と合わない部分を終えた、ここから楽譜通りに演奏する場所に着いた瞬間に押します。') : _t('　矢印の小節（繰り返し記号）に着いた瞬間に、色つきのボタンを押します。')))) : ''); }
 
     if (W.mic) { $('wdone').disabled = !dn2; if (W.micErr) { $('wstat').textContent = '⚠ ' + W.micErr; $('wtap').disabled = true; return; } if (!W.micOn && !done) { $('wstat').textContent = _t('マイクを準備しています…（許可の確認が出たら「許可」を押してください）'); } else if (!done) $('wstat').textContent = _t('● 録音中 ') + Math.round(W.now()) + _t(' 秒　') + (W.frames.length < 10 && W.micOn ? _t('⚠ まだ音が入ってきません。画面を1回タップしてみてください。 ') : '') + $('wstat').textContent; if (done) $('wstat').textContent = _t('印はすべて付きました。演奏を最後まで聞かせてから「できた」を押してください。'); return; }
-    $('wdone').disabled = !dn2 || (W.capture && !$('wmedia').ended);
+    $('wdone').disabled = !dn2;      // (also while a recording that is imported while it plays is still going: the applause at the end is not music - the song is made from what was played up to the press)
     if (!done && dn2) $('wstat').textContent += _t('　（録音がこのページのめくりまで届いていない時は、タップせずに「できた」を押せます。めくりを含む時は、めくる所でタップしてください。）');
-    if (done && W.capture && !$('wmedia').ended) $('wstat').textContent += _t('（この録音は、最後まで再生が終わるのを待ってください）');
     if (preK && !W.mic) { t.disabled = true; $('wstat').textContent = _t('{n} ページ目：自動で譜めくりするページです。録音が次のページに入ったら、下のボタンを押してください。').replace('{n}', p); }
     { var omn = (W.om || []).length, omo = W.omOpen !== null && W.omOpen !== undefined; $('womrow').hidden = !!wpartK(); $('womnote').hidden = !!wpartK(); { var pk = wpartK(); $('wfinalnote').hidden = !!pk; $('wtapnote').hidden = !!pk; var pn = $('wpartnote2'); pn.hidden = !pk; if (pk && wEndsHere()) pn.hidden = true; if (pk) pn.textContent = wSkipEnd() ? _t('1回目はコーダを飛ばして、次のページへめくります。コーダの直前の小節を弾き終えるところで、「ここでめくりたい」を押してください。そのあとは、録音を最後まで聞かせて「できた（曲を作る）」を押してください。') : _t('この部分の録音だけを差し替えます。録音を聞かせながら、{K}ページから{K1}ページへめくる所で、1回だけタップしてください。そのあとは、録音を最後まで聞かせて「できた（曲を作る）」を押してください。').replace('{K}', pk).replace('{K1}', pk + 1); } $('wom1').disabled = omo; $('wom2').disabled = !omo;
       $('womst').textContent = omo ? _t('楽譜にない部分：「ここまで」を押すまで、お手本から外します。') : omn ? _t('楽譜にない部分：{n} か所（お手本から外して覚えます）').replace('{n}', omn) : ''; }
