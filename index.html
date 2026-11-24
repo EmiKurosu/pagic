@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v376</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v378</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -570,9 +570,9 @@
 </div>
 <div id="rtdlg" hidden style="position:fixed;inset:0;z-index:45;background:var(--bg);overflow:auto;padding:14px 14px 90px">
   <h2 style="margin:0 0 6px;font-size:20px">番号つきの印と演奏順（試作）</h2>
-  <small style="display:block;line-height:1.5;margin-bottom:8px">楽譜の記号を、見えたとおりに置くと、弾く順番を計算して確かめられます。ピアノ2台（Primo / Secondo）の楽譜では、印は上の段（Primo）に置いてください。<br>室内楽の楽譜では、印はピアノの段に置いてください。括弧のある曲では、「第1括弧の始め」と、最後の括弧より前の括弧の「終わり」を置けば足ります（括弧が2つなら「第1括弧の終わり」だけ、3つなら「第1・第2括弧の終わり」だけ。最後の括弧の終わりは要りません。前の括弧の終わりを置けば、次の括弧の始めも省けます）。印のすぐ右の小さな数字は、アプリが読む順番です（楽譜の上から下、左から右）。印をタップすると、名前が大きな字で出ます。印は、ドラッグで動かせます。ここで置いた印は、まだ録音とはつながっていません（順番の確認だけです）。</small>
+  <small style="display:block;line-height:1.5;margin-bottom:8px">楽譜の記号を、見えたとおりに置くと、弾く順番を計算して確かめられます。ピアノ2台（Primo / Secondo）の楽譜では、印は上の段（Primo）に置いてください。<br>室内楽の楽譜では、印はピアノの段に置いてください。括弧のある曲では、「第1括弧の始め」と、最後の括弧より前の括弧の「終わり」を置けば足ります（括弧が2つなら「第1括弧の終わり」だけ、3つなら「第1・第2括弧の終わり」だけ。最後の括弧の終わりは要りません。前の括弧の終わりを置けば、次の括弧の始めも省けます）。印のすぐ右の数字は、置いた順番です（ボタンで「読む順」＝アプリが楽譜の上から下、左から右に読む順番、にも切り替えられます）。印をタップすると、名前と両方の順番が大きな字で出ます。印は、ドラッグで動かせます。ここで置いた印は、まだ録音とはつながっていません（順番の確認だけです）。</small>
   <div id="rttools" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><button type="button" id="rtprev">◀</button><b id="rtpgno">p.1</b><button type="button" id="rtnext">▶</button><span id="rttoolnote" style="color:var(--dim);font-size:14px"></span></div>
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><button type="button" id="rtprev">◀</button><b id="rtpgno" style="white-space:nowrap">p.1</b><button type="button" id="rtnext">▶</button><button type="button" id="rtnum" style="min-height:40px;white-space:nowrap"></button><span id="rttoolnote" style="color:var(--dim);font-size:14px"></span></div>
   <div style="text-align:center"><div id="rtpg" style="position:relative;display:inline-block;max-width:100%;touch-action:manipulation;line-height:0"><img id="rtimg" alt="楽譜のページ" style="max-width:100%;max-height:64vh;display:block"></div></div>
   <div id="rtset" style="display:grid;gap:6px;margin:10px 0"></div>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>弾く順番</b><button type="button" id="rtplay">通し再生</button><button type="button" id="rtstop" hidden>止める</button><span id="rtplaymsg" style="color:var(--dim)"></span></div>
@@ -2726,7 +2726,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v376', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v378', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3332,11 +3332,11 @@
   }
 
   /* ---------- numbered marks and the order they give (trial): marks are placed on the pages, AutoRoute.route() works out the order ---------- */
-  var RT_TOOLS = [['rs', 0, '繰り返しの始め'], ['re', 0, '繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['f1', 0, '第1括弧の終わり'], ['e2', 0, '第2括弧の始め'], ['f2', 0, '第2括弧の終わり'], ['e3', 0, '第3括弧の始め'],
-    ['sg', 1, 'セーニョ①'], ['sg', 2, 'セーニョ②'], ['ds', 1, 'D.S.①'], ['ds', 2, 'D.S.②'], ['dc', 0, 'D.C.'], ['tc', 1, 'to Coda ①'], ['tc', 2, 'to Coda ②'], ['cd', 1, 'Coda ①'], ['cd', 2, 'Coda ②'], ['del', 0, '印を消す']];
-  var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり', f2: '第2括弧の終わり', f3: '第3括弧の終わり', sg: 'セーニョ', ds: 'D.S.', dc: 'D.C.', tc: 'to Coda ', cd: 'Coda ' }, CIRC = ['', '①', '②', '③', '④'];
+  var RT_TOOLS = [['rs', 0, '繰り返しの始め'], ['re', 0, '繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['f1', 0, '第1括弧の終わり'], ['f2', 0, '第2括弧の終わり'],
+    ['sg', 1, 'セーニョI'], ['sg', 2, 'セーニョII'], ['ds', 1, 'D.S. I'], ['ds', 2, 'D.S. II'], ['dc', 0, 'D.C.'], ['tc', 1, 'to Coda I'], ['tc', 2, 'to Coda II'], ['cd', 1, 'Coda I'], ['cd', 2, 'Coda II'], ['del', 0, '印を消す']];
+  var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり（＝第2括弧の始め）', f2: '第2括弧の終わり（＝第3括弧の始め）', f3: '第3括弧の終わり', sg: 'セーニョ', ds: 'D.S. ', dc: 'D.C.', tc: 'to Coda ', cd: 'Coda ' }, ROM = ['', 'I', 'II', 'III', 'IV']      // the number of a Segno / Coda: Roman numerals (the order numbers of the marks are circled Arabic numerals - the two must not look alike);
   var rtTool = null, rtPage = 1, rtTimer = null, rtFrame = null, rtTipT = null;
-  function rtName(k, n) { return RT_NAME[k] + (n ? CIRC[n] : ''); }
+  function rtName(k, n) { return RT_NAME[k] + (n ? ROM[n] : ''); }
   function rtNo(n) { return n >= 1 && n <= 20 ? String.fromCharCode(0x2460 + n - 1) : '(' + n + ')'; }
   function rtGlyph(k, n) {      // thin, small, see-through marks that cover as little of the music as possible: the point that counts is the tip / the line at (ax, ay)
     var C = '#c0392b', S = 'stroke="' + C + '" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"', T = function (x, y, t, fs) { return '<text x="' + x + '" y="' + y + '" font-family="Inter,sans-serif" font-weight="700" font-size="' + (fs || 11) + '" fill="' + C + '" stroke="none">' + t + '</text>'; }, d;
@@ -3345,13 +3345,13 @@
     else if (k === 're') d = { w: 26, h: 18, ax: 23, ay: 9, b: '<path ' + S + ' d="M23 1V17M22 9H4M9 4L4 9L9 14"/>' };
     else if (k === 'e1' || k === 'e2' || k === 'e3') d = { w: 20, h: 18, ax: 3, ay: 9, b: '<path ' + S + ' d="M3 17V2H15"/>' + T(6, 14, i, 9) };
     else if (k === 'f1' || k === 'f2' || k === 'f3') d = { w: 20, h: 18, ax: 17, ay: 9, b: '<path ' + S + ' d="M5 2H17V17"/>' + T(6, 14, i, 9) };
-    else if (k === 'sg') d = { w: 22, h: 22, ax: 8, ay: 11, b: T(0, 17, '§', 20) + T(13, 8, n, 9) };
-    else if (k === 'cd') d = { w: 24, h: 22, ax: 9, ay: 11, b: '<circle cx="9" cy="11" r="5.5" ' + S + '/><path ' + S + ' d="M9 2V20M1 11H17"/>' + T(15, 8, n, 9) };
-    else if (k === 'tc') d = { w: 40, h: 22, ax: 17, ay: 11, b: T(0, 15, 'to', 11) + '<circle cx="27" cy="11" r="5" ' + S + '/><path ' + S + ' d="M27 3V19M20 11H34"/>' + T(33, 8, n, 9) };
-    else d = { w: 34, h: 18, ax: 14, ay: 9, b: T(0, 14, k === 'dc' ? 'D.C.' : 'D.S.', 12) + (n ? T(27, 8, n, 9) : '') };
+    else if (k === 'sg') d = { w: 28, h: 22, ax: 2, ay: 9, b: '<path ' + S + ' d="M2 17V1H9"/>' + T(6, 17, '§', 20) + T(19, 8, ROM[n], 9) };          // a landing mark: the line at its left stands exactly where the music goes on
+    else if (k === 'cd') d = { w: 30, h: 22, ax: 2, ay: 9, b: '<path ' + S + ' d="M2 17V1H9"/><circle cx="13" cy="10" r="5.5" ' + S + '/><path ' + S + ' d="M13 1V19M5 10H21"/>' + T(21, 8, ROM[n], 9) };
+    else if (k === 'tc') d = { w: 46, h: 22, ax: 44, ay: 9, b: T(0, 15, 'to', 11) + '<circle cx="27" cy="10" r="5" ' + S + '/><path ' + S + ' d="M27 2V18M20 10H34"/>' + T(33, 8, ROM[n], 9) + '<path ' + S + ' d="M44 1V17H38"/>' };      // a jump-off mark: the line at its right stands exactly where the playing leaves
+    else d = { w: 40, h: 18, ax: 38, ay: 9, b: T(0, 14, k === 'dc' ? 'D.C.' : 'D.S.', 12) + (n ? T(27, 8, ROM[n], 9) : '') + '<path ' + S + ' d="M38 1V17H32"/>' };
     return d;
   }
-  function rtMarks() { if (!W) return []; if (!W.rt) { W.rt = { marks: [], gs: {} }; try { var s = JSON.parse(localStorage.getItem('pagic-rt:' + ($('wtitle').value.trim() || '')) || 'null'); if (s && s.marks) { s.marks = s.marks.filter(function (m) { return m.k !== 'ee'; }); W.rt = s; } } catch (e) {} } return W.rt.marks; }
+  function rtMarks() { if (!W) return []; if (!W.rt) { W.rt = { marks: [], gs: {} }; try { var s = JSON.parse(localStorage.getItem('pagic-rt:' + ($('wtitle').value.trim() || '')) || 'null'); if (s && s.marks) { s.marks = s.marks.filter(function (m) { return m.k !== 'ee'; }); W.rt = s; } } catch (e) {} } var sq = W.rt.seq || 0; W.rt.marks.forEach(function (m) { if (!m.no) m.no = ++sq; }); W.rt.seq = sq; return W.rt.marks; }
   function rtSave() { try { localStorage.setItem('pagic-rt:' + ($('wtitle').value.trim() || ''), JSON.stringify(W.rt)); } catch (e) {} }
   function rtRank(marks) {      // reading order along the score: page, then the row on the page (marks within a tenth of the page height of the row's top mark), then left to right; marks that stand at the same spot share one position
     var byPage = {}; marks.forEach(function (m) { (byPage[m.page] = byPage[m.page] || []).push(m); });
@@ -3385,9 +3385,9 @@
         groups.push({ id: id2, start: st2, ends: ends, endAt: endAt, dsRepeat: !s2.straight, recOnce: s2.once || [] }); lastRs = null;
       }
     });
-    ds.forEach(function (d) { if (d.n && segno[d.n] === undefined) { warn.push('D.S.' + CIRC[d.n] + 'に対応するセーニョ' + CIRC[d.n] + 'がありません。曲の頭に戻ります。'); } });
-    Object.keys(toCoda).forEach(function (n) { if (coda[n] === undefined) warn.push('to Coda ' + CIRC[n] + 'に対応するCoda ' + CIRC[n] + 'がありません。'); });
-    Object.keys(coda).forEach(function (n) { if (toCoda[n] === undefined) warn.push('Coda ' + CIRC[n] + 'に対応するto Coda ' + CIRC[n] + 'がありません。'); });
+    ds.forEach(function (d) { if (d.n && segno[d.n] === undefined) { warn.push('D.S. ' + ROM[d.n] + 'に対応するセーニョ' + ROM[d.n] + 'がありません。曲の頭に戻ります。'); } });
+    Object.keys(toCoda).forEach(function (n) { if (coda[n] === undefined) warn.push('to Coda ' + ROM[n] + 'に対応するCoda ' + ROM[n] + 'がありません。'); });
+    Object.keys(coda).forEach(function (n) { if (toCoda[n] === undefined) warn.push('Coda ' + ROM[n] + 'に対応するto Coda ' + ROM[n] + 'がありません。'); });
     if (marks.some(function (m) { return (m.k === 'e2' || m.k === 'e3') && !marks.some(function (q) { return q.k === 'e1'; }); })) warn.push('第2・第3括弧だけがあります。第1括弧の始めも置いてください。');
     return { m: { total: rk.total, groups: groups, segno: segno, coda: coda, toCoda: toCoda, ds: ds.map(function (d) { return { pos: d.pos, n: d.n }; }) }, warn: warn, rk: rk, groupsAt: groups };
   }
@@ -3421,14 +3421,14 @@
     $('rtpgno').textContent = 'p.' + rtPage + ' / ' + W.imgs.length; var box = $('rtpg'); Array.prototype.slice.call(box.querySelectorAll('.rtm,.rtl,.rtt')).forEach(function (e) { e.remove(); });
     var rkn = rtRank(rtMarks());      // the small number to the right of a mark = its place in the order the app reads the marks (marks at the same spot share a number)
     rtMarks().forEach(function (m) {
-      if (m.page !== rtPage) return; var g = rtGlyph(m.k, m.n), pad = 6, no = rkn.pos[m.id] / 10, d = document.createElement('div'); d.className = 'rtm';
-      d.innerHTML = '<svg width="' + g.w + '" height="' + g.h + '" viewBox="0 0 ' + g.w + ' ' + g.h + '" style="display:block;flex:none;overflow:visible">' + g.b + '</svg><span style="font:700 10px/1 Inter,sans-serif;color:#c0392b;margin-left:1px;align-self:flex-start;margin-top:-2px">' + rtNo(no) + '</span>';
+      if (m.page !== rtPage) return; var g0 = rtGlyph(m.k, m.n), SC = 1.7, g = { w: g0.w * SC, h: g0.h * SC, ax: g0.ax * SC, ay: g0.ay * SC, b: g0.b }, pad = 8, rd = rkn.pos[m.id] / 10, no = (W.rt.numMode === 'read') ? rd : m.no, d = document.createElement('div'); d.className = 'rtm';
+      d.innerHTML = '<svg width="' + g.w + '" height="' + g.h + '" viewBox="0 0 ' + g0.w + ' ' + g0.h + '" style="display:block;flex:none;overflow:visible">' + g.b + '</svg><span style="font:700 13px/1 Inter,sans-serif;color:#c0392b;margin-left:1px;align-self:flex-start;margin-top:-2px">' + rtNo(no) + '</span>';
       d.style.cssText = 'position:absolute;left:' + (m.fx * 100) + '%;top:' + (m.fy * 100) + '%;transform:translate(' + (-g.ax - pad) + 'px,' + (-g.ay - pad) + 'px);padding:' + pad + 'px;display:flex;align-items:center;opacity:.6;touch-action:none;line-height:0;pointer-events:' + (rtTool && rtTool !== 'del' ? 'none' : 'auto');
       d.onclick = function (e) { e.stopPropagation(); if (rtTool === 'del') { W.rt.marks = W.rt.marks.filter(function (q) { return q.id !== m.id; }); rtSave(); rtShow(); rtRun(); rtSettings(); } };
       d.onpointerdown = function (e) {      // no tool chosen: drag the mark to move it; a tap without moving shows its name big
         if (rtTool) return; e.preventDefault(); e.stopPropagation(); var r = $('rtimg').getBoundingClientRect(), moved = false; d.style.opacity = '1'; try { d.setPointerCapture(e.pointerId); } catch (x) {}
         d.onpointermove = function (ev) { moved = true; m.fx = Math.min(1, Math.max(0, Math.round((ev.clientX - r.left) / r.width * 1000) / 1000)); m.fy = Math.min(1, Math.max(0, Math.round((ev.clientY - r.top) / r.height * 1000) / 1000)); d.style.left = (m.fx * 100) + '%'; d.style.top = (m.fy * 100) + '%'; };
-        d.onpointerup = d.onpointercancel = function () { d.onpointermove = d.onpointerup = d.onpointercancel = null; d.style.opacity = '.6'; if (moved) { rtSave(); rtShow(); rtRun(); rtSettings(); } else rtTip(m, rtName(m.k, m.n) + '　' + rtNo(no)); };
+        d.onpointerup = d.onpointercancel = function () { d.onpointermove = d.onpointerup = d.onpointercancel = null; d.style.opacity = '.6'; if (moved) { rtSave(); rtShow(); rtRun(); rtSettings(); } else rtTip(m, rtName(m.k, m.n) + '　置いた順 ' + m.no + '　読む順 ' + rd); };
       };
       box.appendChild(d); });
     if (f) [['sy', '#1e9e4a'], ['ey', '#d12']].forEach(function (c) { if (f[c[0]] === null || f[c[0]] === undefined) return; var l = document.createElement('div'); l.className = 'rtl'; l.style.cssText = 'position:absolute;left:0;right:0;top:' + (f[c[0]] * 100) + '%;height:3px;background:' + c[1] + ';opacity:.8;pointer-events:none'; box.appendChild(l); });
@@ -3438,30 +3438,32 @@
     bd.groupsAt.forEach(function (g) {
       var m = marks.filter(function (q) { return q.id === g.id; })[0], s = gs[g.id] = gs[g.id] || {}, row = document.createElement('div'); row.style.cssText = 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:8px 10px';
       var sgm = marks.filter(function (q) { return q.k === 'sg' && bd.rk.pos[q.id] === g.start; })[0];
-      var nm = document.createElement('b'); nm.textContent = (sgm ? 'セーニョ' + CIRC[sgm.n] + 'の繰り返し' : m ? 'p.' + m.page + ' の繰り返し' : '曲の頭に戻る繰り返し（始めの印がない「繰り返しの終わり」があります）') + (g.ends ? '（括弧' + (g.ends.length - 1) + 'つ）' : ''); row.appendChild(nm);
-      var c1 = document.createElement('label'), k1 = document.createElement('input'); k1.type = 'checkbox'; k1.checked = !!s.straight; k1.onchange = function () { s.straight = k1.checked; rtSave(); rtRun(); }; c1.appendChild(k1); c1.appendChild(document.createTextNode(' D.S.で戻ったときは繰り返さない（Straight）')); row.appendChild(c1);
+      var nm = document.createElement('b'); nm.textContent = (sgm ? 'セーニョ' + ROM[sgm.n] + 'の繰り返し' : m ? 'p.' + m.page + ' の繰り返し' : '曲の頭に戻る繰り返し（始めの印がない「繰り返しの終わり」があります）') + (g.ends ? '（括弧' + (g.ends.length - 1) + 'つ）' : ''); row.appendChild(nm);
+      if (marks.some(function (q) { return q.k === 'ds' || q.k === 'dc'; })) { var c1 = document.createElement('label'), k1 = document.createElement('input'); k1.type = 'checkbox'; k1.checked = !!s.straight; k1.onchange = function () { s.straight = k1.checked; rtSave(); rtRun(); }; c1.appendChild(k1); c1.appendChild(document.createTextNode(' D.S.で戻ったときは繰り返さない（Straight）')); row.appendChild(c1); }      // only a piece with a D.S. / D.C. needs it
       var c2 = document.createElement('label'), k2 = document.createElement('input'); k2.type = 'text'; k2.size = 4; k2.value = (s.once || []).join(','); k2.placeholder = '例 1'; k2.style.cssText = 'font:16px Inter,sans-serif;padding:4px 6px'; k2.onchange = function () { s.once = k2.value.split(/[,、 ]+/).map(Number).filter(function (x) { return x > 0; }); rtSave(); rtRun(); }; c2.appendChild(document.createTextNode('録音では繰り返していない回（何回目に通るとき）：')); c2.appendChild(k2); row.appendChild(c2);
       box.appendChild(row);
     });
   }
   function rtTools() {
     var box = $('rttools'); box.innerHTML = '';
-    RT_TOOLS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t[2]; b.dataset.k = t[0] + t[1]; b.style.cssText = 'min-height:40px;padding:0 10px;font-size:15px'; b.onclick = function () { rtTool = rtTool === t[0] + ':' + t[1] ? null : t[0] === 'del' ? 'del' : t[0] + ':' + t[1]; rtToolUi(); rtShow(); }; box.appendChild(b); });
+    RT_TOOLS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t[2]; b.dataset.k = t[0] + t[1]; b.style.cssText = 'min-height:40px;padding:0 10px;font-size:15px'; b.onclick = function () { var tk = t[0] === 'del' ? 'del' : t[0] + ':' + t[1]; rtTool = rtTool === tk ? null : tk; rtToolUi(); rtShow(); }; box.appendChild(b); });
     rtToolUi();
   }
-  function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の右の数字は、アプリが読む順番）' : rtTool === 'del' ? '消したい印をタップ' : 'この印を置く場所を、楽譜でタップ'; }
+  function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の右の数字は、置いた順番）' : rtTool === 'del' ? '消したい印をタップ' : 'この印を置く場所を、楽譜でタップ'; }
   $('rtpg').addEventListener('click', function (e) {
     if (!rtTool || rtTool === 'del' || e.target.className === 'rtm') return; var r = $('rtimg').getBoundingClientRect(), k = rtTool.split(':');
     var fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height; if (!(fx >= 0 && fx <= 1 && fy >= 0 && fy <= 1)) return;
-    rtMarks().push({ id: 'k' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), k: k[0], n: +k[1], page: rtPage, fx: Math.round(fx * 1000) / 1000, fy: Math.round(fy * 1000) / 1000 }); rtSave(); rtShow(); rtRun(); rtSettings();
+    W.rt.seq = (W.rt.seq || 0) + 1; rtMarks().push({ id: 'k' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), k: k[0], n: +k[1], no: W.rt.seq, page: rtPage, fx: Math.round(fx * 1000) / 1000, fy: Math.round(fy * 1000) / 1000 }); rtSave(); rtShow(); rtRun(); rtSettings();
   });
+  function rtNumUI() { $('rtnum').textContent = W.rt.numMode === 'read' ? '数字：読む順' : '数字：置いた順'; }
+  $('rtnum').onclick = function () { W.rt.numMode = W.rt.numMode === 'read' ? 'placed' : 'read'; rtSave(); rtNumUI(); rtShow(); };
   $('rtprev').onclick = function () { if (rtPage > 1) { rtPage--; rtShow(); } }; $('rtnext').onclick = function () { if (W && rtPage < W.imgs.length) { rtPage++; rtShow(); } };
   function rtStopPlay() { clearInterval(rtTimer); rtTimer = null; $('rtplay').hidden = false; $('rtstop').hidden = true; $('rtplaymsg').textContent = ''; }
   $('rtplay').onclick = function () { if (!rtFrame || !rtFrame.length) return; var i = 0; $('rtplay').hidden = true; $('rtstop').hidden = false; var step = function () { if (i >= rtFrame.length) { rtStopPlay(); return; } var f = rtFrame[i++]; rtGo(f); $('rtplaymsg').textContent = i + ' / ' + rtFrame.length; }; step(); rtTimer = setInterval(step, 1600); };
   $('rtstop').onclick = rtStopPlay;
   $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; };
   $('rtopen').hidden = window.LANG !== 'ja';      // trial: Japanese only
-  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); };
+  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); };
 
   /* ---------- repeats: a flag where the repeat returns to, an arrow at the repeat sign ---------- */
   /* "back to the start / to the Segno" families: D.C. al Fine, D.S. al Fine, D.C. al Coda, D.S. al Coda. The marks of each, in reading order: */
