@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v396</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v398</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -1683,7 +1683,7 @@
     var out = [];
     Object.keys(gs).forEach(function (k) {
       var g = gs[k], y0 = Math.min.apply(null, g.map(function (b) { return b.y0; })), y1 = Math.max.apply(null, g.map(function (b) { return b.y1; })), Hs = y1 - y0;
-      var xc = g.filter(function (b) { return b.y1 - b.y0 >= 0.3 * Hs; }).map(function (b) { return (b.x0 + b.x1) / 2; }).sort(function (a, b) { return a - b; }), xs = [];
+      var xc = g.filter(function (b) { return b.y1 - b.y0 >= Math.max(0.3 * Hs, 0.06 * h); }).map(function (b) { return (b.x0 + b.x1) / 2; }).sort(function (a, b) { return a - b; }), xs = [];
       xc.forEach(function (v) { var l = xs[xs.length - 1]; if (l !== undefined && v - l.last < 0.06 * w) { l.sum += v; l.n++; l.last = v; } else xs.push({ sum: v, n: 1, last: v }); });
       var X = xs.map(function (l) { return l.sum / l.n / w; });
       var cnt = new Uint16Array(w), yy, xx, a1;      // a barline stands between staff lines: drop strokes beyond the left / right end of the staff lines (a page edge, a shadow, a line of text)
@@ -3484,7 +3484,9 @@
   function rtDetectBars(cb) {
     $('rttoolnote').textContent = '小節線を探しています…'; W.rt.bars = W.rt.bars || {}; var i = 0;
     var next = function () {
-      if (i >= W.imgs.length) { rtMergeHalves(); W.rt.barsVer = 5; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); $('rttoolnote').textContent = '小節線を探しました。違うところは「小節線を足す／消す」で直してください。'; if (cb) cb(); return; }
+      if (i >= W.imgs.length) { rtMergeHalves(); W.rt.barsVer = 5; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); var miss = [], ends2 = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends2.push(l); }); }); ends2.sort(function (u, v) { return u - v; }); var ref2 = ends2.length ? ends2[ends2.length >> 1] : 0;
+      if (ref2) Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (sy.xs.length && Math.max.apply(null, sy.xs) < ref2 - 0.06) miss.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); });
+      $('rttoolnote').textContent = '小節線を探しました。' + (miss.length ? '右端の小節線が見つからない段があります：' + miss.join('、') + '。足すなら「小節線を足す」で足してください（自動では足しません）。' : '違うところは「小節線を足す／消す」で直してください。'); if (cb) cb(); return; }
       var im = new Image(), k = ++i; im.onload = function () { try { W.rt.bars[k] = { systems: Song.findBars(im) }; } catch (e) { W.rt.bars[k] = { systems: [] }; } setTimeout(next, 10); }; im.onerror = function () { W.rt.bars[k] = { systems: [] }; next(); }; im.src = W.imgs[k - 1].data;
     };
     setTimeout(next, 20);
@@ -3510,7 +3512,7 @@
   function rtBarList() {
     var out = []; if (!W || !W.rt || !W.rt.bars) return out;
     var ends = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends.push(l); }); }); ends.sort(function (u, v) { return u - v; }); var ref = ends.length ? ends[ends.length >> 1] : 9;      /* the usual right end of a line of music */
-    for (var p = 1; p <= W.imgs.length; p++) { var pb = W.rt.bars[p]; if (!pb) continue; pb.systems.forEach(function (sy, si) { var xs = sy.xs.slice().sort(function (a, b) { return a - b; }); if (xs.length && xs[xs.length - 1] < ref - 0.06) xs.push(ref);      /* the last barline of a line was not found (a double bar at the right end is easily missed): the usual right end closes the last bar */ for (var i = 0; i + 1 < xs.length; i++) out.push({ page: p, sys: si, x0: xs[i], x1: xs[i + 1], y0: sy.y0, y1: sy.y1 }); }); }
+    for (var p = 1; p <= W.imgs.length; p++) { var pb = W.rt.bars[p]; if (!pb) continue; pb.systems.forEach(function (sy, si) { var xs = sy.xs.slice().sort(function (a, b) { return a - b; }); for (var i = 0; i + 1 < xs.length; i++) out.push({ page: p, sys: si, x0: xs[i], x1: xs[i + 1], y0: sy.y0, y1: sy.y1 }); }); }
     return out;
   }
   function rtAddBar(fx, fy) {
