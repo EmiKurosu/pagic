@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v393</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v396</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -575,7 +575,7 @@
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><button type="button" id="rtprev">◀</button><b id="rtpgno" style="white-space:nowrap">p.1</b><button type="button" id="rtnext">▶</button><button type="button" id="rtnum" style="min-height:40px;white-space:nowrap"></button><span id="rttoolnote" style="color:var(--dim);font-size:14px"></span></div>
   <div style="text-align:center"><div id="rtpg" style="position:relative;display:inline-block;max-width:100%;touch-action:manipulation;line-height:0"><img id="rtimg" alt="楽譜のページ" style="max-width:100%;max-height:64vh;display:block"></div></div>
   <div id="rtset" style="display:grid;gap:6px;margin:10px 0"></div>
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>弾く順番</b><button type="button" id="rtback" style="min-height:48px;padding:0 16px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">◀ 押している間、戻る</button><button type="button" id="rtplay" style="min-height:48px;padding:0 16px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">押している間、進む ▶</button><button type="button" id="rtfirst" style="min-height:48px;padding:0 16px">最初から</button><button type="button" id="rtstop" hidden>止める</button><span id="rtplaymsg" style="color:var(--dim)"></span></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>弾く順番</b><button type="button" id="rtback" style="min-height:48px;padding:0 16px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">◀ 押している間、戻る</button><button type="button" id="rtplay" style="min-height:48px;padding:0 16px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">押している間、進む ▶</button><button type="button" id="rtfirst" style="min-height:48px;padding:0 16px">最初から</button><button type="button" id="rtexp" style="min-height:48px;padding:0 16px">印のデータを書き出す</button><button type="button" id="rtstop" hidden>止める</button><span id="rtplaymsg" style="color:var(--dim)"></span></div>
   <div id="rtwarn" style="color:var(--warn);line-height:1.5"></div>
   <ol id="rtres" style="margin:6px 0 0;padding-left:26px;line-height:1.7"></ol>
   <button type="button" id="rtclose" aria-label="閉じる" style="position:fixed;bottom:max(24px,env(safe-area-inset-bottom));right:max(24px,env(safe-area-inset-right));z-index:46;min-height:52px;padding:0 22px;font-size:18px;box-shadow:0 2px 12px rgba(0,0,0,.35)">閉じる</button>
@@ -1689,16 +1689,44 @@
       var cnt = new Uint16Array(w), yy, xx, a1;      // a barline stands between staff lines: drop strokes beyond the left / right end of the staff lines (a page edge, a shadow, a line of text)
       for (yy = Math.max(0, y0); yy <= Math.min(h - 1, y1); yy++) { a1 = -1; for (xx = 0; xx <= w; xx++) { var on2 = xx < w && m[yy * w + xx] === 1; if (on2) { if (a1 < 0) a1 = xx; } else if (a1 >= 0) { if (xx - a1 >= 0.05 * w) for (var q2 = a1; q2 < xx; q2++) cnt[q2]++; a1 = -1; } } }
       var xmin = -1, xmax = -1; for (xx = 0; xx < w; xx++) if (cnt[xx] >= 6) { if (xmin < 0) xmin = xx; xmax = xx; }
-      if (xmin >= 0) X = X.filter(function (v) { return v * w >= xmin - 0.08 * w && v * w <= xmax + 0.035 * w; });
-      if (X.length >= 2) out.push({ y0: y0 / h, y1: y1 / h, xs: X });
+      if (xmin >= 0) X = X.filter(function (v) { return v * w >= xmin - 0.08 * w && (xmax < 0.75 * w || v * w <= Math.max(xmax + 0.035 * w, 0.975 * w)); });      /* (a short stretch of staff lines found says little about the right end) */
+      X = X.filter(function (v) { return v < 0.985; }); if (X.length >= 2 || (X.length === 1 && (y1 - y0) / h >= 0.06)) out.push({ y0: y0 / h, y1: y1 / h, xs: X });      /* a band with a single barline is kept for now (the half of a system whose other barlines were not seen); it must find its other half below */
     });
     out.sort(function (a, b) { return a.y0 - b.y0; });
     var merged = [];      // bands that touch each other belong together (a system whose left edge stroke was broken in two)
     out.forEach(function (o) { var l = merged[merged.length - 1]; if (l && o.y0 - l.y1 < 0.012) { l.y1 = Math.max(l.y1, o.y1); l.xs = l.xs.concat(o.xs).sort(function (a, b) { return a - b; }).filter(function (v, k, ar) { return k === 0 || v - ar[k - 1] >= 0.06; }); } else merged.push(o); });
     var same = function (a, b) { var n = 0; a.forEach(function (v) { if (b.some(function (u) { return Math.abs(u - v) < 0.015; })) n++; }); return n >= 0.6 * Math.min(a.length, b.length) && n >= 2; };      // the two pianos of one system (Primo / Secondo) have their barlines at the same places
-    var m2 = []; merged.forEach(function (o) { var l = m2[m2.length - 1]; if (l && o.y0 - l.y1 < 0.06 && same(l.xs, o.xs)) { l.y1 = Math.max(l.y1, o.y1); l.xs = l.xs.concat(o.xs).sort(function (a, b) { return a - b; }).filter(function (v, k, ar) { return k === 0 || v - ar[k - 1] >= 0.03; }); } else m2.push(o); }); merged = m2;
+    var m2 = []; merged.forEach(function (o) { var l = m2[m2.length - 1]; if (l && o.y0 - l.y1 < 0.06 && false && same(l.xs, o.xs)) { l.y1 = Math.max(l.y1, o.y1); l.xs = l.xs.concat(o.xs).sort(function (a, b) { return a - b; }).filter(function (v, k, ar) { return k === 0 || v - ar[k - 1] >= 0.03; }); } else m2.push(o); }); merged = m2;
     var firsts = merged.map(function (o) { return o.xs[0]; }).filter(function (v) { return v < 0.15; }).sort(function (a, b) { return a - b; });
     if (firsts.length) { var med = firsts[Math.floor(firsts.length / 2)]; merged.forEach(function (o) { if (o.xs[0] - med > 0.1) o.xs.unshift(med); }); }      // the left edge of a system that the stroke search missed
+    merged = merged.filter(function (o) { return o.xs.length >= 2; });
+    /* one bar = four staves (Primo's two + Secondo's two): the photo breaks a system into two bands (a pair of staves each); put the two together again, and keep only the barlines that really stand in BOTH halves (a stroke seen in one half only must be found again in the other half, otherwise it is a stem or a shadow) */
+    var mxh = 0; merged.forEach(function (o) { mxh = Math.max(mxh, o.y1 - o.y0); });
+    var isHalf = function (o) { return o && ((o.y1 - o.y0) < 0.65 * mxh || (o.y1 - o.y0) < 0.17); };
+    var probe = function (o, xn) { var xq = Math.round(xn * w), ya = Math.max(0, Math.round(o.y0 * h)), yb = Math.min(h - 1, Math.round(o.y1 * h)), nq = yb - ya + 1, best = 0, dq, yq; if (nq < 4) return 0; for (dq = -12; dq <= 12; dq++) { var xz = xq + dq, cq = 0; if (xz < 1 || xz >= w - 1) continue; for (yq = ya; yq <= yb; yq++) if (m[yq * w + xz - 1] || m[yq * w + xz] || m[yq * w + xz + 1]) cq++; if (cq / nq > best) best = cq / nq; } return best; };      /* how much of the band is covered by one unbroken stroke near this x (the stroke may lean a little) */
+    var paired = [], kq = 0;
+    while (kq < merged.length) {
+      var ba = merged[kq], bb = merged[kq + 1], bn = merged[kq + 2], gq = bb ? bb.y0 - ba.y1 : 9, gnq = bn ? bn.y0 - bb.y1 : 9, runq = 0, rq = kq;
+      while (merged[rq] && isHalf(merged[rq]) && (rq === kq || merged[rq].y0 - merged[rq - 1].y1 < 0.09)) { runq++; rq++; }
+      if (isHalf(ba) && isHalf(bb) && gq < 0.09 && (runq % 2 === 0 || gq <= gnq * 1.05)) {
+        var cand = ba.xs.concat(bb.xs).sort(function (u, v) { return u - v; }), cl2 = [];
+        cand.forEach(function (v) { var l = cl2[cl2.length - 1]; if (l && v - l.last < 0.012) { l.v.push(v); l.last = v; } else cl2.push({ v: [v], last: v }); });
+        var keep = [];
+        cl2.forEach(function (l) {
+          var xm = l.v.reduce(function (p, q) { return p + q; }, 0) / l.v.length;
+          var inA = ba.xs.some(function (u) { return Math.abs(u - xm) < 0.012; }), inB = bb.xs.some(function (u) { return Math.abs(u - xm) < 0.012; });
+          if (inA && inB) keep.push(xm);
+          else if (xm < 0.15) keep.push(xm);      /* the left edge of the system */
+          else if (inA && probe(bb, xm) >= 0.62) keep.push(xm);
+          else if (inB && probe(ba, xm) >= 0.62) keep.push(xm);
+        });
+        keep = keep.filter(function (v, k) { return !(k > 0 && v < 0.15 && keep[0] < 0.15) ; });
+        if (keep.length >= 2) { paired.push({ y0: ba.y0, y1: Math.max(ba.y1, bb.y1), xs: keep.map(function (v) { return Math.round(v * 1000) / 1000; }) }); kq += 2; continue; }
+      }
+      paired.push(ba); kq++;
+    }
+    merged = paired;
+    merged = merged.filter(function (o) { return o.xs.length >= 2; });
     return merged;
   }
   // where the music starts on a page photo: {x, y} (picture pixels) = left end and top of the first system, or null
@@ -3456,7 +3484,7 @@
   function rtDetectBars(cb) {
     $('rttoolnote').textContent = '小節線を探しています…'; W.rt.bars = W.rt.bars || {}; var i = 0;
     var next = function () {
-      if (i >= W.imgs.length) { rtMergeHalves(); W.rt.barsVer = 4; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); $('rttoolnote').textContent = '小節線を探しました。違うところは「小節線を足す／消す」で直してください。'; if (cb) cb(); return; }
+      if (i >= W.imgs.length) { rtMergeHalves(); W.rt.barsVer = 5; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); $('rttoolnote').textContent = '小節線を探しました。違うところは「小節線を足す／消す」で直してください。'; if (cb) cb(); return; }
       var im = new Image(), k = ++i; im.onload = function () { try { W.rt.bars[k] = { systems: Song.findBars(im) }; } catch (e) { W.rt.bars[k] = { systems: [] }; } setTimeout(next, 10); }; im.onerror = function () { W.rt.bars[k] = { systems: [] }; next(); }; im.src = W.imgs[k - 1].data;
     };
     setTimeout(next, 20);
@@ -3633,10 +3661,11 @@
     el.onpointerup = el.onpointercancel = el.onpointerleave = rtHoldStop; el.oncontextmenu = function (ev) { ev.preventDefault(); };
   });
   $('rtfirst').onclick = function () { rtHoldStop(); rtCur = -1; rtHi = null; rtPage = 1; try { rtShow(); } catch (e) {} $('rtplaymsg').textContent = ''; };      // back to the very beginning of the play-through
+  $('rtexp').onclick = function () { try { exportText('pagic-marks', JSON.stringify({ rt: W.rt, plan: (rtPlan || []).map(function (p) { return { list: p.list, why: p.why, dup: p.dup }; }), bars: rtPlan && rtPlan.bars ? rtPlan.bars.length : 0 })); } catch (e) { $('rtplaymsg').textContent = '書き出せませんでした：' + e.message; } };      // for finding mistakes: the marks, the bars and the order, as one file
   $('rtstop').onclick = rtStopPlay;
   $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; };
   $('rtopen').hidden = window.LANG !== 'ja';      // trial: Japanese only
-  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 4) rtDetectBars(); };      // bars found by an older way of searching are searched again once
+  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 5) rtDetectBars(); };      // bars found by an older way of searching are searched again once
 
   /* ---------- repeats: a flag where the repeat returns to, an arrow at the repeat sign ---------- */
   /* "back to the start / to the Segno" families: D.C. al Fine, D.S. al Fine, D.C. al Coda, D.S. al Coda. The marks of each, in reading order: */
