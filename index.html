@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v398</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v400</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3484,7 +3484,7 @@
   function rtDetectBars(cb) {
     $('rttoolnote').textContent = '小節線を探しています…'; W.rt.bars = W.rt.bars || {}; var i = 0;
     var next = function () {
-      if (i >= W.imgs.length) { rtMergeHalves(); W.rt.barsVer = 5; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); var miss = [], ends2 = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends2.push(l); }); }); ends2.sort(function (u, v) { return u - v; }); var ref2 = ends2.length ? ends2[ends2.length >> 1] : 0;
+      if (i >= W.imgs.length) { rtMergeHalves(); W.rt.barsVer = 6; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); var miss = [], ends2 = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends2.push(l); }); }); ends2.sort(function (u, v) { return u - v; }); var ref2 = ends2.length ? ends2[ends2.length >> 1] : 0;
       if (ref2) Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (sy.xs.length && Math.max.apply(null, sy.xs) < ref2 - 0.06) miss.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); });
       $('rttoolnote').textContent = '小節線を探しました。' + (miss.length ? '右端の小節線が見つからない段があります：' + miss.join('、') + '。足すなら「小節線を足す」で足してください（自動では足しません）。' : '違うところは「小節線を足す／消す」で直してください。'); if (cb) cb(); return; }
       var im = new Image(), k = ++i; im.onload = function () { try { W.rt.bars[k] = { systems: Song.findBars(im) }; } catch (e) { W.rt.bars[k] = { systems: [] }; } setTimeout(next, 10); }; im.onerror = function () { W.rt.bars[k] = { systems: [] }; next(); }; im.src = W.imgs[k - 1].data;
@@ -3667,7 +3667,7 @@
   $('rtstop').onclick = rtStopPlay;
   $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; };
   $('rtopen').hidden = window.LANG !== 'ja';      // trial: Japanese only
-  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 5) rtDetectBars(); };      // bars found by an older way of searching are searched again once
+  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 6) rtDetectBars(); };      // bars found by an older way of searching are searched again once
 
   /* ---------- repeats: a flag where the repeat returns to, an arrow at the repeat sign ---------- */
   /* "back to the start / to the Segno" families: D.C. al Fine, D.S. al Fine, D.C. al Coda, D.S. al Coda. The marks of each, in reading order: */
@@ -4978,7 +4978,7 @@
       try { var rq = c.getBoundingClientRect(), dq = c.width / rq.width; if (hitFlagX((e.clientX - rq.left) * dq, (e.clientY - rq.top) * dq, dq)) { clearFlag(); return; } } catch (e8) {}      // the pencil touching the x button of the "start here" flag removes the flag instead of drawing
       var pt = inkPoint(e), d = pt[2];
       if (ink.cur && ink.cur.pid !== undefined && ink.cur.pid !== e.pointerId) return;      // a second pointer (palm, finger) never starts a second stroke while one is being written
-      if (ink.eraser) { ink.cur = { erase: true, pid: e.pointerId }; eraseAt(pt); return; }
+      if (ink.eraser) { ink.cur = { erase: true, pid: e.pointerId }; eraseAt(pt); try { ringDraw(e); } catch (x5) {} return; }
       var cov = ink.cover, w = (inkW() * ((cov || ink.hl) ? 5 : 1)) / 10 * d / (view.s0 || view.s);      // the width is that of the page at its normal size (not of the zoomed screen): a stroke written while zoomed in is not thin when the page is back to normal
       ink.cur = { pid: e.pointerId, c: cov ? paperColorAt(pt[0], pt[1]) : ink.color, w: w, h: !cov && ink.hl ? 1 : 0, a: inkA() / 100, p: [pt[0], pt[1]] };
       (ink.strokes[shownPage] = ink.strokes[shownPage] || []).push(ink.cur); $('inkov').style.mixBlendMode = ink.cur.h ? 'multiply' : 'normal'; inkRedraw();
@@ -4990,6 +4990,15 @@
       if (!ink.cur.erase) inkRedraw();
     });
     var inkRaf = 0, ov = $('inkov');
+    function ringDraw(e) {      /* the eraser: a circle of its size follows the pencil (also while hovering), so that one sees what will be wiped */
+      if (!ink.on || !ink.eraser || !view) { ringClear(); return; }
+      try { fit(ov); var og = ov.getContext('2d'), rq = c.getBoundingClientRect(), dq = c.width / rq.width, x = (e.clientX - rq.left) * dq, y = (e.clientY - rq.top) * dq, r = ink.wEr * dq;
+        og.setTransform(1, 0, 0, 1, 0, 0); og.clearRect(0, 0, ov.width, ov.height); og.beginPath(); og.arc(x, y, r, 0, 6.2832); og.fillStyle = 'rgba(255,255,255,.35)'; og.fill(); og.lineWidth = 2 * dq; og.strokeStyle = 'rgba(60,60,60,.85)'; og.stroke(); ringOn = true; } catch (x2) {}
+    }
+    var ringOn = false;
+    function ringClear() { if (!ringOn) return; ringOn = false; try { var og = ov.getContext('2d'); og.setTransform(1, 0, 0, 1, 0, 0); og.clearRect(0, 0, ov.width, ov.height); } catch (x3) {} }
+    c.addEventListener('pointermove', function (e) { try { if (ink.on && ink.eraser && inkOn(e)) ringDraw(e); else ringClear(); } catch (x4) {} });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (n) { c.addEventListener(n, ringClear); });
     function inkRedraw() {                                                                  // while writing, only the stroke in progress is redrawn (on its own layer), once per frame: the page itself is not redrawn
       if (inkRaf) return; inkRaf = requestAnimationFrame(function () { inkRaf = 0; if (!ink.cur || ink.cur.erase || !view) return; fit(ov); var og = ov.getContext('2d'); og.setTransform(1, 0, 0, 1, 0, 0); og.clearRect(0, 0, ov.width, ov.height); drawOne(og, ink.cur, view); });
     }
