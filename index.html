@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v406</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v409</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3423,7 +3423,7 @@
 
   /* ---------- numbered marks and the order they give (trial): marks are placed on the pages, AutoRoute.route() works out the order ---------- */
   var RT_TOOLS = [['rs', 0, '繰り返しの始め'], ['re', 0, '繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['f1', 0, '第1括弧の終わり'], ['f2', 0, '第2括弧の終わり'],
-    ['sg', -1, 'セーニョ'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to Coda'], ['cd', -1, 'Coda'], ['del', 0, '印を消す'], ['bdet', 0, '小節線を調べる'], ['badd', 0, '小節線を足す'], ['bjoin', 0, '上下をつなぐ'], ['bdel', 0, '小節線を消す'], ['bshow', 0, '小節線の表示']];
+    ['sg', -1, 'セーニョ'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to Coda'], ['cd', -1, 'Coda'], ['del', 0, '印を消す'], ['bdet', 0, '小節線を調べる'], ['badd', 0, '小節線を足す'], ['bjoin', 0, '上下をつなぐ'], ['bfix', 0, '段を直す'], ['bsplit', 0, '段を分ける'], ['bdel', 0, '小節線を消す'], ['bshow', 0, '小節線の表示']];
   var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり（＝第2括弧の始め）', f2: '第2括弧の終わり（＝第3括弧の始め）', f3: '第3括弧の終わり', sg: 'セーニョ', ds: 'D.S. ', dc: 'D.C. ', tc: 'to Coda ', cd: 'Coda ' }, ROM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']      // the number of a Segno / Coda: Roman numerals (the order numbers of the marks are circled Arabic numerals - the two must not look alike);
   var rtTool = null, rtPage = 1, rtTimer = null, rtFrame = null, rtTipT = null;
   function rtName(k, n) { return RT_NAME[k] + (n ? ROM[n] : ''); }
@@ -3500,7 +3500,7 @@
         Object.keys(W.rt.bars).forEach(function (p) { var pb = W.rt.bars[p]; if (!W.rt.duo && pb.raw) pb.systems = pb.raw; delete pb.raw; });
         if (W.rt.duo) rtMergeHalves(); W.rt.barsVer = 9; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); var miss = [], ends2 = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends2.push(l); }); }); ends2.sort(function (u, v) { return u - v; }); var ref2 = ends2.length ? ends2[ends2.length >> 1] : 0;
       if (ref2) Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (sy.xs.length && Math.max.apply(null, sy.xs) < ref2 - 0.06) miss.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); });
-      $('rttoolnote').textContent = '小節線を探しました。' + (miss.length ? '右端の小節線が見つからない段があります：' + miss.join('、') + '。足すなら「小節線を足す」で足してください（自動では足しません）。' : '違うところは「小節線を足す／消す」で直してください。'); if (cb) cb(); return; }
+      $('rttoolnote').textContent = '小節線を探しました。' + (function () { var sp = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (rtSusp(sy)) sp.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); }); return sp.length ? '五線が2つを超える段があったので、小節線を引くのを止めました：' + sp.join('、') + '。' : ''; })() + (miss.length ? '右端の小節線が見つからない段があります：' + miss.join('、') + '。足すなら「小節線を足す」で足してください（自動では足しません）。' : '違うところは「小節線を足す／消す」で直してください。'); if (cb) cb(); return; }
       var im = new Image(), k = ++i; im.onload = function () { try { var fr = Song.findBars(im); W.rt.bars[k] = { systems: fr, raw: fr.raw }; } catch (e) { W.rt.bars[k] = { systems: [] }; } setTimeout(next, 10); }; im.onerror = function () { W.rt.bars[k] = { systems: [] }; next(); }; im.src = W.imgs[k - 1].data;
     };
     setTimeout(next, 20);
@@ -3523,18 +3523,32 @@
       W.rt.bars[p].systems = out;
     });
   }
+  function rtSusp(sy) {      /* a solo piece (two staves = one bar): a band much taller than the usual one holds more than two staves; no barline is drawn or used there, the person is told instead */
+    if (!W || !W.rt || !W.rt.bars || W.rt.duo === true) return false; var hs = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (o) { hs.push(o.y1 - o.y0); }); }); if (!hs.length) return false;
+    hs.sort(function (a, b) { return a - b; }); var med = hs[hs.length >> 1]; if (W.rt.duo !== false && med >= 0.17) return false;
+    return !sy.fixed && (sy.y1 - sy.y0) > 1.5 * med;
+  }
   function rtBarList() {
     var out = []; if (!W || !W.rt || !W.rt.bars) return out;
     var ends = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends.push(l); }); }); ends.sort(function (u, v) { return u - v; }); var ref = ends.length ? ends[ends.length >> 1] : 9;      /* the usual right end of a line of music */
-    for (var p = 1; p <= W.imgs.length; p++) { var pb = W.rt.bars[p]; if (!pb) continue; pb.systems.forEach(function (sy, si) { var xs = sy.xs.slice().sort(function (a, b) { return a - b; }); for (var i = 0; i + 1 < xs.length; i++) out.push({ page: p, sys: si, x0: xs[i], x1: xs[i + 1], y0: sy.y0, y1: sy.y1 }); }); }
+    for (var p = 1; p <= W.imgs.length; p++) { var pb = W.rt.bars[p]; if (!pb) continue; pb.systems.forEach(function (sy, si) { if (rtSusp(sy)) return; var xs = sy.xs.slice().sort(function (a, b) { return a - b; }); for (var i = 0; i + 1 < xs.length; i++) out.push({ page: p, sys: si, x0: xs[i], x1: xs[i + 1], y0: sy.y0, y1: sy.y1 }); }); }
     return out;
   }
   function rtAddBar(fx, fy) {
+    if (W.rt.bars && W.rt.bars[rtPage] && W.rt.bars[rtPage].systems.some(rtSusp)) { var nb = null, bd0 = 9; W.rt.bars[rtPage].systems.forEach(function (sy) { var d = fy < sy.y0 ? sy.y0 - fy : fy > sy.y1 ? fy - sy.y1 : 0; if (d < bd0) { bd0 = d; nb = sy; } }); if (nb && rtSusp(nb)) { $('rttoolnote').textContent = 'この段は、五線が2つを超えています（この曲は、五線2つで1小節）。小節線は、引きません。'; return; } }
     var pb = W.rt.bars && W.rt.bars[rtPage]; if (!pb || !pb.systems.length) { $('rttoolnote').textContent = 'まず「小節線を調べる」を押してください。'; return; }
     var best = null, bd = 9; pb.systems.forEach(function (sy) { var d = fy < sy.y0 ? sy.y0 - fy : fy > sy.y1 ? fy - sy.y1 : 0; if (d < bd) { bd = d; best = sy; } });
-    best.xs.push(Math.round(fx * 1000) / 1000); best.xs.sort(function (a, b) { return a - b; }); rtSave(); rtShow(); rtRun();
+    var nx = Math.round(fx * 1000) / 1000; (best.ux = best.ux || []).push(nx); best.xs.push(nx); best.xs.sort(function (a, b) { return a - b; }); rtSave(); rtShow(); rtRun();
   }
-  function rtJoinBars(fy) {      // tap between (or on) two bands of one page: they become one system (Primo + Secondo)
+  function rtSplitBar(fy) {      // tap inside a band: it is cut in two at that height (both keep the barlines); each part can then be fitted with "段を直す"
+    var pb = W.rt.bars && W.rt.bars[rtPage]; if (!pb) return; var i, hit = -1; for (i = 0; i < pb.systems.length; i++) if (fy > pb.systems[i].y0 && fy < pb.systems[i].y1) hit = i;
+    if (hit < 0) { $('rttoolnote').textContent = '段の中をタップしてください（段を分けたい高さ）。'; return; }
+    var sy = pb.systems[hit], up = { y0: sy.y0, y1: Math.round((fy - 0.003) * 1000) / 1000, xs: sy.xs.slice(), fixed: true }, dn = { y0: Math.round((fy + 0.003) * 1000) / 1000, y1: sy.y1, xs: sy.xs.slice(), fixed: true };
+    if (up.y1 - up.y0 < 0.03 || dn.y1 - dn.y0 < 0.03) { $('rttoolnote').textContent = 'そこでは、段が小さくなりすぎます。'; return; }
+    pb.systems.splice(hit, 1, up, dn); rtSave(); rtShow(); rtRun(); $('rttoolnote').textContent = '段を二つに分けました。「段を直す」で、上と下の位置を合わせてください。';
+  }
+  function rtJoinBars(fy) {
+    if (W.rt && W.rt.duo === false) { $('rttoolnote').textContent = 'この曲は、五線2つで1小節です。上下はつなぎません。'; return; }      // tap between (or on) two bands of one page: they become one system (Primo + Secondo)
     var pb = W.rt.bars && W.rt.bars[rtPage]; if (!pb || pb.systems.length < 2) { $('rttoolnote').textContent = 'つなげる段がありません。'; return; }
     var sy = pb.systems, best = -1, bd = 9, i; for (i = 0; i + 1 < sy.length; i++) { var m = (sy[i].y1 + sy[i + 1].y0) / 2, dd = Math.abs(fy - m); if (fy >= sy[i].y0 && fy <= sy[i + 1].y1 && dd < bd) { bd = dd; best = i; } }
     if (best < 0) { $('rttoolnote').textContent = '二つの段の間（または段の上）をタップしてください。'; return; }
@@ -3598,7 +3612,7 @@
   }
   function rtShow(f) {
     var im = W.imgs[rtPage - 1]; if (!im) return; var img = $('rtimg'); if (img.dataset.k !== '' + rtPage) { img.src = im.data; img.dataset.k = '' + rtPage; }
-    $('rtpgno').textContent = 'p.' + rtPage + ' / ' + W.imgs.length; var box = $('rtpg'); Array.prototype.slice.call(box.querySelectorAll('.rtm,.rtl,.rtt')).forEach(function (e) { e.remove(); });
+    $('rtpgno').textContent = 'p.' + rtPage + ' / ' + W.imgs.length; var box = $('rtpg'); Array.prototype.slice.call(box.querySelectorAll('.rtm,.rtl,.rtt,.rtg')).forEach(function (e) { e.remove(); });
     var rkn = rtRank(rtMarks()), cols = rtColors(), pas = rtPasses();      // the small number to the right of a mark = its place in the order the app reads the marks (marks at the same spot share a number)
     rtMarks().forEach(function (m) {
       if (m.page !== rtPage) return; var mc = cols[m.id] || '#555', g0 = rtGlyph(m.k, m.n, mc), SC = 1.7, g = { w: g0.w * SC, h: g0.h * SC, ax: g0.ax * SC, ay: g0.ay * SC, b: g0.b }, pad = 8, rd = rkn.pos[m.id] / 10, no = (pas[m.id] || []).map(rtNo).join(''), d = document.createElement('div'); d.className = 'rtm';
@@ -3612,9 +3626,23 @@
       };
       box.appendChild(d); });
     var pbs = W.rt.bars && W.rt.bars[rtPage], barTool = rtTool && rtTool.charAt(0) === 'b';
+    if (pbs && rtTool === 'bfix:0') pbs.systems.forEach(function (sy) {      // fit a band by dragging its top and bottom edge (a barline spans exactly the staves inside the band); a barline can be dragged sideways
+      var sus = rtSusp(sy), x0 = sy.xs.length ? Math.min.apply(null, sy.xs) : 0.05, x1 = sy.xs.length ? Math.max.apply(null, sy.xs) : 0.95, rc = document.createElement('div'); rc.className = 'rtl';
+      rc.style.cssText = 'position:absolute;left:' + (x0 * 100) + '%;width:' + ((x1 - x0) * 100) + '%;top:' + (sy.y0 * 100) + '%;height:' + ((sy.y1 - sy.y0) * 100) + '%;border:2px dashed ' + (sus ? '#d9480f' : '#2a5bd7') + ';background:' + (sus ? 'rgba(217,72,15,.08)' : 'rgba(42,91,215,.06)') + ';pointer-events:none;box-sizing:border-box'; box.appendChild(rc);
+      var mk = function (edge) {
+        var g = document.createElement('div'); g.className = 'rtg'; g.style.cssText = 'position:absolute;left:' + (Math.min(0.97, x1 + 0.03) * 100) + '%;top:' + ((edge === 'y0' ? sy.y0 : sy.y1) * 100) + '%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:#2a5bd7;color:#fff;font:700 20px/46px Inter,sans-serif;text-align:center;touch-action:none;z-index:6;box-shadow:0 1px 4px rgba(0,0,0,.4)'; g.textContent = edge === 'y0' ? '↕' : '↕';
+        g.onpointerdown = function (e) { e.preventDefault(); e.stopPropagation(); var r = $('rtimg').getBoundingClientRect(); try { g.setPointerCapture(e.pointerId); } catch (x) {}
+          g.onpointermove = function (ev) { var fy = Math.min(1, Math.max(0, (ev.clientY - r.top) / r.height)); if (edge === 'y0') sy.y0 = Math.min(fy, sy.y1 - 0.03); else sy.y1 = Math.max(fy, sy.y0 + 0.03); g.style.top = ((edge === 'y0' ? sy.y0 : sy.y1) * 100) + '%'; rc.style.top = (sy.y0 * 100) + '%'; rc.style.height = ((sy.y1 - sy.y0) * 100) + '%'; };
+          g.onpointerup = g.onpointercancel = function () { g.onpointermove = g.onpointerup = g.onpointercancel = null; sy.y0 = Math.round(sy.y0 * 1000) / 1000; sy.y1 = Math.round(sy.y1 * 1000) / 1000; sy.fixed = true; rtSave(); rtShow(); rtRun(); };
+        }; box.appendChild(g);
+      }; mk('y0'); mk('y1');
+    });
     if (pbs && (W.rt.showBars || barTool || rtHi)) pbs.systems.forEach(function (sy) {
+      if (rtSusp(sy)) return;
       sy.xs.forEach(function (x, xi) {
-        var l = document.createElement('div'); l.className = 'rtl'; l.style.cssText = 'position:absolute;left:' + (x * 100) + '%;top:' + (sy.y0 * 100) + '%;height:' + ((sy.y1 - sy.y0) * 100) + '%;width:22px;margin-left:-11px;background:linear-gradient(to right,transparent 10px,rgba(30,30,30,.4) 10px,rgba(30,30,30,.4) 12px,transparent 12px);pointer-events:' + (rtTool === 'bdel:0' ? 'auto' : 'none');
+        var l = document.createElement('div'); l.className = 'rtl'; var added = (sy.ux || []).some(function (u) { return Math.abs(u - x) < 0.002; }), lc = added ? 'rgba(240,120,0,.95)' : 'rgba(20,90,255,.9)';      /* found by the app: blue; added by the person: orange; every line reaches a little above and below the staves so that it can be seen next to the printed barline */
+        l.style.cssText = 'position:absolute;left:' + (x * 100) + '%;top:' + ((sy.y0 - 0.012) * 100) + '%;height:' + ((sy.y1 - sy.y0 + 0.024) * 100) + '%;width:22px;margin-left:-11px;background:linear-gradient(to right,transparent 9px,' + lc + ' 9px,' + lc + ' 13px,transparent 13px);pointer-events:' + (rtTool === 'bdel:0' || rtTool === 'bfix:0' ? 'auto' : 'none') + ';touch-action:none';
+        if (rtTool === 'bfix:0') l.onpointerdown = function (e) { e.preventDefault(); e.stopPropagation(); var r = $('rtimg').getBoundingClientRect(), old0 = sy.xs[xi]; try { l.setPointerCapture(e.pointerId); } catch (x) {} l.onpointermove = function (ev) { var fx = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)); sy.xs[xi] = fx; l.style.left = (fx * 100) + '%'; }; l.onpointerup = l.onpointercancel = function () { l.onpointermove = l.onpointerup = l.onpointercancel = null; sy.xs[xi] = Math.round(sy.xs[xi] * 1000) / 1000; if (sy.ux) sy.ux = sy.ux.map(function (u) { return Math.abs(u - old0) < 0.002 ? sy.xs[xi] : u; }); sy.xs.sort(function (a, b) { return a - b; }); rtSave(); rtShow(); rtRun(); }; };
         l.onclick = function (e) { e.stopPropagation(); if (rtTool !== 'bdel:0') return; sy.xs.splice(xi, 1); rtSave(); rtShow(); rtRun(); };
         box.appendChild(l);
       });
@@ -3646,12 +3674,13 @@
     RT_TOOLS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t[2]; b.dataset.k = t[0] + t[1]; b.style.cssText = 'min-height:40px;padding:0 10px;font-size:15px'; b.onclick = function () { if (t[0] === 'bdet') { rtDetectBars(); return; } if (t[0] === 'bshow') { W.rt.showBars = !W.rt.showBars; rtSave(); rtShow(); return; } var tk = t[0] === 'del' ? 'del' : t[0] + ':' + t[1]; rtTool = rtTool === tk ? null : tk; rtToolUi(); rtShow(); }; box.appendChild(b); });
     rtToolUi();
   }
-  function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の右の数字は、通る順番）' : rtTool === 'del' ? '消したい印をタップ' : rtTool === 'badd:0' ? '小節線を足したい場所を、楽譜でタップ' : rtTool === 'bdel:0' ? '消したい小節線をタップ' : rtTool === 'bjoin:0' ? 'つなげたい二つの段の間（Primo と Secondo の間）をタップ' : 'この印を置く場所を、楽譜でタップ'; }
+  function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の右の数字は、通る順番）' : rtTool === 'del' ? '消したい印をタップ' : rtTool === 'badd:0' ? '小節線を足したい場所を、楽譜でタップ' : rtTool === 'bdel:0' ? '消したい小節線をタップ' : rtTool === 'bfix:0' ? '青い丸を上下にドラッグして、段の上と下を合わせてください（小節線は、段の中の五線に引かれます）。小節線も、横にドラッグして動かせます' : rtTool === 'bsplit:0' ? '分けたい高さを、段の中でタップ' : rtTool === 'bjoin:0' ? 'つなげたい二つの段の間（Primo と Secondo の間）をタップ' : 'この印を置く場所を、楽譜でタップ'; }
   $('rtpg').addEventListener('click', function (e) {
-    if (!rtTool || rtTool === 'del' || rtTool === 'bdel:0' || e.target.className === 'rtm') return; var r = $('rtimg').getBoundingClientRect(), k = rtTool.split(':');
+    if (!rtTool || rtTool === 'del' || rtTool === 'bdel:0' || rtTool === 'bfix:0' || e.target.className === 'rtm' || e.target.className === 'rtg') return; var r = $('rtimg').getBoundingClientRect(), k = rtTool.split(':');
     var fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height; if (!(fx >= 0 && fx <= 1 && fy >= 0 && fy <= 1)) return;
     if (k[0] === 'badd') { rtAddBar(fx, fy); return; }
     if (k[0] === 'bjoin') { rtJoinBars(fy); return; }
+    if (k[0] === 'bsplit') { rtSplitBar(fy); return; }
     W.rt.seq = (W.rt.seq || 0) + 1; rtMarks().push({ id: 'k' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), k: k[0], n: +k[1] < 0 ? rtNextN(k[0]) : +k[1], no: W.rt.seq, page: rtPage, fx: Math.round(fx * 1000) / 1000, fy: Math.round(fy * 1000) / 1000 }); rtSave(); rtShow(); rtRun(); rtSettings();
   });
   function rtNumUI() { $('rtnum').hidden = true; $('rtnum').textContent = W.rt.numMode === 'read' ? '数字：読む順' : '数字：置いた順'; }
