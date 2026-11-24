@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v389</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v390</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2780,7 +2780,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v389', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v390', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3400,8 +3400,8 @@
     else if (k === 'e1' || k === 'e2' || k === 'e3') d = { w: 20, h: 18, ax: 3, ay: 9, b: '<path ' + S + ' d="M3 17V2H15"/>' + T(6, 14, i, 9) };
     else if (k === 'f1' || k === 'f2' || k === 'f3') d = { w: 20, h: 18, ax: 17, ay: 9, b: '<path ' + S + ' d="M5 2H17V17"/>' + T(6, 14, i, 9) };
     else if (k === 'sg') d = { w: 20, h: 16, ax: 2, ay: 8, b: '<path ' + S + ' d="M2 15V1H7"/>' + T(4, 13, '§', 10) + T(12, 7, ROM[n], 7) };          // a landing mark: the line at its left stands exactly where the music goes on
-    else if (k === 'cd') d = { w: 30, h: 22, ax: 2, ay: 9, b: '<path ' + S + ' d="M2 17V1H9"/><circle cx="13" cy="10" r="5.5" ' + S + '/><path ' + S + ' d="M13 1V19M5 10H21"/>' + T(21, 8, ROM[n], 9) };
-    else if (k === 'tc') d = { w: 46, h: 22, ax: 44, ay: 9, b: T(0, 15, 'to', 11) + '<circle cx="27" cy="10" r="5" ' + S + '/><path ' + S + ' d="M27 2V18M20 10H34"/>' + T(33, 8, ROM[n], 9) + '<path ' + S + ' d="M44 1V17H38"/>' };      // a jump-off mark: the line at its right stands exactly where the playing leaves
+    else if (k === 'cd') d = { w: 22, h: 16, ax: 2, ay: 8, b: '<path ' + S + ' d="M2 15V1H7"/><circle cx="11.5" cy="8.5" r="4" ' + S + '/><path ' + S + ' d="M11.5 1V16M4.5 8.5H18.5"/>' + T(17, 7, ROM[n], 7) };
+    else if (k === 'tc') d = { w: 38, h: 16, ax: 36, ay: 8, b: T(0, 12, 'to', 9) + '<circle cx="21" cy="8.5" r="3.8" ' + S + '/><path ' + S + ' d="M21 2V15M15 8.5H27"/>' + T(26, 6, ROM[n], 7) + '<path ' + S + ' d="M36 1V15H32"/>' };
     else d = { w: 30, h: 14, ax: 28, ay: 7, b: T(0, 11, k === 'dc' ? 'D.C.' : 'D.S.', 9) + (n ? T(k === 'dc' ? 23 : 20, 6, ROM[n], 7) : '') + '<path ' + S + ' d="M28 1V13H24"/>' };
     return d;
   }
@@ -3562,7 +3562,10 @@
       var sgm = marks.filter(function (q) { return q.k === 'sg' && bd.rk.pos[q.id] === g.start; })[0];
       var nm = document.createElement('b'); nm.textContent = (sgm ? 'セーニョ' + ROM[sgm.n] + 'の繰り返し' : m ? 'p.' + m.page + ' の繰り返し' : '曲の頭に戻る繰り返し（始めの印がない「繰り返しの終わり」があります）') + (g.ends ? '（括弧' + (g.ends.length - 1) + 'つ）' : ''); row.appendChild(nm);
       if (marks.some(function (q) { return q.k === 'ds' || q.k === 'dc'; })) { var c1 = document.createElement('label'), k1 = document.createElement('input'); k1.type = 'checkbox'; k1.checked = !!s.straight; k1.onchange = function () { s.straight = k1.checked; rtSave(); rtRun(); }; c1.appendChild(k1); c1.appendChild(document.createTextNode(' D.S.で戻ったときは繰り返さない（Straight）')); row.appendChild(c1); }      // only a piece with a D.S. / D.C. needs it
-      var c2 = document.createElement('label'), k2 = document.createElement('input'); k2.type = 'text'; k2.size = 4; k2.value = (s.once || []).join(','); k2.placeholder = '例 1'; k2.style.cssText = 'font:16px Inter,sans-serif;padding:4px 6px'; k2.onchange = function () { s.once = k2.value.split(/[,、 ]+/).map(Number).filter(function (x) { return x > 0; }); rtSave(); rtRun(); }; c2.appendChild(document.createTextNode('録音では繰り返していない回（何回目に通るとき）：')); c2.appendChild(k2); row.appendChild(c2);
+      var asScore = !(s.notAsScore || (s.once && s.once.length)), c2 = document.createElement('label'), k2 = document.createElement('input'); k2.type = 'checkbox'; k2.checked = asScore; c2.appendChild(k2); c2.appendChild(document.createTextNode(' 録音でも楽譜通りに繰り返している')); row.appendChild(c2);
+      var c3 = document.createElement('label'), k3 = document.createElement('input'); k3.type = 'text'; k3.inputMode = 'numeric'; k3.size = 3; k3.value = (s.once || []).join(','); k3.placeholder = '1'; k3.style.cssText = 'font:16px Inter,sans-serif;padding:4px 6px;width:3.5em;text-align:center'; k3.onchange = function () { s.once = k3.value.split(/[,、 ]+/).map(Number).filter(function (x) { return x > 0; }); rtSave(); rtRun(); };
+      c3.appendChild(document.createTextNode('録音は ')); c3.appendChild(k3); c3.appendChild(document.createTextNode(' 回目に通るときに繰り返していない')); c3.hidden = asScore; row.appendChild(c3);
+      k2.onchange = function () { s.notAsScore = !k2.checked; if (k2.checked) { s.once = []; k3.value = ''; } c3.hidden = k2.checked; rtSave(); rtRun(); };
       box.appendChild(row);
     });
   }
