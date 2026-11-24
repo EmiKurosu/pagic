@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v390</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v391</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -575,7 +575,7 @@
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><button type="button" id="rtprev">◀</button><b id="rtpgno" style="white-space:nowrap">p.1</b><button type="button" id="rtnext">▶</button><button type="button" id="rtnum" style="min-height:40px;white-space:nowrap"></button><span id="rttoolnote" style="color:var(--dim);font-size:14px"></span></div>
   <div style="text-align:center"><div id="rtpg" style="position:relative;display:inline-block;max-width:100%;touch-action:manipulation;line-height:0"><img id="rtimg" alt="楽譜のページ" style="max-width:100%;max-height:64vh;display:block"></div></div>
   <div id="rtset" style="display:grid;gap:6px;margin:10px 0"></div>
-  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>弾く順番</b><button type="button" id="rtback" style="min-height:48px;padding:0 16px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">◀ 押している間、戻る</button><button type="button" id="rtplay" style="min-height:48px;padding:0 16px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">押している間、進む ▶</button><button type="button" id="rtstop" hidden>止める</button><span id="rtplaymsg" style="color:var(--dim)"></span></div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>弾く順番</b><button type="button" id="rtback" style="min-height:48px;padding:0 16px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">◀ 押している間、戻る</button><button type="button" id="rtplay" style="min-height:48px;padding:0 16px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">押している間、進む ▶</button><button type="button" id="rtfirst" style="min-height:48px;padding:0 16px">最初から</button><button type="button" id="rtstop" hidden>止める</button><span id="rtplaymsg" style="color:var(--dim)"></span></div>
   <div id="rtwarn" style="color:var(--warn);line-height:1.5"></div>
   <ol id="rtres" style="margin:6px 0 0;padding-left:26px;line-height:1.7"></ol>
   <button type="button" id="rtclose" aria-label="閉じる" style="position:fixed;bottom:max(24px,env(safe-area-inset-bottom));right:max(24px,env(safe-area-inset-right));z-index:46;min-height:52px;padding:0 22px;font-size:18px;box-shadow:0 2px 12px rgba(0,0,0,.35)">閉じる</button>
@@ -2780,7 +2780,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v390', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v391', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3456,10 +3456,27 @@
   function rtDetectBars(cb) {
     $('rttoolnote').textContent = '小節線を探しています…'; W.rt.bars = W.rt.bars || {}; var i = 0;
     var next = function () {
-      if (i >= W.imgs.length) { W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); $('rttoolnote').textContent = '小節線を探しました。違うところは「小節線を足す／消す」で直してください。'; if (cb) cb(); return; }
+      if (i >= W.imgs.length) { rtMergeHalves(); W.rt.barsVer = 2; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); $('rttoolnote').textContent = '小節線を探しました。違うところは「小節線を足す／消す」で直してください。'; if (cb) cb(); return; }
       var im = new Image(), k = ++i; im.onload = function () { try { W.rt.bars[k] = { systems: Song.findBars(im) }; } catch (e) { W.rt.bars[k] = { systems: [] }; } setTimeout(next, 10); }; im.onerror = function () { W.rt.bars[k] = { systems: [] }; next(); }; im.src = W.imgs[k - 1].data;
     };
     setTimeout(next, 20);
+  }
+  function rtMergeHalves() {      // a duo-piano system = Primo's two staves + Secondo's two: where the page photo broke it in two bands, put the two halves together again (both bands clearly shorter than the tallest band of the score, and close together)
+    var all = [], mx = 0; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { mx = Math.max(mx, sy.y1 - sy.y0); }); });
+    if (!mx) return;
+    Object.keys(W.rt.bars).forEach(function (p) {
+      var sy = W.rt.bars[p].systems, out = [], k = 0;
+      while (k < sy.length) {
+        var a = sy[k], b = sy[k + 1], half = function (o) { return o && (o.y1 - o.y0) < 0.65 * mx; };
+        var nx = sy[k + 2], gp = b ? b.y0 - a.y1 : 9, gn = nx ? nx.y0 - b.y1 : 9;      // the gap inside a system is smaller than the gap to the next system
+        if (half(a) && half(b) && gp < 0.09 && gp <= gn * 1.05) {
+          var xs = a.xs.concat(b.xs).sort(function (u, v) { return u - v; }), cl = [];
+          xs.forEach(function (v) { var l = cl[cl.length - 1]; if (l && v - l.last < 0.03) { l.sum += v; l.n++; l.last = v; } else cl.push({ sum: v, n: 1, last: v }); });
+          out.push({ y0: a.y0, y1: Math.max(a.y1, b.y1), xs: cl.map(function (l) { return Math.round(l.sum / l.n * 1000) / 1000; }) }); k += 2;
+        } else { out.push(a); k++; }
+      }
+      W.rt.bars[p].systems = out;
+    });
   }
   function rtBarList() {
     var out = []; if (!W || !W.rt || !W.rt.bars) return out;
@@ -3483,7 +3500,7 @@
     for (k = 0; k < st.length; k++) {
       var x = st[k], sa, sb, mk;
       if (x.a <= 0) sa = 0; else { mk = marks.filter(function (m) { return P[m.id] === x.a; })[0]; if (!mk) return null; sa = rtBarOf(mk, bars, true); }
-      if (x.b >= b.rk.total) sb = bars.length - 1; else { mk = marks.filter(function (m) { return P[m.id] === x.b; })[0]; if (!mk) return null; sb = rtBarOf(mk, bars, false); }
+      if (x.b >= b.rk.total) sb = bars.length - 1; else { mk = marks.filter(function (m) { return P[m.id] === x.b; })[0]; if (!mk) return null; sb = /^(rs|e[123]|sg|cd)$/.test(mk.k) ? rtBarOf(mk, bars, true) - 1 : rtBarOf(mk, bars, false); }      // a stretch that ends AT a mark which begins something (the start of the 1st ending, ...) stops in the bar before the bar right of that mark
       if (sa < 0 || sb < 0) return null; if (sb < sa) sb = sa; var l = []; for (var q = sa; q <= sb; q++) l.push(q);
       plan.push({ list: l, why: x.why, dup: x.dup });
     }
@@ -3560,7 +3577,7 @@
     bd.groupsAt.forEach(function (g) {
       var m = marks.filter(function (q) { return q.id === g.id; })[0], s = gs[g.id] = gs[g.id] || {}, row = document.createElement('div'); row.style.cssText = 'display:flex;gap:10px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:8px 10px';
       var sgm = marks.filter(function (q) { return q.k === 'sg' && bd.rk.pos[q.id] === g.start; })[0];
-      var nm = document.createElement('b'); nm.textContent = (sgm ? 'セーニョ' + ROM[sgm.n] + 'の繰り返し' : m ? 'p.' + m.page + ' の繰り返し' : '曲の頭に戻る繰り返し（始めの印がない「繰り返しの終わり」があります）') + (g.ends ? '（括弧' + (g.ends.length - 1) + 'つ）' : ''); row.appendChild(nm);
+      var nm = document.createElement('b'); nm.textContent = (sgm ? 'p.' + (m ? m.page : sgm.page) + ' の繰り返し（セーニョ' + ROM[sgm.n] + '）' : m ? 'p.' + m.page + ' の繰り返し' : '曲の頭に戻る繰り返し（始めの印がない「繰り返しの終わり」があります）') + (g.ends ? '（括弧' + (g.ends.length - 1) + 'つ）' : ''); row.appendChild(nm);
       if (marks.some(function (q) { return q.k === 'ds' || q.k === 'dc'; })) { var c1 = document.createElement('label'), k1 = document.createElement('input'); k1.type = 'checkbox'; k1.checked = !!s.straight; k1.onchange = function () { s.straight = k1.checked; rtSave(); rtRun(); }; c1.appendChild(k1); c1.appendChild(document.createTextNode(' D.S.で戻ったときは繰り返さない（Straight）')); row.appendChild(c1); }      // only a piece with a D.S. / D.C. needs it
       var asScore = !(s.notAsScore || (s.once && s.once.length)), c2 = document.createElement('label'), k2 = document.createElement('input'); k2.type = 'checkbox'; k2.checked = asScore; c2.appendChild(k2); c2.appendChild(document.createTextNode(' 録音でも楽譜通りに繰り返している')); row.appendChild(c2);
       var c3 = document.createElement('label'), k3 = document.createElement('input'); k3.type = 'text'; k3.inputMode = 'numeric'; k3.size = 3; k3.value = (s.once || []).join(','); k3.placeholder = '1'; k3.style.cssText = 'font:16px Inter,sans-serif;padding:4px 6px;width:3.5em;text-align:center'; k3.onchange = function () { s.once = k3.value.split(/[,、 ]+/).map(Number).filter(function (x) { return x > 0; }); rtSave(); rtRun(); };
@@ -3604,10 +3621,11 @@
     var el = $(z[0]); el.onpointerdown = function (ev) { try { el.setPointerCapture(ev.pointerId); } catch (e) {} rtHoldStart(z[1], ev); };
     el.onpointerup = el.onpointercancel = el.onpointerleave = rtHoldStop; el.oncontextmenu = function (ev) { ev.preventDefault(); };
   });
+  $('rtfirst').onclick = function () { rtHoldStop(); rtCur = -1; rtHi = null; rtPage = 1; try { rtShow(); } catch (e) {} $('rtplaymsg').textContent = ''; };      // back to the very beginning of the play-through
   $('rtstop').onclick = rtStopPlay;
   $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; };
   $('rtopen').hidden = window.LANG !== 'ja';      // trial: Japanese only
-  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length)) rtDetectBars(); };
+  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 2) rtDetectBars(); };      // bars found by an older way of searching are searched again once
 
   /* ---------- repeats: a flag where the repeat returns to, an arrow at the repeat sign ---------- */
   /* "back to the start / to the Segno" families: D.C. al Fine, D.S. al Fine, D.C. al Coda, D.S. al Coda. The marks of each, in reading order: */
