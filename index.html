@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v386</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v387</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2774,7 +2774,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v386', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v387', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3447,10 +3447,10 @@
 
   /* ---------- bars: found in the page photos (and corrected by hand), used to colour the play-through bar by bar */
   var rtHi = null, rtPlan = null, RTHI = ['#e03131', '#1c7ed6', '#2f9e44', '#f08c00', '#9c36b5', '#0b7285'];
-  function rtDetectBars() {
+  function rtDetectBars(cb) {
     $('rttoolnote').textContent = '小節線を探しています…'; W.rt.bars = W.rt.bars || {}; var i = 0;
     var next = function () {
-      if (i >= W.imgs.length) { W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); $('rttoolnote').textContent = '小節線を探しました。違うところは「小節線を足す／消す」で直してください。'; return; }
+      if (i >= W.imgs.length) { W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); $('rttoolnote').textContent = '小節線を探しました。違うところは「小節線を足す／消す」で直してください。'; if (cb) cb(); return; }
       var im = new Image(), k = ++i; im.onload = function () { try { W.rt.bars[k] = { systems: Song.findBars(im) }; } catch (e) { W.rt.bars[k] = { systems: [] }; } setTimeout(next, 10); }; im.onerror = function () { W.rt.bars[k] = { systems: [] }; next(); }; im.src = W.imgs[k - 1].data;
     };
     setTimeout(next, 20);
@@ -3544,7 +3544,7 @@
     });
     if (rtHi && rtPlan && rtPlan[rtHi.s]) rtPlan[rtHi.s].list.slice(0, rtHi.u).forEach(function (bi, k, ar) {
       var b = rtPlan.bars[bi]; if (b.page !== rtPage) return; var d = document.createElement('div'); d.className = 'rtl'; var last = k === ar.length - 1;
-      d.style.cssText = 'position:absolute;left:' + (b.x0 * 100) + '%;width:' + ((b.x1 - b.x0) * 100) + '%;top:' + (b.y0 * 100) + '%;height:' + ((b.y1 - b.y0) * 100) + '%;background:' + RTHI[rtHi.s % RTHI.length] + ';opacity:' + (last ? .45 : .28) + ';pointer-events:none';
+      d.style.cssText = 'position:absolute;left:' + (b.x0 * 100) + '%;width:' + ((b.x1 - b.x0) * 100) + '%;top:' + (b.y0 * 100) + '%;height:' + ((b.y1 - b.y0) * 100) + '%;background:' + RTHI[rtHi.s % RTHI.length] + ';border-radius:6px;box-shadow:0 0 10px ' + RTHI[rtHi.s % RTHI.length] + ';opacity:' + (last ? .45 : .28) + ';pointer-events:none';
       box.appendChild(d);
     });
     if (f) [['sy', '#1e9e4a'], ['ey', '#d12']].forEach(function (c) { if (f[c[0]] === null || f[c[0]] === undefined) return; var l = document.createElement('div'); l.className = 'rtl'; l.style.cssText = 'position:absolute;left:0;right:0;top:' + (f[c[0]] * 100) + '%;height:3px;background:' + c[1] + ';opacity:.8;pointer-events:none'; box.appendChild(l); });
@@ -3577,7 +3577,8 @@
   $('rtnum').onclick = function () { W.rt.numMode = W.rt.numMode === 'read' ? 'placed' : 'read'; rtSave(); rtNumUI(); rtShow(); };
   $('rtprev').onclick = function () { if (rtPage > 1) { rtPage--; rtShow(); } }; $('rtnext').onclick = function () { if (W && rtPage < W.imgs.length) { rtPage++; rtShow(); } };
   function rtStopPlay() { clearInterval(rtTimer); rtTimer = null; rtHi = null; if (!$('rtdlg').hidden) { try { rtShow(); } catch (e) {} } $('rtplay').hidden = false; $('rtstop').hidden = true; $('rtplaymsg').textContent = ''; }
-  $('rtplay').onclick = function () {
+  $('rtplay').onclick = function (ev, again) {
+    if (!(rtPlan && rtPlan.length) && !again && !(W.rt.bars && Object.keys(W.rt.bars).length)) { rtDetectBars(function () { $('rtplay').onclick(null, true); }); return; }      // no bars known yet: look for them first
     if (rtPlan && rtPlan.length) {      // bar by bar: the bars of one stretch fill with colour one after the other, every stretch in its own colour
       var si = 0, bi = 0; $('rtplay').hidden = true; $('rtstop').hidden = false;
       var stepB = function () {
@@ -3592,7 +3593,7 @@
   $('rtstop').onclick = rtStopPlay;
   $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; };
   $('rtopen').hidden = window.LANG !== 'ja';      // trial: Japanese only
-  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); };
+  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length)) rtDetectBars(); };
 
   /* ---------- repeats: a flag where the repeat returns to, an arrow at the repeat sign ---------- */
   /* "back to the start / to the Segno" families: D.C. al Fine, D.S. al Fine, D.C. al Coda, D.S. al Coda. The marks of each, in reading order: */
