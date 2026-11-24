@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v391</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v393</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2003,7 +2003,7 @@
     function recOnce(o) { return (o.g.recOnce || []).indexOf(visit[o.g.id]) >= 0; }      // the recording did NOT repeat this repeat on this visit: the repeat is made from the stretch that was recorded once (dup)
     while (cur < total && guard++ < 2000) {
       var mp = null; ev.forEach(function (e) { if (e.pos > cur && (mp === null || e.pos < mp)) mp = e.pos; });
-      if (mp === null) break; var here = ev.filter(function (e) { return e.pos === mp; }).sort(function (x, y) { return (x.k === 'gstart') - (y.k === 'gstart'); });
+      if (mp === null) break; var here = ev.filter(function (e) { return e.pos === mp; }).sort(function (x, y) { var rk = function (e) { return e.k === 'gstart' ? 2 : e.k === 'tocoda' ? 0 : 1; }; return rk(x) - rk(y); });      /* a "to Coda" that stands where an ending begins is looked at first: on the last pass it leaves for the Coda and the endings are not played */
       cur = mp;
       for (var hi = 0; hi < here.length; hi++) {
         var nx = here[hi], before = segStart + ':' + why, c0 = cur;
@@ -2162,7 +2162,7 @@
     g.restore();
     g.fillStyle = 'rgba(0,0,0,.35)'; g.fillRect(vw - 1 * d, 0, 2 * d, c.height);
   }
-  var pinP = null; function pinPath() { return pinP || (pinP = new Path2D('M12 21.5s-6.7-6.3-6.7-11.4a6.7 6.7 0 0 1 13.4 0c0 5.1-6.7 11.4-6.7 11.4zM12 7.4a2.9 2.9 0 1 0 0 5.8 2.9 2.9 0 0 0 0-5.8z')); }
+  var pinP = null; function pinPath() { return pinP || (pinP = new Path2D('M12 3.9a4.3 4.3 0 1 1 0 8.6a4.3 4.3 0 0 1 0-8.6zM10.9 12.2L12 21.5L13.1 12.2z')); }
   var loadGate = 0, loadGateT = null;      // the page is not drawn until the saved trimming / colour / view / handwriting are read (otherwise the uncropped photo flashes first)
   function gateDone() { if (loadGate > 0 && --loadGate === 0) { clearTimeout(loadGateT); try { drawPage(null, 0); } catch (e) {} } }
   function drawPage(playBar, playFrac) {
@@ -2219,11 +2219,11 @@
     var mk = startPos.mark; if (mk && mk.page === shownPage && !(running && mk.left) && !(running && peel && peel.sc > 0)) {      // once the playing has left the flag's page, the flag stays away when that page comes back (a repeat)
                            // the flag: "start here" (not on top of the curl: the next page is being shown there)
       var fx = vX(view, mk.x, mk.y), fy = vY(view, mk.x, mk.y), u = d;
-      var pk = pinPath(), ks = 2.2 * u;      // a map pin ("here"): its point is on the place that was tapped
+      var pk = pinPath(), ks = 1.9 * u;      // a map pin ("here"): its point is on the place that was tapped
       g.save(); g.lineJoin = 'round'; g.translate(fx, fy); g.scale(ks, ks); g.translate(-12, -21.5);
-      g.strokeStyle = '#fff'; g.lineWidth = 3.2 / 2.2 * 1.0; g.stroke(pk); g.fillStyle = '#16a34a'; g.fill(pk, 'evenodd'); g.strokeStyle = '#15803d'; g.lineWidth = 1.1; g.stroke(pk); g.restore();
+      g.strokeStyle = '#fff'; g.lineWidth = 2.6 / 1.9; g.stroke(pk); g.fillStyle = '#16a34a'; g.fill(pk); g.strokeStyle = '#15803d'; g.lineWidth = 0.8; g.stroke(pk); g.restore();
       g.save();
-      var cbx = fx + 30 * u, cby = fy - 46 * u, br = 13 * u; mk.btn = { x: cbx, y: cby, r: br };                    // the cancel "x" at the flag's upper right
+      var cbx = fx + 24 * u, cby = fy - 40 * u, br = 13 * u; mk.btn = { x: cbx, y: cby, r: br };                    // the cancel "x" at the flag's upper right
       g.beginPath(); g.arc(cbx, cby, br, 0, 7); g.fillStyle = '#fff'; g.fill(); g.lineWidth = 2 * u; g.strokeStyle = '#15803d'; g.stroke();
       g.beginPath(); g.moveTo(cbx - 5 * u, cby - 5 * u); g.lineTo(cbx + 5 * u, cby + 5 * u); g.moveTo(cbx + 5 * u, cby - 5 * u); g.lineTo(cbx - 5 * u, cby + 5 * u); g.lineWidth = 2.6 * u; g.lineCap = 'round'; g.strokeStyle = '#15803d'; g.stroke(); g.restore();
     }
@@ -2780,7 +2780,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v391', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: 'v392', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -3387,7 +3387,7 @@
 
   /* ---------- numbered marks and the order they give (trial): marks are placed on the pages, AutoRoute.route() works out the order ---------- */
   var RT_TOOLS = [['rs', 0, '繰り返しの始め'], ['re', 0, '繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['f1', 0, '第1括弧の終わり'], ['f2', 0, '第2括弧の終わり'],
-    ['sg', -1, 'セーニョ'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to Coda'], ['cd', -1, 'Coda'], ['del', 0, '印を消す'], ['bdet', 0, '小節線を調べる'], ['badd', 0, '小節線を足す'], ['bdel', 0, '小節線を消す'], ['bshow', 0, '小節線の表示']];
+    ['sg', -1, 'セーニョ'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to Coda'], ['cd', -1, 'Coda'], ['del', 0, '印を消す'], ['bdet', 0, '小節線を調べる'], ['badd', 0, '小節線を足す'], ['bjoin', 0, '上下をつなぐ'], ['bdel', 0, '小節線を消す'], ['bshow', 0, '小節線の表示']];
   var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり（＝第2括弧の始め）', f2: '第2括弧の終わり（＝第3括弧の始め）', f3: '第3括弧の終わり', sg: 'セーニョ', ds: 'D.S. ', dc: 'D.C. ', tc: 'to Coda ', cd: 'Coda ' }, ROM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']      // the number of a Segno / Coda: Roman numerals (the order numbers of the marks are circled Arabic numerals - the two must not look alike);
   var rtTool = null, rtPage = 1, rtTimer = null, rtFrame = null, rtTipT = null;
   function rtName(k, n) { return RT_NAME[k] + (n ? ROM[n] : ''); }
@@ -3456,7 +3456,7 @@
   function rtDetectBars(cb) {
     $('rttoolnote').textContent = '小節線を探しています…'; W.rt.bars = W.rt.bars || {}; var i = 0;
     var next = function () {
-      if (i >= W.imgs.length) { rtMergeHalves(); W.rt.barsVer = 2; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); $('rttoolnote').textContent = '小節線を探しました。違うところは「小節線を足す／消す」で直してください。'; if (cb) cb(); return; }
+      if (i >= W.imgs.length) { rtMergeHalves(); W.rt.barsVer = 4; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); $('rttoolnote').textContent = '小節線を探しました。違うところは「小節線を足す／消す」で直してください。'; if (cb) cb(); return; }
       var im = new Image(), k = ++i; im.onload = function () { try { W.rt.bars[k] = { systems: Song.findBars(im) }; } catch (e) { W.rt.bars[k] = { systems: [] }; } setTimeout(next, 10); }; im.onerror = function () { W.rt.bars[k] = { systems: [] }; next(); }; im.src = W.imgs[k - 1].data;
     };
     setTimeout(next, 20);
@@ -3469,7 +3469,8 @@
       while (k < sy.length) {
         var a = sy[k], b = sy[k + 1], half = function (o) { return o && (o.y1 - o.y0) < 0.65 * mx; };
         var nx = sy[k + 2], gp = b ? b.y0 - a.y1 : 9, gn = nx ? nx.y0 - b.y1 : 9;      // the gap inside a system is smaller than the gap to the next system
-        if (half(a) && half(b) && gp < 0.09 && gp <= gn * 1.05) {
+        var run = 0, rr = k; while (sy[rr] && half(sy[rr]) && (rr === k || sy[rr].y0 - sy[rr - 1].y1 < 0.09)) { run++; rr++; }      // how many half bands follow each other here
+        if (half(a) && half(b) && gp < 0.09 && (run % 2 === 0 || gp <= gn * 1.05)) {
           var xs = a.xs.concat(b.xs).sort(function (u, v) { return u - v; }), cl = [];
           xs.forEach(function (v) { var l = cl[cl.length - 1]; if (l && v - l.last < 0.03) { l.sum += v; l.n++; l.last = v; } else cl.push({ sum: v, n: 1, last: v }); });
           out.push({ y0: a.y0, y1: Math.max(a.y1, b.y1), xs: cl.map(function (l) { return Math.round(l.sum / l.n * 1000) / 1000; }) }); k += 2;
@@ -3480,13 +3481,22 @@
   }
   function rtBarList() {
     var out = []; if (!W || !W.rt || !W.rt.bars) return out;
-    for (var p = 1; p <= W.imgs.length; p++) { var pb = W.rt.bars[p]; if (!pb) continue; pb.systems.forEach(function (sy, si) { var xs = sy.xs.slice().sort(function (a, b) { return a - b; }); for (var i = 0; i + 1 < xs.length; i++) out.push({ page: p, sys: si, x0: xs[i], x1: xs[i + 1], y0: sy.y0, y1: sy.y1 }); }); }
+    var ends = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends.push(l); }); }); ends.sort(function (u, v) { return u - v; }); var ref = ends.length ? ends[ends.length >> 1] : 9;      /* the usual right end of a line of music */
+    for (var p = 1; p <= W.imgs.length; p++) { var pb = W.rt.bars[p]; if (!pb) continue; pb.systems.forEach(function (sy, si) { var xs = sy.xs.slice().sort(function (a, b) { return a - b; }); if (xs.length && xs[xs.length - 1] < ref - 0.06) xs.push(ref);      /* the last barline of a line was not found (a double bar at the right end is easily missed): the usual right end closes the last bar */ for (var i = 0; i + 1 < xs.length; i++) out.push({ page: p, sys: si, x0: xs[i], x1: xs[i + 1], y0: sy.y0, y1: sy.y1 }); }); }
     return out;
   }
   function rtAddBar(fx, fy) {
     var pb = W.rt.bars && W.rt.bars[rtPage]; if (!pb || !pb.systems.length) { $('rttoolnote').textContent = 'まず「小節線を調べる」を押してください。'; return; }
     var best = null, bd = 9; pb.systems.forEach(function (sy) { var d = fy < sy.y0 ? sy.y0 - fy : fy > sy.y1 ? fy - sy.y1 : 0; if (d < bd) { bd = d; best = sy; } });
     best.xs.push(Math.round(fx * 1000) / 1000); best.xs.sort(function (a, b) { return a - b; }); rtSave(); rtShow(); rtRun();
+  }
+  function rtJoinBars(fy) {      // tap between (or on) two bands of one page: they become one system (Primo + Secondo)
+    var pb = W.rt.bars && W.rt.bars[rtPage]; if (!pb || pb.systems.length < 2) { $('rttoolnote').textContent = 'つなげる段がありません。'; return; }
+    var sy = pb.systems, best = -1, bd = 9, i; for (i = 0; i + 1 < sy.length; i++) { var m = (sy[i].y1 + sy[i + 1].y0) / 2, dd = Math.abs(fy - m); if (fy >= sy[i].y0 && fy <= sy[i + 1].y1 && dd < bd) { bd = dd; best = i; } }
+    if (best < 0) { $('rttoolnote').textContent = '二つの段の間（または段の上）をタップしてください。'; return; }
+    var a = sy[best], b = sy[best + 1], xs = a.xs.concat(b.xs).sort(function (u, v) { return u - v; }), cl = [];
+    xs.forEach(function (v) { var l = cl[cl.length - 1]; if (l && v - l.last < 0.03) { l.sum += v; l.n++; l.last = v; } else cl.push({ sum: v, n: 1, last: v }); });
+    sy.splice(best, 2, { y0: a.y0, y1: Math.max(a.y1, b.y1), xs: cl.map(function (l) { return Math.round(l.sum / l.n * 1000) / 1000; }) }); rtSave(); rtShow(); rtRun();
   }
   function rtBarOf(m, bars, start) {      // the bar a mark belongs to: a mark that begins something (start of a repeat, Segno, ...) = the bar to the right of it; one that ends something (end of a repeat, D.S., to Coda, ...) = the bar to the left
     var sys = {}, best = null, bd = 9; bars.forEach(function (b, i) { if (b.page === m.page) { sys[b.sys] = b; } });
@@ -3592,11 +3602,12 @@
     RT_TOOLS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t[2]; b.dataset.k = t[0] + t[1]; b.style.cssText = 'min-height:40px;padding:0 10px;font-size:15px'; b.onclick = function () { if (t[0] === 'bdet') { rtDetectBars(); return; } if (t[0] === 'bshow') { W.rt.showBars = !W.rt.showBars; rtSave(); rtShow(); return; } var tk = t[0] === 'del' ? 'del' : t[0] + ':' + t[1]; rtTool = rtTool === tk ? null : tk; rtToolUi(); rtShow(); }; box.appendChild(b); });
     rtToolUi();
   }
-  function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の右の数字は、通る順番）' : rtTool === 'del' ? '消したい印をタップ' : rtTool === 'badd:0' ? '小節線を足したい場所を、楽譜でタップ' : rtTool === 'bdel:0' ? '消したい小節線をタップ' : 'この印を置く場所を、楽譜でタップ'; }
+  function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の右の数字は、通る順番）' : rtTool === 'del' ? '消したい印をタップ' : rtTool === 'badd:0' ? '小節線を足したい場所を、楽譜でタップ' : rtTool === 'bdel:0' ? '消したい小節線をタップ' : rtTool === 'bjoin:0' ? 'つなげたい二つの段の間（Primo と Secondo の間）をタップ' : 'この印を置く場所を、楽譜でタップ'; }
   $('rtpg').addEventListener('click', function (e) {
     if (!rtTool || rtTool === 'del' || rtTool === 'bdel:0' || e.target.className === 'rtm') return; var r = $('rtimg').getBoundingClientRect(), k = rtTool.split(':');
     var fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height; if (!(fx >= 0 && fx <= 1 && fy >= 0 && fy <= 1)) return;
     if (k[0] === 'badd') { rtAddBar(fx, fy); return; }
+    if (k[0] === 'bjoin') { rtJoinBars(fy); return; }
     W.rt.seq = (W.rt.seq || 0) + 1; rtMarks().push({ id: 'k' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), k: k[0], n: +k[1] < 0 ? rtNextN(k[0]) : +k[1], no: W.rt.seq, page: rtPage, fx: Math.round(fx * 1000) / 1000, fy: Math.round(fy * 1000) / 1000 }); rtSave(); rtShow(); rtRun(); rtSettings();
   });
   function rtNumUI() { $('rtnum').hidden = true; $('rtnum').textContent = W.rt.numMode === 'read' ? '数字：読む順' : '数字：置いた順'; }
@@ -3625,7 +3636,7 @@
   $('rtstop').onclick = rtStopPlay;
   $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; };
   $('rtopen').hidden = window.LANG !== 'ja';      // trial: Japanese only
-  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 2) rtDetectBars(); };      // bars found by an older way of searching are searched again once
+  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 4) rtDetectBars(); };      // bars found by an older way of searching are searched again once
 
   /* ---------- repeats: a flag where the repeat returns to, an arrow at the repeat sign ---------- */
   /* "back to the start / to the Segno" families: D.C. al Fine, D.S. al Fine, D.C. al Coda, D.S. al Coda. The marks of each, in reading order: */
