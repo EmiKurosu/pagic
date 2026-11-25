@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v431</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v432</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3719,7 +3719,8 @@
   }
   function rtSyncReps() {      /* handed to the recording screen when the trial screen is closed (only when marks were placed here) */
     if (!W || !W.rt || !rtMarks().length) { if (W && W.reps) { var n0 = W.reps.length; W.reps = W.reps.filter(function (r) { return String(r.id).indexOf('rt_') !== 0; }); if (n0 !== W.reps.length) { try { wreplist(); } catch (e) {} } } return []; }
-    var r = rtToReps(); W.reps = (W.reps || []).filter(function (q) { return String(q.id).indexOf('rt_') !== 0; }).concat(r.items); repSort(); try { wreplist(); } catch (e) {} return r.warn;
+    var r = rtToReps(); if (r.items.some(function (q) { return q.da; })) { var rb = document.querySelector('input[name=wrec][value="1"]'); if (rb) rb.checked = true; }
+    W.reps = (W.reps || []).filter(function (q) { return String(q.id).indexOf('rt_') !== 0; }).concat(r.items); repSort(); try { wreplist(); } catch (e) {} return r.warn;
   }
   function rtRun() {
     var b = rtBuild(), marks = rtMarks(), res = $('rtres'); res.innerHTML = ''; var warn = b.warn.slice(); $('rtwarn').textContent = '';
@@ -3866,7 +3867,7 @@
   $('rtexp').onclick = function () { try { exportText('pagic-marks', JSON.stringify({ rt: W.rt, plan: (rtPlan || []).map(function (p) { return { list: p.list, why: p.why, dup: p.dup }; }), bars: rtPlan && rtPlan.bars ? rtPlan.bars.length : 0 })); } catch (e) { $('rtplaymsg').textContent = '書き出せませんでした：' + e.message; } };      // for finding mistakes: the marks, the bars and the order, as one file
   $('rtstop').onclick = rtStopPlay;
   $('rtcancel').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; };
-  $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; try { rtSyncReps(); } catch (e) {} try { if (W && W.redoId && W.srcSong) { window.__rtReopen = true; wApply(null); } } catch (e) {} };      /* a saved song: it is written, and the screen it came from (the song-making page) is opened again */
+  $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; try { var wn = rtSyncReps(); if (wn && wn.length) toast(wn.join(' ')); } catch (e) {} try { if (W && W.redoId && W.srcSong) { window.__rtReopen = true; wApply(null); } } catch (e) {} };      /* a saved song: it is written, and the screen it came from (the song-making page) is opened again */
   $('rtopen').hidden = window.LANG !== 'ja';      // trial: Japanese only
   (function () {      // the number of staves in one bar: the app reads it from the staff lines; the person can tell it
     var sel = document.createElement('select'), lab = document.createElement('label'); lab.style.cssText = 'white-space:nowrap;flex:none;display:inline-flex;gap:6px;align-items:center;font-size:15px;margin:0 10px 0 0'; lab.appendChild(document.createTextNode('1小節の五線の数：'));
@@ -4371,7 +4372,7 @@
     $('wlevelmsg').textContent = bad ? _t('音が聞こえていないようです。音量を上げるか、静かな場所へ移動してください。') : pct < 45 ? _t('音が聞こえています。もう少し大きいと、さらに安心です。') : _t('音は十分に聞こえています ✔');
     $('wlevelmsg').style.color = bad ? 'var(--warn)' : 'var(--fg)';
   }
-  function wrec() { var q = document.querySelector('input[name=wrec]:checked'); return !!(W && W.reps.some(function (r) { return !r.skip; }) && q && q.value === '1'); }
+  function wrec() { var q = document.querySelector('input[name=wrec]:checked'); return !!(W && W.reps.some(function (r) { return !r.skip; }) && ((q && q.value === '1') || W.reps.some(isDA))); }      /* a piece with D.S. / D.C. / Coda cannot be played through without the repeat: the recording always has it */
   function skipIsCoda(r) { return !!(r && r.skip && r.arrow && W && W.reps.some(function (z) { return isDA(z) && z.fine && z.fine.page === r.arrow.page && Math.abs(z.fine.fx - r.arrow.fx) < 0.12 && Math.abs(z.fine.fy - r.arrow.fy) < 0.15; })); }
   function wskipB(q) { if (!W) return false; if (q) return !!q.skip && !skipIsCoda(q); return W.reps.some(function (r) { return r.skip && !skipIsCoda(r); }); }      // a skip that is not the coda type: the reference recording itself leaves the passage out (decided automatically)
   function wseq() { return wrec() || wskipB(); }    // the reference recording repeats as the score says
@@ -4439,27 +4440,37 @@
     var far = Math.round(2 / fsec), second = -1; for (s0 = 0; s0 < sc.length; s0++) if (Math.abs(s0 - best) > far && sc[s0] > second) second = sc[s0];
     if (best < 0 || bs < 0.85 || bs < second + 0.03) return null; return t00 + (best - o) * fsec;
   }
-  function wrepPending() {                                    // the next flag / arrow moment to be tapped (in the order of the music)
+  function wrepPending() {                                    // the next flag / arrow moment to be tapped: of all the repeats the one whose next mark comes first in the score (the repeats are listed by their first mark, but a D.S. is listed before a repeat that starts in the same place and is reached much later)
     if (wpartK()) return null;      // one page is learned: the marks of the repeats stay as they are
-    for (var i = 0; i < W.reps.length; i++) { var r = W.reps[i], e = W.rev[r.id] || {};
+    var cands = [], wait = false;
+    W.reps.forEach(function (r, ri) {
+      if (wait) return; var e = W.rev[r.id] || {}, c = pendOne(r, e);
+      if (c === 'wait') { wait = true; return; } if (c) cands.push({ c: c, ri: ri });
+    });
+    if (wait) return null; if (!cands.length) return null;
+    var posOf = function (c) { var r = c.c.r, m = c.c.group ? (r.jf || r.arrow) : (c.c.kind === 'f' ? r.flag : c.c.kind === 'a' ? r.arrow : c.c.kind === 'j' ? r.jf : c.c.kind === 'sg' ? r.sg : c.c.kind === 'tc' ? r.tc : c.c.kind === 'fi' ? r.fine : c.c.kind === 'dc' ? r.dc : c.c.kind === 'cd' ? r.tc : null) || r.flag || r.sg || r.tc || { page: 99, fy: 0, fx: 0 }; return [c.c.second ? 1 : 0, m.page, m.fy, m.fx, c.ri]; };
+    cands.sort(function (a, b) { var x = posOf(a), y = posOf(b), k; for (k = 0; k < 5; k++) if (x[k] !== y[k]) return x[k] - y[k]; return 0; });
+    return cands[0].c;
+    function pendOne(r, e) {
       if (isDA(r)) {
         var dm = daMarks(r), prevK = null, KD = { sg: 'sg', fine: 'fi', tc: 'tc', dc: 'dc' };
         for (var di = 0; di < dm.length; di++) { var m = dm[di];
           if (m === 'cd') { if (wrec() && e.tc2 === undefined) return { r: r, kind: 'cd', page: r.tc.page, key: 'tc2', second: true, prev: prevK }; continue; }
           if ((m === 'sg' || m === 'tc') && wrec() && !(W.needSg && W.needSg[r.id])) continue;      /* the recording plays the D.S. through: the Segno of the first pass is found from the repeated pass, no tap for it */
           if (e[DAT[m]] === undefined) return { r: r, kind: KD[m], page: r[m].page, key: DAT[m], prev: prevK }; prevK = DAT[m]; }
-        continue;
+        return null;
       }
-      if (e.tf === undefined) { if (wAutoStart(r)) { e = W.rev[r.id] = W.rev[r.id] || {}; e.tf = 0; } else { if (wAutoFlag(r) || wAutoPageFlag(r)) return null; return { r: r, kind: 'f', page: r.flag.page, key: 'tf' }; } }      // (an automatic flag waits for the page turn that sets it)
-      if (r.skip) { if (!wskipB(r) && e.ta === undefined) return { r: r, kind: 'a', page: r.arrow.page, key: 'ta', prev: 'tf' }; continue; }
+      if (e.tf === undefined) { if (wAutoStart(r)) { e = W.rev[r.id] = W.rev[r.id] || {}; e.tf = 0; } else { if (wAutoFlag(r) || wAutoPageFlag(r)) return 'wait'; return { r: r, kind: 'f', page: r.flag.page, key: 'tf' }; } }      // (an automatic flag waits for the page turn that sets it)
+      if (r.skip) { if (!wskipB(r) && e.ta === undefined) return { r: r, kind: 'a', page: r.arrow.page, key: 'ta', prev: 'tf' }; return null; }
       if (r.jf && (e.tj === undefined || e.ta === undefined)) {                  // "first ending starts here" and "ends here" come close together: they may be pressed in either order
         var gr = []; if (e.tj === undefined) gr.push({ kind: 'j', key: 'tj', page: r.jf.page, prev: 'tf' }); if (e.ta === undefined) gr.push({ kind: 'a', key: 'ta', page: r.arrow.page, prev: 'tf' });
         return { r: r, kind: gr[0].kind, page: gr[0].page, key: gr[0].key, prev: 'tf', group: gr };
       }
       if (e.ta === undefined) return { r: r, kind: 'a', page: r.arrow.page, key: 'ta', prev: 'tf' };
       if (wrec()) { if (r.jf) { if (e.tj2 === undefined) return { r: r, kind: 'j', page: r.jf.page, key: 'tj2', second: true, prev: 'ta' }; }
-        else if (e.ta2 === undefined && !wAutoEnd(r) && !wAutoLast(r)) return { r: r, kind: 'a', page: r.arrow.page, key: 'ta2', second: true, prev: 'ta' }; } }
-    return null;
+        else if (e.ta2 === undefined && !wAutoEnd(r) && !wAutoLast(r)) return { r: r, kind: 'a', page: r.arrow.page, key: 'ta2', second: true, prev: 'ta' }; }
+      return null;
+    }
   }
   function wlastT() { var m = -1; W.log.forEach(function (e) { if (e.t > m) m = e.t; }); return m; }
   function wMulti() {      // learning one page: the page before, the page itself and the page after are shown side by side (the others turn by themselves: no button there); the third one is reached by scrolling
