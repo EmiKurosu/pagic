@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v411</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v415</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -1703,9 +1703,20 @@
     else merged.forEach(function (o) { if (o.xl >= 0 && o.xl < 0.15 && o.xs[0] - o.xl > 0.1) o.xs.unshift(Math.round((o.xl + 0.004) * 1000) / 1000); });      /* no left edge found anywhere on the page: the bar starts where the staff lines start */      // the left edge of a system that the stroke search missed
     merged = merged.filter(function (o) { return o.xs.length >= 2; });
     /* one bar = four staves (Primo's two + Secondo's two): the photo breaks a system into two bands (a pair of staves each); put the two together again, and keep only the barlines that really stand in BOTH halves (a stroke seen in one half only must be found again in the other half, otherwise it is a stem or a shadow) */
+    var stavesOf = function (o) {      /* how many staves does this band hold: rows of a staff line (a dark row across most of the width between two barlines), counted in fives */
+      var a = Math.max(0, Math.round(o.y0 * h)), b = Math.min(h - 1, Math.round(o.y1 * h)), cs = [], i2, yy2, xx2;
+      for (i2 = 0; i2 + 1 < o.xs.length; i2++) {
+        var xa = Math.round((o.xs[i2] + 0.01) * w), xb = Math.round((o.xs[i2 + 1] - 0.01) * w); if (xb - xa < 60) continue;
+        var c0 = xa + Math.floor((xb - xa) / 5), c1 = xb - Math.floor((xb - xa) / 5), n = 0, pv = false;
+        for (yy2 = a; yy2 <= b; yy2++) { var ct = 0; for (xx2 = c0; xx2 <= c1; xx2++) ct += m[yy2 * w + xx2]; var on3 = ct >= 0.7 * (c1 - c0 + 1); if (on3 && !pv) n++; pv = on3; }
+        if (n >= 6) cs.push(n);
+      }
+      if (!cs.length) return null; cs.sort(function (p, q) { return p - q; }); return Math.max(1, Math.round(cs[cs.length >> 1] / 5));
+    };
+    merged.forEach(function (o) { o.st = stavesOf(o); });
     var raw = merged.slice();      /* the bands as found (before Primo and Secondo are put together): a solo piece keeps them */
     var mxh = 0; merged.forEach(function (o) { mxh = Math.max(mxh, o.y1 - o.y0); });
-    var isHalf = function (o) { return o && ((o.y1 - o.y0) < 0.65 * mxh || (o.y1 - o.y0) < 0.17); };
+    var isHalf = function (o) { return o && (o.st ? o.st <= 2 : ((o.y1 - o.y0) < 0.65 * mxh || (o.y1 - o.y0) < 0.17)); };
     var probe = function (o, xn) { var xq = Math.round(xn * w), ya = Math.max(0, Math.round(o.y0 * h)), yb = Math.min(h - 1, Math.round(o.y1 * h)), nq = yb - ya + 1, best = 0, dq, yq; if (nq < 4) return 0; for (dq = -12; dq <= 12; dq++) { var xz = xq + dq, cq = 0; if (xz < 1 || xz >= w - 1) continue; for (yq = ya; yq <= yb; yq++) if (m[yq * w + xz - 1] || m[yq * w + xz] || m[yq * w + xz + 1]) cq++; if (cq / nq > best) best = cq / nq; } return best; };      /* how much of the band is covered by one unbroken stroke near this x (the stroke may lean a little) */
     var paired = [], kq = 0;
     while (kq < merged.length) {
@@ -1724,7 +1735,7 @@
           else if (inB && probe(ba, xm) >= 0.62) keep.push(xm);
         });
         keep = keep.filter(function (v, k) { return !(k > 0 && v < 0.15 && keep[0] < 0.15) ; });
-        if (keep.length >= 2) { paired.push({ y0: ba.y0, y1: Math.max(ba.y1, bb.y1), xs: keep.map(function (v) { return Math.round(v * 1000) / 1000; }) }); kq += 2; continue; }
+        if (keep.length >= 2) { paired.push({ y0: ba.y0, y1: Math.max(ba.y1, bb.y1), xs: keep.map(function (v) { return Math.round(v * 1000) / 1000; }), st: (ba.st && bb.st) ? ba.st + bb.st : null }); kq += 2; continue; }
       }
       paired.push(ba); kq++;
     }
@@ -3423,8 +3434,8 @@
 
   /* ---------- numbered marks and the order they give (trial): marks are placed on the pages, AutoRoute.route() works out the order ---------- */
   var RT_TOOLS = [['rs', 0, '繰り返しの始め'], ['re', 0, '繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['f1', 0, '第1括弧の終わり'], ['f2', 0, '第2括弧の終わり'],
-    ['sg', -1, 'セーニョ'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to Coda'], ['cd', -1, 'Coda'], ['del', 0, '印を消す'], ['bdet', 0, '小節線を調べる'], ['bpen', 0, '小節線をペンで引く'], ['badd', 0, '小節線を足す'], ['bjoin', 0, '上下をつなぐ'], ['bfix', 0, '段を直す'], ['bsplit', 0, '段を分ける'], ['bdel', 0, '小節線を消す'], ['bshow', 0, '小節線の表示']];
-  var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり（＝第2括弧の始め）', f2: '第2括弧の終わり（＝第3括弧の始め）', f3: '第3括弧の終わり', sg: 'セーニョ', ds: 'D.S. ', dc: 'D.C. ', tc: 'to Coda ', cd: 'Coda ' }, ROM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']      // the number of a Segno / Coda: Roman numerals (the order numbers of the marks are circled Arabic numerals - the two must not look alike);
+    ['sg', -1, '𝄋'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to 𝄌'], ['cd', -1, '𝄌 Coda'], ['del', 0, '印を消す'], ['bpen', 0, '小節線をペンで引く'], ['bdel', 0, '小節線を消す']];
+  var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり（＝第2括弧の始め）', f2: '第2括弧の終わり（＝第3括弧の始め）', f3: '第3括弧の終わり', sg: '𝄋', ds: 'D.S. ', dc: 'D.C. ', tc: 'to 𝄌 ', cd: '𝄌 Coda ' }, ROM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']      // the number of a Segno / Coda: Roman numerals (the order numbers of the marks are circled Arabic numerals - the two must not look alike);
   var rtTool = null, rtPage = 1, rtTimer = null, rtFrame = null, rtTipT = null;
   function rtName(k, n) { return RT_NAME[k] + (n ? ROM[n] : ''); }
   function rtNo(n) { return n >= 1 && n <= 20 ? String.fromCharCode(0x2460 + n - 1) : '(' + n + ')'; }
@@ -3494,13 +3505,14 @@
     var next = function () {
       if (i >= W.imgs.length) {
         /* one piece is for one set of players for its whole length: a solo piece, a piano duet (four staves in a bar), a trio ... never changes half way. Only where a band of four staves exists anywhere in the piece are Primo and Secondo put together; otherwise the bands stay as they were found */
-        var nTall = 0, nAll = 0;      /* one decision per piece: duet/trio bands are tall in most systems, a solo piece has hardly any */
-        Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].raw || []).forEach(function (o) { nAll++; if (o.y1 - o.y0 >= 0.19) nTall++; }); });
-        W.rt.duo = nTall >= 3 && nTall >= 0.3 * nAll;
+        /* one number for the whole piece: how many staves make one bar (a solo piece 2, a trio 4 ...). The person can say it; otherwise it is read from the staff lines: the biggest number that at least two bands show */
+        var cnt = {}, nTall = 0, nAll = 0; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].raw || []).forEach(function (o) { nAll++; if (o.y1 - o.y0 >= 0.19) nTall++; if (o.st && o.st <= 8) cnt[o.st] = (cnt[o.st] || 0) + 1; }); });
+        var NS = W.rt.staves || 0; if (!NS) { Object.keys(cnt).forEach(function (k) { if (cnt[k] >= 2 && +k > NS) NS = +k; }); if (!NS) NS = (nTall >= 3 && nTall >= 0.3 * nAll) ? 4 : 2; }
+        W.rt.nStaves = NS; W.rt.duo = NS >= 4;
         Object.keys(W.rt.bars).forEach(function (p) { var pb = W.rt.bars[p]; if (!W.rt.duo && pb.raw) pb.systems = pb.raw; delete pb.raw; });
-        if (W.rt.duo) rtMergeHalves(); W.rt.barsVer = 9; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); var miss = [], ends2 = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends2.push(l); }); }); ends2.sort(function (u, v) { return u - v; }); var ref2 = ends2.length ? ends2[ends2.length >> 1] : 0;
+        if (W.rt.duo) rtMergeHalves(); W.rt.barsVer = 11; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); var miss = [], ends2 = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends2.push(l); }); }); ends2.sort(function (u, v) { return u - v; }); var ref2 = ends2.length ? ends2[ends2.length >> 1] : 0;
       if (ref2) Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (sy.xs.length && Math.max.apply(null, sy.xs) < ref2 - 0.06) miss.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); });
-      $('rttoolnote').textContent = '小節線を探しました。' + (function () { var sp = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (rtSusp(sy)) sp.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); }); return sp.length ? '五線が2つを超える段があったので、小節線を引くのを止めました：' + sp.join('、') + '。' : ''; })() + (miss.length ? '右端の小節線が見つからない段があります：' + miss.join('、') + '。足すなら「小節線を足す」で足してください（自動では足しません）。' : '違うところは「小節線を足す／消す」で直してください。'); if (cb) cb(); return; }
+      $('rttoolnote').textContent = '小節線を探しました（1小節は、五線' + NS + '段）。' + (function () { var sp = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (rtSusp(sy)) sp.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); }); return sp.length ? '五線が2つを超える段があったので、小節線を引くのを止めました：' + sp.join('、') + '。' : ''; })() + (miss.length ? '右端の小節線が見つからない段があります：' + miss.join('、') + '。足すときは「小節線をペンで引く」で引いてください（自動では足しません）。' : '違うところは「小節線をペンで引く」か「小節線を消す」で直してください。'); if (cb) cb(); return; }
       var im = new Image(), k = ++i; im.onload = function () { try { var fr = Song.findBars(im); W.rt.bars[k] = { systems: fr, raw: fr.raw }; } catch (e) { W.rt.bars[k] = { systems: [] }; } setTimeout(next, 10); }; im.onerror = function () { W.rt.bars[k] = { systems: [] }; next(); }; im.src = W.imgs[k - 1].data;
     };
     setTimeout(next, 20);
@@ -3511,13 +3523,13 @@
     Object.keys(W.rt.bars).forEach(function (p) {
       var sy = W.rt.bars[p].systems, out = [], k = 0;
       while (k < sy.length) {
-        var a = sy[k], b = sy[k + 1], half = function (o) { return o && (o.y1 - o.y0) < 0.65 * mx; };
+        var a = sy[k], b = sy[k + 1], half = function (o) { return o && (o.st ? o.st < (W.rt.nStaves || 4) : (o.y1 - o.y0) < 0.65 * mx); };
         var nx = sy[k + 2], gp = b ? b.y0 - a.y1 : 9, gn = nx ? nx.y0 - b.y1 : 9;      // the gap inside a system is smaller than the gap to the next system
         var run = 0, rr = k; while (sy[rr] && half(sy[rr]) && (rr === k || sy[rr].y0 - sy[rr - 1].y1 < 0.09)) { run++; rr++; }      // how many half bands follow each other here
         if (half(a) && half(b) && gp < 0.09 && (run % 2 === 0 || gp <= gn * 1.05)) {
           var xs = a.xs.concat(b.xs).sort(function (u, v) { return u - v; }), cl = [];
           xs.forEach(function (v) { var l = cl[cl.length - 1]; if (l && v - l.last < 0.03) { l.sum += v; l.n++; l.last = v; } else cl.push({ sum: v, n: 1, last: v }); });
-          out.push({ y0: a.y0, y1: Math.max(a.y1, b.y1), xs: cl.map(function (l) { return Math.round(l.sum / l.n * 1000) / 1000; }) }); k += 2;
+          out.push({ y0: a.y0, y1: Math.max(a.y1, b.y1), xs: cl.map(function (l) { return Math.round(l.sum / l.n * 1000) / 1000; }), st: (a.st && b.st) ? a.st + b.st : null }); k += 2;
         } else { out.push(a); k++; }
       }
       W.rt.bars[p].systems = out;
@@ -3664,14 +3676,14 @@
         }; box.appendChild(g);
       }; mk('y0'); mk('y1');
     });
-    if (pbs && (W.rt.showBars || barTool || rtHi)) pbs.systems.forEach(function (sy) {
+    if (pbs) pbs.systems.forEach(function (sy) {
       if (rtSusp(sy)) {      /* held back: show where, so that it can be cut with "段を分ける" and fitted with "段を直す" */
         var sb = document.createElement('div'); sb.className = 'rtl'; sb.style.cssText = 'position:absolute;left:3%;width:94%;top:' + (sy.y0 * 100) + '%;height:' + ((sy.y1 - sy.y0) * 100) + '%;border:3px dashed #d9480f;background:rgba(217,72,15,.10);box-sizing:border-box;pointer-events:none;color:#d9480f;font:700 17px/1.3 Inter,sans-serif;padding:6px 10px';
-        sb.textContent = '五線が2つを超えています（小節線は引いていません）。「段を分ける」で分けてください'; box.appendChild(sb); return;
+        sb.textContent = '五線が2つを超えています（小節線は引いていません）。「小節線をペンで引く」で、五線2つ分ずつ引いてください'; box.appendChild(sb); return;
       }
       sy.xs.forEach(function (x, xi) {
         var l = document.createElement('div'); l.className = 'rtl'; var added = (sy.ux || []).some(function (u) { return Math.abs(u - x) < 0.002; }), lc = added ? 'rgba(240,120,0,.95)' : 'rgba(20,90,255,.9)';      /* found by the app: blue; added by the person: orange; every line reaches a little above and below the staves so that it can be seen next to the printed barline */
-        l.style.cssText = 'position:absolute;left:' + (x * 100) + '%;top:' + ((sy.y0 - 0.012) * 100) + '%;height:' + ((sy.y1 - sy.y0 + 0.024) * 100) + '%;width:22px;margin-left:-11px;background:linear-gradient(to right,transparent 9px,' + lc + ' 9px,' + lc + ' 13px,transparent 13px);pointer-events:' + (rtTool === 'bdel:0' || rtTool === 'bfix:0' ? 'auto' : 'none') + ';touch-action:none';
+        l.style.cssText = 'position:absolute;left:' + (x * 100) + '%;top:' + (sy.y0 * 100) + '%;height:' + ((sy.y1 - sy.y0) * 100) + '%;width:22px;margin-left:-11px;background:linear-gradient(to right,transparent 9.5px,' + lc + ' 9.5px,' + lc + ' 12.5px,transparent 12.5px);pointer-events:' + (rtTool === 'bdel:0' || rtTool === 'bfix:0' ? 'auto' : 'none') + ';touch-action:none';
         if (rtTool === 'bfix:0') l.onpointerdown = function (e) { e.preventDefault(); e.stopPropagation(); var r = $('rtimg').getBoundingClientRect(), old0 = sy.xs[xi]; try { l.setPointerCapture(e.pointerId); } catch (x) {} l.onpointermove = function (ev) { var fx = Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)); sy.xs[xi] = fx; l.style.left = (fx * 100) + '%'; }; l.onpointerup = l.onpointercancel = function () { l.onpointermove = l.onpointerup = l.onpointercancel = null; sy.xs[xi] = Math.round(sy.xs[xi] * 1000) / 1000; if (sy.ux) sy.ux = sy.ux.map(function (u) { return Math.abs(u - old0) < 0.002 ? sy.xs[xi] : u; }); sy.xs.sort(function (a, b) { return a - b; }); rtSave(); rtShow(); rtRun(); }; };
         l.onclick = function (e) { e.stopPropagation(); if (rtTool !== 'bdel:0') return; sy.xs.splice(xi, 1); rtSave(); rtShow(); rtRun(); };
         box.appendChild(l);
@@ -3740,7 +3752,13 @@
   $('rtstop').onclick = rtStopPlay;
   $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; };
   $('rtopen').hidden = window.LANG !== 'ja';      // trial: Japanese only
-  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } $('rtimg').dataset.k = ''; $('rtimg').removeAttribute('src'); rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 9) rtDetectBars(); };      // bars found by an older way of searching are searched again once
+  (function () {      // the number of staves in one bar: the app reads it from the staff lines; the person can tell it
+    var sel = document.createElement('select'), lab = document.createElement('label'); lab.style.cssText = 'display:inline-flex;gap:6px;align-items:center;font-size:15px;margin:0 10px 0 0'; lab.appendChild(document.createTextNode('1小節の五線の数：'));
+    [['0', '自動'], ['2', '2段（ソロ）'], ['4', '4段（連弾・トリオなど）'], ['6', '6段']].forEach(function (o) { var op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); }); sel.id = 'rtstaves'; sel.style.cssText = 'min-height:40px;font-size:15px'; lab.appendChild(sel);
+    var nt = $('rttoolnote'); nt.parentNode.insertBefore(lab, nt);
+    sel.onchange = function () { if (!W || !W.rt) return; W.rt.staves = +sel.value || 0; rtSave(); rtDetectBars(); };
+  })();
+  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } $('rtimg').dataset.k = ''; $('rtimg').removeAttribute('src'); rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 11) { W.rt.showBars = true; rtDetectBars(); } else W.rt.showBars = true; $('rtstaves').value = '' + (W.rt.staves || 0); };      // bars found by an older way of searching are searched again once
 
   /* ---------- repeats: a flag where the repeat returns to, an arrow at the repeat sign ---------- */
   /* "back to the start / to the Segno" families: D.C. al Fine, D.S. al Fine, D.C. al Coda, D.S. al Coda. The marks of each, in reading order: */
