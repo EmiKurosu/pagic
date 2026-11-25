@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v409</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v411</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3423,7 +3423,7 @@
 
   /* ---------- numbered marks and the order they give (trial): marks are placed on the pages, AutoRoute.route() works out the order ---------- */
   var RT_TOOLS = [['rs', 0, '繰り返しの始め'], ['re', 0, '繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['f1', 0, '第1括弧の終わり'], ['f2', 0, '第2括弧の終わり'],
-    ['sg', -1, 'セーニョ'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to Coda'], ['cd', -1, 'Coda'], ['del', 0, '印を消す'], ['bdet', 0, '小節線を調べる'], ['badd', 0, '小節線を足す'], ['bjoin', 0, '上下をつなぐ'], ['bfix', 0, '段を直す'], ['bsplit', 0, '段を分ける'], ['bdel', 0, '小節線を消す'], ['bshow', 0, '小節線の表示']];
+    ['sg', -1, 'セーニョ'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to Coda'], ['cd', -1, 'Coda'], ['del', 0, '印を消す'], ['bdet', 0, '小節線を調べる'], ['bpen', 0, '小節線をペンで引く'], ['badd', 0, '小節線を足す'], ['bjoin', 0, '上下をつなぐ'], ['bfix', 0, '段を直す'], ['bsplit', 0, '段を分ける'], ['bdel', 0, '小節線を消す'], ['bshow', 0, '小節線の表示']];
   var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり（＝第2括弧の始め）', f2: '第2括弧の終わり（＝第3括弧の始め）', f3: '第3括弧の終わり', sg: 'セーニョ', ds: 'D.S. ', dc: 'D.C. ', tc: 'to Coda ', cd: 'Coda ' }, ROM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']      // the number of a Segno / Coda: Roman numerals (the order numbers of the marks are circled Arabic numerals - the two must not look alike);
   var rtTool = null, rtPage = 1, rtTimer = null, rtFrame = null, rtTipT = null;
   function rtName(k, n) { return RT_NAME[k] + (n ? ROM[n] : ''); }
@@ -3540,6 +3540,25 @@
     var best = null, bd = 9; pb.systems.forEach(function (sy) { var d = fy < sy.y0 ? sy.y0 - fy : fy > sy.y1 ? fy - sy.y1 : 0; if (d < bd) { bd = d; best = sy; } });
     var nx = Math.round(fx * 1000) / 1000; (best.ux = best.ux || []).push(nx); best.xs.push(nx); best.xs.sort(function (a, b) { return a - b; }); rtSave(); rtShow(); rtRun();
   }
+  function rtPenLine(pts) {      // a barline drawn with the pencil from the top staff line to the bottom staff line of one bar: its height = the two staves it crosses
+    var pb = W.rt.bars = W.rt.bars || {}; pb = pb[rtPage] = pb[rtPage] || { systems: [] }; var n = pts.length, i, sx = 0, a = 1, b = 0; if (n < 2) return;
+    pts.forEach(function (p) { sx += p.x; a = Math.min(a, p.y); b = Math.max(b, p.y); }); var x = Math.round(sx / n * 1000) / 1000; a = Math.round(a * 1000) / 1000; b = Math.round(b * 1000) / 1000;
+    var dx = Math.max.apply(null, pts.map(function (p) { return p.x; })) - Math.min.apply(null, pts.map(function (p) { return p.x; }));
+    if (b - a < 0.03 || dx > 0.5 * (b - a)) { $('rttoolnote').textContent = '上から下へ、まっすぐ縦に引いてください。'; return; }
+    var best = -1, bo = 0; pb.systems.forEach(function (sy, k) { var ov = Math.min(sy.y1, b) - Math.max(sy.y0, a); if (ov > bo) { bo = ov; best = k; } });
+    var add = function (sy) { (sy.ux = sy.ux || []).push(x); if (!sy.xs.some(function (u) { return Math.abs(u - x) < 0.006; })) sy.xs.push(x); sy.xs.sort(function (p, q) { return p - q; }); };
+    if (best < 0 || bo < 0.5 * (b - a)) { var nw = { y0: a, y1: b, xs: [], fixed: true }; add(nw); pb.systems.push(nw); pb.systems.sort(function (p, q) { return p.y0 - q.y0; }); }
+    else {
+      var S = pb.systems[best];
+      if ((S.y1 - S.y0) > 1.4 * (b - a)) {      /* a band that holds more than the bar drawn: the drawn bar is cut out of it, what is left above / below stays open for the next lines */
+        var parts = [], pad = 0.004; if (a - pad - S.y0 >= 0.03) parts.push({ y0: S.y0, y1: Math.round((a - pad) * 1000) / 1000, xs: [], fixed: true });
+        var mid = { y0: a, y1: b, xs: [], fixed: true }; add(mid); parts.push(mid);
+        if (S.y1 - (b + pad) >= 0.03) parts.push({ y0: Math.round((b + pad) * 1000) / 1000, y1: S.y1, xs: [], fixed: true });
+        pb.systems.splice.apply(pb.systems, [best, 1].concat(parts));
+      } else add(S);
+    }
+    rtSave(); rtShow(); rtRun(); $('rttoolnote').textContent = '小節線を足しました（オレンジ）。続けて引けます。';
+  }
   function rtSplitBar(fy) {      // tap inside a band: it is cut in two at that height (both keep the barlines); each part can then be fitted with "段を直す"
     var pb = W.rt.bars && W.rt.bars[rtPage]; if (!pb) return; var i, hit = -1; for (i = 0; i < pb.systems.length; i++) if (fy > pb.systems[i].y0 && fy < pb.systems[i].y1) hit = i;
     if (hit < 0) { $('rttoolnote').textContent = '段の中をタップしてください（段を分けたい高さ）。'; return; }
@@ -3626,6 +3645,14 @@
       };
       box.appendChild(d); });
     var pbs = W.rt.bars && W.rt.bars[rtPage], barTool = rtTool && rtTool.charAt(0) === 'b';
+    if (rtTool === 'bpen:0') {
+      var ov = document.createElement('div'); ov.className = 'rtg'; ov.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none;z-index:7;cursor:crosshair';
+      var pts = [], pv = null, rr = null;
+      ov.onpointerdown = function (e) { e.preventDefault(); e.stopPropagation(); rr = $('rtimg').getBoundingClientRect(); try { ov.setPointerCapture(e.pointerId); } catch (x) {} pts = [{ x: (e.clientX - rr.left) / rr.width, y: (e.clientY - rr.top) / rr.height }]; pv = document.createElement('div'); pv.style.cssText = 'position:absolute;width:4px;margin-left:-2px;background:rgba(240,120,0,.9);pointer-events:none'; ov.appendChild(pv); };
+      ov.onpointermove = function (e) { if (!pts.length) return; e.preventDefault(); var p = { x: (e.clientX - rr.left) / rr.width, y: (e.clientY - rr.top) / rr.height }; pts.push(p); var xm = pts.reduce(function (q, o) { return q + o.x; }, 0) / pts.length, ya = Math.min.apply(null, pts.map(function (o) { return o.y; })), yb = Math.max.apply(null, pts.map(function (o) { return o.y; })); pv.style.left = (xm * 100) + '%'; pv.style.top = (ya * 100) + '%'; pv.style.height = ((yb - ya) * 100) + '%'; };
+      ov.onpointerup = ov.onpointercancel = function (e) { var q = pts; pts = []; if (q.length > 1) rtPenLine(q); else rtShow(); };
+      box.appendChild(ov);
+    }
     if (pbs && rtTool === 'bfix:0') pbs.systems.forEach(function (sy) {      // fit a band by dragging its top and bottom edge (a barline spans exactly the staves inside the band); a barline can be dragged sideways
       var sus = rtSusp(sy), x0 = sy.xs.length ? Math.min.apply(null, sy.xs) : 0.05, x1 = sy.xs.length ? Math.max.apply(null, sy.xs) : 0.95, rc = document.createElement('div'); rc.className = 'rtl';
       rc.style.cssText = 'position:absolute;left:' + (x0 * 100) + '%;width:' + ((x1 - x0) * 100) + '%;top:' + (sy.y0 * 100) + '%;height:' + ((sy.y1 - sy.y0) * 100) + '%;border:2px dashed ' + (sus ? '#d9480f' : '#2a5bd7') + ';background:' + (sus ? 'rgba(217,72,15,.08)' : 'rgba(42,91,215,.06)') + ';pointer-events:none;box-sizing:border-box'; box.appendChild(rc);
@@ -3638,7 +3665,10 @@
       }; mk('y0'); mk('y1');
     });
     if (pbs && (W.rt.showBars || barTool || rtHi)) pbs.systems.forEach(function (sy) {
-      if (rtSusp(sy)) return;
+      if (rtSusp(sy)) {      /* held back: show where, so that it can be cut with "段を分ける" and fitted with "段を直す" */
+        var sb = document.createElement('div'); sb.className = 'rtl'; sb.style.cssText = 'position:absolute;left:3%;width:94%;top:' + (sy.y0 * 100) + '%;height:' + ((sy.y1 - sy.y0) * 100) + '%;border:3px dashed #d9480f;background:rgba(217,72,15,.10);box-sizing:border-box;pointer-events:none;color:#d9480f;font:700 17px/1.3 Inter,sans-serif;padding:6px 10px';
+        sb.textContent = '五線が2つを超えています（小節線は引いていません）。「段を分ける」で分けてください'; box.appendChild(sb); return;
+      }
       sy.xs.forEach(function (x, xi) {
         var l = document.createElement('div'); l.className = 'rtl'; var added = (sy.ux || []).some(function (u) { return Math.abs(u - x) < 0.002; }), lc = added ? 'rgba(240,120,0,.95)' : 'rgba(20,90,255,.9)';      /* found by the app: blue; added by the person: orange; every line reaches a little above and below the staves so that it can be seen next to the printed barline */
         l.style.cssText = 'position:absolute;left:' + (x * 100) + '%;top:' + ((sy.y0 - 0.012) * 100) + '%;height:' + ((sy.y1 - sy.y0 + 0.024) * 100) + '%;width:22px;margin-left:-11px;background:linear-gradient(to right,transparent 9px,' + lc + ' 9px,' + lc + ' 13px,transparent 13px);pointer-events:' + (rtTool === 'bdel:0' || rtTool === 'bfix:0' ? 'auto' : 'none') + ';touch-action:none';
@@ -3674,9 +3704,9 @@
     RT_TOOLS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t[2]; b.dataset.k = t[0] + t[1]; b.style.cssText = 'min-height:40px;padding:0 10px;font-size:15px'; b.onclick = function () { if (t[0] === 'bdet') { rtDetectBars(); return; } if (t[0] === 'bshow') { W.rt.showBars = !W.rt.showBars; rtSave(); rtShow(); return; } var tk = t[0] === 'del' ? 'del' : t[0] + ':' + t[1]; rtTool = rtTool === tk ? null : tk; rtToolUi(); rtShow(); }; box.appendChild(b); });
     rtToolUi();
   }
-  function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の右の数字は、通る順番）' : rtTool === 'del' ? '消したい印をタップ' : rtTool === 'badd:0' ? '小節線を足したい場所を、楽譜でタップ' : rtTool === 'bdel:0' ? '消したい小節線をタップ' : rtTool === 'bfix:0' ? '青い丸を上下にドラッグして、段の上と下を合わせてください（小節線は、段の中の五線に引かれます）。小節線も、横にドラッグして動かせます' : rtTool === 'bsplit:0' ? '分けたい高さを、段の中でタップ' : rtTool === 'bjoin:0' ? 'つなげたい二つの段の間（Primo と Secondo の間）をタップ' : 'この印を置く場所を、楽譜でタップ'; }
+  function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の右の数字は、通る順番）' : rtTool === 'del' ? '消したい印をタップ' : rtTool === 'badd:0' ? '小節線を足したい場所を、楽譜でタップ' : rtTool === 'bdel:0' ? '消したい小節線をタップ' : rtTool === 'bpen:0' ? 'ペン（または指）で、小節線を上から下へ、引いてください。五線2つ分を、上から下まで（ほかの段の小節線の上に引くと、その段に足されます）' : rtTool === 'bfix:0' ? '青い丸を上下にドラッグして、段の上と下を合わせてください（小節線は、段の中の五線に引かれます）。小節線も、横にドラッグして動かせます' : rtTool === 'bsplit:0' ? '分けたい高さを、段の中でタップ' : rtTool === 'bjoin:0' ? 'つなげたい二つの段の間（Primo と Secondo の間）をタップ' : 'この印を置く場所を、楽譜でタップ'; }
   $('rtpg').addEventListener('click', function (e) {
-    if (!rtTool || rtTool === 'del' || rtTool === 'bdel:0' || rtTool === 'bfix:0' || e.target.className === 'rtm' || e.target.className === 'rtg') return; var r = $('rtimg').getBoundingClientRect(), k = rtTool.split(':');
+    if (!rtTool || rtTool === 'del' || rtTool === 'bdel:0' || rtTool === 'bfix:0' || rtTool === 'bpen:0' || e.target.className === 'rtm' || e.target.className === 'rtg') return; var r = $('rtimg').getBoundingClientRect(), k = rtTool.split(':');
     var fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height; if (!(fx >= 0 && fx <= 1 && fy >= 0 && fy <= 1)) return;
     if (k[0] === 'badd') { rtAddBar(fx, fy); return; }
     if (k[0] === 'bjoin') { rtJoinBars(fy); return; }
