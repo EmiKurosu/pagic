@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v417</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v423</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -570,7 +570,7 @@
 </div>
 <div id="rtdlg" hidden style="position:fixed;inset:0;z-index:45;background:var(--bg);overflow:auto;padding:14px 14px 90px">
   <h2 style="margin:0 0 6px;font-size:20px">番号つきの印と演奏順（試作）</h2>
-  <small style="display:block;line-height:1.5;margin-bottom:8px">楽譜の記号を、見えたとおりに置くと、弾く順番を計算して確かめられます。ピアノ2台（Primo / Secondo）の楽譜では、印は上の段（Primo）に置いてください。<br>室内楽の楽譜では、印はピアノの段に置いてください。括弧のある曲では、「第1括弧の始め」と、最後の括弧より前の括弧の「終わり」を置けば足ります（括弧が2つなら「第1括弧の終わり」だけ、3つなら「第1・第2括弧の終わり」だけ。最後の括弧の終わりは要りません。前の括弧の終わりを置けば、次の括弧の始めも省けます）。セーニョ・D.S.・D.C.・to Coda・Codaは、置いた順にI、II、…と自動で番号がつきます（印をタップして「−」「＋」で番号を変えられます）。印のすぐ右の数字は、その印を通る順番です（何度も通る印には、①③⑤のように数字が並びます）（アプリが楽譜を上から下、左から右に読む順番です）。印をタップすると、名前と読む順番が大きな字で出ます。印は、ドラッグで動かせます。ここで置いた印は、まだ録音とはつながっていません（順番の確認だけです）。</small>
+  <small style="display:block;line-height:1.5;margin-bottom:8px">楽譜の記号を、見えたとおりに置くと、弾く順番を計算して確かめられます。ピアノ2台（Primo / Secondo）の楽譜では、印は上の段（Primo）に置いてください。<br>室内楽の楽譜では、印はピアノの段に置いてください。括弧のある曲では、「第1括弧の始め」と、最後の括弧より前の括弧の「括弧の終わり」を置けば足ります（「括弧の終わり」は、置くたびに第1、第2、第3、…と楽譜の順に番号がつくので、括弧がいくつあっても使えます。括弧が2つなら1回、3つなら2回。最後の括弧の終わりは要りません。前の括弧の終わりを置けば、次の括弧の始めも省けます）。セーニョ・D.S.・D.C.・to Coda・Codaは、置いた順にI、II、…と自動で番号がつきます（印をタップして「−」「＋」で番号を変えられます）。印のすぐ右の数字は、その印を通る順番です（何度も通る印には、①③⑤のように数字が並びます）（アプリが楽譜を上から下、左から右に読む順番です）。印をタップすると、名前と読む順番が大きな字で出ます。印は、ドラッグで動かせます。ここで置いた印は、まだ録音とはつながっていません（順番の確認だけです）。</small>
   <div id="rttools" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><button type="button" id="rtprev">◀</button><b id="rtpgno" style="white-space:nowrap">p.1</b><button type="button" id="rtnext">▶</button><button type="button" id="rtnum" style="min-height:40px;white-space:nowrap"></button><span id="rttoolnote" style="color:var(--dim);font-size:14px"></span></div>
   <div style="text-align:center"><div id="rtpg" style="position:relative;display:inline-block;max-width:100%;touch-action:manipulation;line-height:0"><img id="rtimg" alt="楽譜のページ" style="max-width:100%;max-height:64vh;display:block"></div></div>
@@ -1684,13 +1684,36 @@
     var out = [];
     Object.keys(gs).forEach(function (k) {
       var g = gs[k], y0 = Math.min.apply(null, g.map(function (b) { return b.y0; })), y1 = Math.max.apply(null, g.map(function (b) { return b.y1; })), Hs = y1 - y0;
-      var xc = g.concat(g.ex || []).filter(function (b) { return b.y1 - b.y0 >= Math.max(0.3 * Hs, 0.06 * h); }).map(function (b) { return (b.x0 + b.x1) / 2; }).sort(function (a, b) { return a - b; }), xs = [];
-      xc.forEach(function (v) { var l = xs[xs.length - 1]; if (l !== undefined && v - l.last < 0.06 * w) { l.sum += v; l.n++; l.last = v; } else xs.push({ sum: v, n: 1, last: v }); });
-      var X = xs.map(function (l) { return l.sum / l.n / w; });
+      var cand = g.concat(g.ex || []).filter(function (b) { return b.y1 - b.y0 >= Math.max(0.3 * Hs, 0.06 * h); }).map(function (b) { return { x: (b.x0 + b.x1) / 2, h: b.y1 - b.y0, e: !!b.e }; }).sort(function (a, b) { return a.x - b.x; }), xs = [];
+      cand.forEach(function (c) { var l = xs[xs.length - 1]; if (l !== undefined && c.x - l.last < 0.06 * w) { l.cs.push(c); l.last = c.x; } else xs.push({ cs: [c], last: c.x }); });
+      var X = []; xs.forEach(function (l) {
+        var avg = function (a) { return a.reduce(function (q, c) { return q + c.x; }, 0) / a.length / w; };
+        if (l.cs[l.cs.length - 1].x - l.cs[0].x <= 0.05 * w) { X.push(avg(l.cs)); return; }
+        /* a long chain of strokes (barline, stems, barline ...) is not one place: split where there is a gap, and keep the places whose tallest stroke is as tall as the tallest of the chain (a stem is shorter than a barline) */
+        var subs = [], mh = Math.max.apply(null, l.cs.map(function (c) { return c.e ? 0 : c.h; })) || Math.max.apply(null, l.cs.map(function (c) { return c.h; })); l.cs.forEach(function (c) { var t = subs[subs.length - 1]; if (t && c.x - t[t.length - 1].x < 0.015 * w) t.push(c); else subs.push([c]); });
+        var th = function (t) { return Math.max.apply(null, t.map(function (c) { return c.h; })); }, kept = subs.filter(function (t, k) { return th(t) >= 0.9 * mh || (k === subs.length - 1 && th(t) >= 0.6 * mh); }); if (!kept.length) kept = subs;
+        kept.forEach(function (t) { X.push(avg(t)); });
+      });
       var cnt = new Uint16Array(w), yy, xx, a1;      // a barline stands between staff lines: drop strokes beyond the left / right end of the staff lines (a page edge, a shadow, a line of text)
       for (yy = Math.max(0, y0); yy <= Math.min(h - 1, y1); yy++) { a1 = -1; for (xx = 0; xx <= w; xx++) { var on2 = xx < w && m[yy * w + xx] === 1; if (on2) { if (a1 < 0) a1 = xx; } else if (a1 >= 0) { if (xx - a1 >= 0.05 * w) for (var q2 = a1; q2 < xx; q2++) cnt[q2]++; a1 = -1; } } }
       var xmin = -1, xmax = -1; for (xx = 0; xx < w; xx++) if (cnt[xx] >= 6) { if (xmin < 0) xmin = xx; xmax = xx; }
       if (xmin >= 0) X = X.filter(function (v) { return v * w >= xmin - 0.08 * w && (xmax < 0.75 * w || v * w <= Math.max(xmax + 0.035 * w, 0.975 * w)); });      /* (a short stretch of staff lines found says little about the right end) */
+      /* a note stem is a little shorter than a barline: drop places whose tallest stroke is clearly shorter than the usual barline of this band */
+      var hOf = function (v) { var best = 0; cand.forEach(function (c) { if (Math.abs(c.x / w - v) < 0.012 && c.h > best) best = c.h; }); return best; };
+      var hs = cand.filter(function (c) { return !c.e; }).map(function (c) { return c.h; }).sort(function (p, q) { return p - q; }), hm = hs.length ? hs[Math.floor(hs.length / 2)] : 0;
+      if (X.length >= 5 && hm) { var X2 = X.filter(function (v) { return v < 0.1 || v > 0.9 || hOf(v) >= 0.8 * hm; }); if (X2.length >= 4) X = X2; }
+      /* a barline broken by a word or a note (cresc.) leaves no tall stroke: where a bar is much wider than the others, look for a column that is dark over most of the band's height */
+      X.sort(function (p, q) { return p - q; });
+      if (X.length >= 4) {
+        var gp = []; for (var q6 = 1; q6 < X.length; q6++) gp.push(X[q6] - X[q6 - 1]); var gs6 = gp.slice().sort(function (p, q) { return p - q; }), gm = gs6[Math.floor(gs6.length / 2)], add = [];
+        for (q6 = 1; q6 < X.length; q6++) {
+          if (gp[q6 - 1] < Math.max(1.8 * gm, 0.16)) continue;
+          var bx = -1, bc = 0, xa6 = Math.round((X[q6 - 1] + 0.04) * w), xb6 = Math.round((X[q6] - 0.04) * w), cx6, ry;
+          for (cx6 = xa6; cx6 <= xb6; cx6++) { var c6 = 0; for (ry = y0; ry <= y1; ry++) if (dm[ry * w + cx6]) c6++; if (c6 > bc) { bc = c6; bx = cx6; } }
+          if (bx >= 0 && bc >= 0.72 * (y1 - y0 + 1)) add.push(bx / w);
+        }
+        X = X.concat(add);
+      }
       X = X.filter(function (v) { return v < 0.985; }); if (X.length >= 2 || (X.length === 1 && (y1 - y0) / h >= 0.06)) out.push({ y0: y0 / h, y1: y1 / h, xs: X, xl: xmin >= 0 ? xmin / w : -1 });      /* a band with a single barline is kept for now (the half of a system whose other barlines were not seen); it must find its other half below */
     });
     out.sort(function (a, b) { return a.y0 - b.y0; });
@@ -1704,20 +1727,43 @@
     merged = merged.filter(function (o) { return o.xs.length >= 2; });
     /* one bar = four staves (Primo's two + Secondo's two): the photo breaks a system into two bands (a pair of staves each); put the two together again, and keep only the barlines that really stand in BOTH halves (a stroke seen in one half only must be found again in the other half, otherwise it is a stem or a shadow) */
     var stavesOf = function (o) {      /* how many staves does this band hold, and where are its first and last staff line: rows of a staff line (a dark row across most of the width between two barlines), counted in fives */
-      var a = Math.max(0, Math.round(o.y0 * h)), b = Math.min(h - 1, Math.round(o.y1 * h)), cs = [], tops = [], bots = [], i2, yy2, xx2;
+      var a = Math.max(0, Math.round(o.y0 * h)), b = Math.min(h - 1, Math.round(o.y1 * h)), cs = [], tops = [], bots = [], i2, yy2, xx2, sp0 = 0;
       for (i2 = 0; i2 + 1 < o.xs.length; i2++) {
         var xa = Math.round((o.xs[i2] + 0.01) * w), xb = Math.round((o.xs[i2 + 1] - 0.01) * w); if (xb - xa < 60) continue;
         var c0 = xa + Math.floor((xb - xa) / 5), c1 = xb - Math.floor((xb - xa) / 5), n = 0, pv = false, st0 = 0, cen = [];
         for (yy2 = a; yy2 <= b; yy2++) { var ct = 0; for (xx2 = c0; xx2 <= c1; xx2++) ct += m[yy2 * w + xx2]; var on3 = ct >= 0.7 * (c1 - c0 + 1); if (on3 && !pv) { n++; st0 = yy2; } if (!on3 && pv) cen.push((st0 + yy2 - 1) / 2); pv = on3; }
         if (pv) cen.push((st0 + b) / 2);
-        if (n >= 6) { cs.push(n); tops.push(cen[0]); bots.push(cen[cen.length - 1]); }
+        if (n >= 6) { cs.push(n); tops.push(cen[0]); bots.push(cen[cen.length - 1]); var df = []; for (var k5 = 1; k5 < cen.length; k5++) df.push(cen[k5] - cen[k5 - 1]); df.sort(function (p, q) { return p - q; }); sp0 = df[Math.floor(df.length / 3)]; }
       }
       if (!cs.length) return null; var md = function (q) { q = q.slice().sort(function (p, r) { return p - r; }); return q[q.length >> 1]; };
-      return { st: Math.max(1, Math.round(md(cs) / 5)), top: md(tops) / h, bot: md(bots) / h };
+      return { st: Math.max(1, Math.round(md(cs) / 5)), top: md(tops) / h, bot: md(bots) / h, sp: sp0 };
     };
     merged.forEach(function (o) {
       var r0 = stavesOf(o); o.st = r0 ? r0.st : null;
       if (r0 && r0.bot - r0.top >= 0.6 * (o.y1 - o.y0) && r0.top >= o.y0 - 0.02 && r0.bot <= o.y1 + 0.02) { o.y0 = Math.round(r0.top * 1000) / 1000; o.y1 = Math.round(r0.bot * 1000) / 1000; }      /* a barline runs from the top staff line to the bottom one: stems and ledger lines that touch it do not make it longer */
+    });
+    /* a staff that stands alone (the violin above the cello and the piano) has a barline too short to be seen as a stroke: when a band holds fewer staves than the others on the page, look for the missing staff in the free space next to it (staff lines: five rows in a regular distance) */
+    var modeSt = 0, cnS = {}; merged.forEach(function (o) { if (o.st) cnS[o.st] = (cnS[o.st] || 0) + 1; }); Object.keys(cnS).forEach(function (k) { if (cnS[k] > (cnS[modeSt] || 0) || (cnS[k] === cnS[modeSt] && +k > modeSt)) modeSt = +k; });
+    var linesIn = function (o, ya, yb) {      /* centres of the staff lines between rows ya and yb, seen in the windows between the barlines of o */
+      var best = [], i2, yy2, xx2; ya = Math.max(0, Math.round(ya)); yb = Math.min(h - 1, Math.round(yb));
+      for (i2 = 0; i2 + 1 < o.xs.length; i2++) {
+        var xa = Math.round((o.xs[i2] + 0.01) * w), xb = Math.round((o.xs[i2 + 1] - 0.01) * w); if (xb - xa < 60) continue;
+        var c0 = xa + Math.floor((xb - xa) / 5), c1 = xb - Math.floor((xb - xa) / 5), pv = false, st0 = 0, cen = [];
+        for (yy2 = ya; yy2 <= yb; yy2++) { var ct = 0; for (xx2 = c0; xx2 <= c1; xx2++) ct += m[yy2 * w + xx2]; var on3 = ct >= 0.7 * (c1 - c0 + 1); if (on3 && !pv) st0 = yy2; if (!on3 && pv) cen.push((st0 + yy2 - 1) / 2); pv = on3; }
+        if (pv) cen.push((st0 + yb) / 2); if (cen.length > best.length) best = cen;
+      }
+      return best;
+    };
+    var groupsOf = function (cen, sp) { var gs = [], k5 = 0; while (k5 + 4 < cen.length) { var ok = true, q5; for (q5 = 1; q5 < 5; q5++) { var dd = cen[k5 + q5] - cen[k5 + q5 - 1]; if (dd < 0.6 * sp || dd > 1.6 * sp) ok = false; } if (ok) { gs.push([cen[k5], cen[k5 + 4]]); k5 += 5; } else k5++; } return gs; };
+    merged.forEach(function (o, k) {
+      if (!o.st || !modeSt || o.st >= modeSt) return; var r1 = stavesOf(o); if (!r1 || !r1.sp) return; var sp = r1.sp, guard = 0;
+      while (o.st < modeSt && guard++ < 4) {
+        var prevB = k > 0 ? merged[k - 1].y1 : 0, nextT = k + 1 < merged.length ? merged[k + 1].y0 : 1, upG = groupsOf(linesIn(o, prevB * h + 2, o.y0 * h - 1), sp), dnG = groupsOf(linesIn(o, o.y1 * h + 1, nextT * h - 2), sp), moved = false;
+        var dU = upG.length ? o.y0 * h - upG[upG.length - 1][1] : 1e9, dD = dnG.length ? dnG[0][0] - o.y1 * h : 1e9;
+        if (dU <= dD && dU < 0.12 * h) { o.y0 = Math.round(upG[upG.length - 1][0] / h * 1000) / 1000; o.st++; moved = true; }
+        else if (dD < 0.12 * h) { o.y1 = Math.round(dnG[0][1] / h * 1000) / 1000; o.st++; moved = true; }
+        if (!moved) break;
+      }
     });
     var raw = merged.slice();      /* the bands as found (before Primo and Secondo are put together): a solo piece keeps them */
     var mxh = 0; merged.forEach(function (o) { mxh = Math.max(mxh, o.y1 - o.y0); });
@@ -2026,6 +2072,7 @@
                                                               // dsRepeat: false = when the piece is played again after a D.S. / D.C. this repeat is NOT taken ("Straight")
      segno: { 1: pos, 2: pos }, coda: { 1: pos, 2: pos },
      toCoda: { 1: pos, 2: pos },                              // jumps to the Coda of the same number, only after the D.S. / D.C. of that number, and on the last pass of the repeat it stands in
+     fine: [pos],                                             // Fine: after a D.C. / D.S. the piece ends here
      ds: [ { pos, n } ]                                       // D.S. n: back to segno n (n = 0 or no segno: D.C., back to the start); taken once
    }
    returns [ { a, b, why } ]: the stretches that are played, in order (a stretch ends where the music jumps) */
@@ -2045,6 +2092,7 @@
     });
     Object.keys(toC).forEach(function (n) { ev.push({ pos: toC[n], k: 'tocoda', n: +n }); });
     dsl.forEach(function (d) { ev.push({ pos: d.pos, k: 'ds', d: d }); });
+    (m.fine || []).forEach(function (p) { ev.push({ pos: p, k: 'fine' }); });
     function groupAt(pos) { var f = null; groups.forEach(function (o) { var g = o.g, a = g.start, b = g.ends ? g.ends[g.ends.length - 1] : g.end; if (pos >= a && pos <= b) f = o; }); return f; }
     function jump(to, w) { if (cur > segStart) out.push({ a: segStart, b: cur, why: why }); cur = to; segStart = to; why = w; if (w !== 'repeat') groups.forEach(function (o) { if (o.g.start === to) visit[o.g.id] = (visit[o.g.id] || 0) + 1; }); }
     function split(dup) { if (cur > segStart) out.push({ a: segStart, b: cur, why: why, dup: dup || undefined }); segStart = cur; why = 'go on'; }      // a stretch ends here without a jump (the part before it was not in the recording)
@@ -2068,6 +2116,8 @@
           else if (dupNow[o2.g.id]) { split(true); dupNow[o2.g.id] = false; }
         } else if (nx.k === 'tocoda') {
           if (dsActive === nx.n && coda[nx.n] !== undefined) { var og = groupAt(nx.pos); if (!og || pass[og.g.id] >= final(og)) jump(coda[nx.n], 'coda' + nx.n); }
+        } else if (nx.k === 'fine') {      /* Fine: after a D.C. / D.S. the piece ends here */
+          if (dsActive !== null) { if (cur > segStart) out.push({ a: segStart, b: cur, why: why }); segStart = total; cur = total; }
         } else if (nx.k === 'ds') {
           if (!dsDone[nx.d.i]) { dsDone[nx.d.i] = true; dsActive = nx.d.n; resetPass(true); jump(nx.d.n && segno[nx.d.n] !== undefined ? segno[nx.d.n] : 0, 'ds' + nx.d.n); }
         }
@@ -3438,9 +3488,10 @@
   }
 
   /* ---------- numbered marks and the order they give (trial): marks are placed on the pages, AutoRoute.route() works out the order ---------- */
-  var RT_TOOLS = [['rs', 0, '繰り返しの始め'], ['re', 0, '繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['f1', 0, '第1括弧の終わり'], ['f2', 0, '第2括弧の終わり'],
-    ['sg', -1, 'セーニョ'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to Coda'], ['cd', -1, 'Coda'], ['del', 0, '印を消す'], ['bpen', 0, '小節線をペンで引く'], ['bdel', 0, '小節線を消す']];
-  var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり（＝第2括弧の始め）', f2: '第2括弧の終わり（＝第3括弧の始め）', f3: '第3括弧の終わり', sg: 'セーニョ', ds: 'D.S. ', dc: 'D.C. ', tc: 'to Coda ', cd: 'Coda ' }, ROM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']      // the number of a Segno / Coda: Roman numerals (the order numbers of the marks are circled Arabic numerals - the two must not look alike);
+  var RT_TOOLS = [['rs', 0, '繰り返しの始め'], ['re', 0, '繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['f1', 0, '括弧の終わり'],
+    ['dc', -1, 'D.C.'], ['fi', 0, 'Fine'], ['ds', -1, 'D.S.'], ['sg', -1, 'セーニョ'], ['tc', -1, 'to Coda'], ['cd', -1, 'Coda'], ['del', 0, '印を消す'], ['bpen', 0, '小節線をペンで引く'], ['bdel', 0, '小節線を消す']];
+  var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり（＝第2括弧の始め）', f2: '第2括弧の終わり（＝第3括弧の始め）', f3: '第3括弧の終わり', sg: 'セーニョ', ds: 'D.S. ', dc: 'D.C. ', fi: 'Fine', tc: 'to Coda ', cd: 'Coda ' }, ROM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']      // the number of a Segno / Coda: Roman numerals (the order numbers of the marks are circled Arabic numerals - the two must not look alike);
+  for (var q9 = 4; q9 <= 12; q9++) RT_NAME['f' + q9] = '第' + q9 + '括弧の終わり（＝第' + (q9 + 1) + '括弧の始め）';
   var rtTool = null, rtPage = 1, rtTimer = null, rtFrame = null, rtTipT = null;
   function rtName(k, n) { return RT_NAME[k] + (n ? ROM[n] : ''); }
   function rtNo(n) { return n >= 1 && n <= 20 ? String.fromCharCode(0x2460 + n - 1) : '(' + n + ')'; }
@@ -3451,14 +3502,15 @@
   }
   function rtGlyph(k, n, col) {      // thin, small, see-through marks that cover as little of the music as possible: the point that counts is the tip / the line at (ax, ay)
     var C = col || '#555', S = 'stroke="' + C + '" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"', T = function (x, y, t, fs) { return '<text x="' + x + '" y="' + y + '" font-family="Inter,sans-serif" font-weight="700" font-size="' + (fs || 11) + '" fill="' + C + '" stroke="none">' + t + '</text>'; }, d;
-    var i = k.charAt(1);
+    var i = k.slice(1);
     if (k === 'rs') d = { w: 18, h: 22, ax: 3, ay: 11, b: '<path ' + S + ' d="M3 1V21"/><path d="M3 2L15 6.5L3 11Z" fill="' + C + '" stroke="none"/>' };
     else if (k === 're') d = { w: 26, h: 18, ax: 23, ay: 9, b: '<path ' + S + ' d="M23 1V17M22 9H4M9 4L4 9L9 14"/>' };
     else if (k === 'e1' || k === 'e2' || k === 'e3') d = { w: 20, h: 18, ax: 3, ay: 9, b: '<path ' + S + ' d="M3 17V2H15"/>' + T(6, 14, i, 9) };
-    else if (k === 'f1' || k === 'f2' || k === 'f3') d = { w: 20, h: 18, ax: 17, ay: 9, b: '<path ' + S + ' d="M5 2H17V17"/>' + T(6, 14, i, 9) };
+    else if (/^f\d+$/.test(k)) d = { w: 20, h: 18, ax: 17, ay: 9, b: '<path ' + S + ' d="M5 2H17V17"/>' + T(6, 14, i, 9) };
     else if (k === 'sg') d = { w: 20, h: 16, ax: 2, ay: 8, b: '<path ' + S + ' d="M2 15V1H7"/>' + T(4, 13, '§', 10) + T(12, 7, ROM[n], 7) };          // a landing mark: the line at its left stands exactly where the music goes on
     else if (k === 'cd') d = { w: 22, h: 16, ax: 2, ay: 8, b: '<path ' + S + ' d="M2 15V1H7"/><circle cx="11.5" cy="8.5" r="4" ' + S + '/><path ' + S + ' d="M11.5 1V16M4.5 8.5H18.5"/>' + T(17, 7, ROM[n], 7) };
     else if (k === 'tc') d = { w: 38, h: 16, ax: 36, ay: 8, b: T(0, 12, 'to', 9) + '<circle cx="21" cy="8.5" r="3.8" ' + S + '/><path ' + S + ' d="M21 2V15M15 8.5H27"/>' + T(26, 6, ROM[n], 7) + '<path ' + S + ' d="M36 1V15H32"/>' };
+    else if (k === 'fi') d = { w: 36, h: 14, ax: 34, ay: 7, b: T(0, 11, 'Fine', 10) + '<path ' + S + ' d="M34 1V13H30"/>' };
     else d = { w: 30, h: 14, ax: 28, ay: 7, b: T(0, 11, k === 'dc' ? 'D.C.' : 'D.S.', 9) + (n ? T(k === 'dc' ? 23 : 20, 6, ROM[n], 7) : '') + '<path ' + S + ' d="M28 1V13H24"/>' };
     return d;
   }
@@ -3474,10 +3526,17 @@
     });
     return { pos: pos, total: (cnt + 1) * 10, order: order };
   }
-  function rtBuild() {      // -> { m: input of AutoRoute.route, warn: [...], rk }
+  function rtRenumber() {      /* one "括弧の終わり" button: the endings are numbered by their place in the score - after a "第1括弧の始め" the first one is 1, the next 2, and so on */
+    var marks = rtMarks(), rk = rtRank(marks), n = 0, ch = false;
+    marks.slice().sort(function (a, b) { return rk.pos[a.id] - rk.pos[b.id]; }).forEach(function (m) {
+      if (m.k === 'e1' || m.k === 'rs') n = 0; else if (/^f\d+$/.test(m.k)) { n++; if (m.k !== 'f' + n) { m.k = 'f' + n; ch = true; } }
+    });
+    return ch;
+  }
+  function rtBuild() {      rtRenumber();      // -> { m: input of AutoRoute.route, warn: [...], rk }
     var marks = rtMarks(), rk = rtRank(marks), P = rk.pos, warn = [], gs = (W.rt && W.rt.gs) || {}, byPos = function (a, b) { return P[a.id] - P[b.id]; };
-    var L = marks.slice().sort(byPos), groups = [], segno = {}, coda = {}, toCoda = {}, ds = [], lastRs = null, usedRe = {};
-    L.forEach(function (m) { if (m.k === 'sg' && segno[m.n] === undefined) segno[m.n] = P[m.id]; if (m.k === 'cd' && coda[m.n] === undefined) coda[m.n] = P[m.id]; if (m.k === 'tc' && toCoda[m.n] === undefined) toCoda[m.n] = P[m.id]; if (m.k === 'ds') ds.push({ pos: P[m.id], n: m.n, m: m }); if (m.k === 'dc') ds.push({ pos: P[m.id], n: 0, m: m }); });
+    var L = marks.slice().sort(byPos), groups = [], segno = {}, coda = {}, toCoda = {}, ds = [], fines = [], lastRs = null, usedRe = {};
+    L.forEach(function (m) { if (m.k === 'sg' && segno[m.n] === undefined) segno[m.n] = P[m.id]; if (m.k === 'cd' && coda[m.n] === undefined) coda[m.n] = P[m.id]; if (m.k === 'tc' && toCoda[m.n] === undefined) toCoda[m.n] = P[m.id]; if (m.k === 'ds') ds.push({ pos: P[m.id], n: m.n, m: m }); if (m.k === 'dc') ds.push({ pos: P[m.id], n: 0, m: m }); if (m.k === 'fi') fines.push(P[m.id]); });
     function first(k, after, before) { var f = null; L.forEach(function (m) { if (!f && m.k === k && P[m.id] > after && (before === undefined || P[m.id] <= before)) f = m; }); return f; }
     L.forEach(function (m) {
       if (m.k === 'rs') lastRs = m;
@@ -3485,7 +3544,7 @@
       else if (m.k === 'e1') {
         // endings: the start of the first one is needed; the end of every ending but the last tells where it stops (and so where the next one starts); the end of the LAST ending is not needed
         var st2 = lastRs ? P[lastRs.id] : 0, id2 = lastRs ? lastRs.id : 'start', s2 = gs[id2] || {}, a = [P[m.id]], endAt = [], k, em, lim, N = 1;
-        for (k = 2; k <= 3; k++) {
+        for (k = 2; k <= 12; k++) {
           var ek = first('e' + k, a[k - 2]), fk = first('f' + (k - 1), a[k - 2]); if (!ek && !fk) break;
           a[k - 1] = ek ? P[ek.id] : P[fk.id]; N = k;
         }
@@ -3499,14 +3558,15 @@
     ds.forEach(function (d) { if (d.n && segno[d.n] === undefined) { warn.push('D.S. ' + ROM[d.n] + 'に対応するセーニョ' + ROM[d.n] + 'がありません。曲の頭に戻ります。'); } });
     Object.keys(toCoda).forEach(function (n) { if (coda[n] === undefined) warn.push('to Coda ' + ROM[n] + 'に対応するCoda ' + ROM[n] + 'がありません。'); });
     Object.keys(coda).forEach(function (n) { if (toCoda[n] === undefined) warn.push('Coda ' + ROM[n] + 'に対応するto Coda ' + ROM[n] + 'がありません。'); });
+    if (fines.length && !ds.length) warn.push('FineがありますがD.C.・D.S.がありません。');
     if (marks.some(function (m) { return (m.k === 'e2' || m.k === 'e3') && !marks.some(function (q) { return q.k === 'e1'; }); })) warn.push('第2・第3括弧だけがあります。第1括弧の始めも置いてください。');
-    return { m: { total: rk.total, groups: groups, segno: segno, coda: coda, toCoda: toCoda, ds: ds.map(function (d) { return { pos: d.pos, n: d.n }; }) }, warn: warn, rk: rk, groupsAt: groups };
+    return { m: { total: rk.total, groups: groups, segno: segno, coda: coda, toCoda: toCoda, ds: ds.map(function (d) { return { pos: d.pos, n: d.n }; }), fine: fines }, warn: warn, rk: rk, groupsAt: groups };
   }
   function rtPageAt(pos, rk, marks, isEnd) {      // the page and height a position stands at (0 = the beginning of the score, the total = its end)
     if (pos <= 0) return { page: 1, fy: 0 }; if (pos >= rk.total) return { page: W.imgs.length, fy: 1 };
     var f = null; marks.forEach(function (m) { if (rk.pos[m.id] === pos && !f) f = m; }); return f ? { page: f.page, fy: f.fy } : { page: 1, fy: 0 };
   }
-  var RT_WHY = { start: '', repeat: '繰り返しで戻った', 'go on': '続けて', ending2: '第2括弧へ飛んだ', ending3: '第3括弧へ飛んだ', ds0: 'D.C.で戻った', ds1: 'D.S.①で戻った', ds2: 'D.S.②で戻った', coda1: 'Coda①へ飛んだ', coda2: 'Coda②へ飛んだ' };
+  var RT_WHY = { start: '', repeat: '繰り返しで戻った', 'go on': '続けて', ending2: '第2括弧へ飛んだ', ending3: '第3括弧へ飛んだ', ds0: 'D.C.で戻った', ds1: 'D.S.①で戻った', ds2: 'D.S.②で戻った', coda1: 'Coda①へ飛んだ', coda2: 'Coda②へ飛んだ' }; for (var q8 = 4; q8 <= 12; q8++) RT_WHY['ending' + q8] = '第' + q8 + '括弧へ飛んだ';
 
   /* ---------- bars: found in the page photos (and corrected by hand), used to colour the play-through bar by bar */
   var rtHi = null, rtPlan = null, RTHI = ['#e03131', '#1c7ed6', '#2f9e44', '#f08c00', '#9c36b5', '#0b7285'];
@@ -3520,7 +3580,7 @@
         var NS = W.rt.staves || 0; if (!NS) { Object.keys(cnt).forEach(function (k) { if (cnt[k] >= 2 && +k > NS) NS = +k; }); if (!NS) NS = (nTall >= 3 && nTall >= 0.3 * nAll) ? 4 : 2; }
         W.rt.nStaves = NS; W.rt.duo = NS >= 4;
         Object.keys(W.rt.bars).forEach(function (p) { var pb = W.rt.bars[p]; if (!W.rt.duo && pb.raw) pb.systems = pb.raw; delete pb.raw; });
-        if (W.rt.duo) rtMergeHalves(); W.rt.barsVer = 12; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); var miss = [], ends2 = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends2.push(l); }); }); ends2.sort(function (u, v) { return u - v; }); var ref2 = ends2.length ? ends2[ends2.length >> 1] : 0;
+        if (W.rt.duo) rtMergeHalves(); W.rt.barsVer = 15; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); var miss = [], ends2 = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends2.push(l); }); }); ends2.sort(function (u, v) { return u - v; }); var ref2 = ends2.length ? ends2[ends2.length >> 1] : 0;
       if (ref2) Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (sy.xs.length && Math.max.apply(null, sy.xs) < ref2 - 0.06) miss.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); });
       $('rttoolnote').textContent = '小節線を探しました（1小節は、五線' + NS + '段）。' + (function () { var sp = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (rtSusp(sy)) sp.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); }); return sp.length ? '五線が2つを超える段があったので、小節線を引くのを止めました：' + sp.join('、') + '。' : ''; })() + (miss.length ? '右端の小節線が見つからない段があります：' + miss.join('、') + '。足すときは「小節線をペンで引く」で引いてください（自動では足しません）。' : '違うところは「小節線をペンで引く」か「小節線を消す」で直してください。'); if (cb) cb(); return; }
       var im = new Image(), k = ++i; im.onload = function () { try { var fr = Song.findBars(im); W.rt.bars[k] = { systems: fr, raw: fr.raw }; } catch (e) { W.rt.bars[k] = { systems: [] }; } setTimeout(next, 10); }; im.onerror = function () { W.rt.bars[k] = { systems: [] }; next(); }; im.src = W.imgs[k - 1].data;
@@ -3639,7 +3699,7 @@
   function rtGo(f) { if (!f) return; rtPage = f.page; rtShow(f); }
   var RTCOL = ['#e03131', '#1c7ed6', '#2f9e44', '#f08c00', '#9c36b5', '#0b7285'];      // one colour per repeat: the first repeat red, the second blue, the third green ...
   function rtColors() {
-    var out = {}, b = rtBuild(), P = b.rk.pos; b.groupsAt.forEach(function (g, i) { var a = g.start, z = g.ends ? g.ends[g.ends.length - 1] : g.end, c = RTCOL[i % RTCOL.length]; rtMarks().forEach(function (m) { if (/^(rs|re|e[123]|f[123])$/.test(m.k) && P[m.id] >= a && P[m.id] <= z && !out[m.id]) out[m.id] = c; }); });
+    var out = {}, b = rtBuild(), P = b.rk.pos; b.groupsAt.forEach(function (g, i) { var a = g.start, z = g.ends ? g.ends[g.ends.length - 1] : g.end, c = RTCOL[i % RTCOL.length]; rtMarks().forEach(function (m) { if (/^(rs|re|e[123]|f\d+)$/.test(m.k) && P[m.id] >= a && P[m.id] <= z && !out[m.id]) out[m.id] = c; }); });
     return out;
   }
   function rtPasses() {      // for each mark: the numbers of the stretches of the play order that pass it (a mark passed three times gets three numbers)
@@ -3657,7 +3717,7 @@
     }
     box.appendChild(t); rtTipT = setTimeout(function () { t.remove(); }, numbered ? 6000 : 3000);
   }
-  function rtShow(f) {
+  function rtShow(f) {      if (W && W.rt) rtRenumber();
     var im = W.imgs[rtPage - 1]; if (!im) return; var img = $('rtimg'); if (img.dataset.k !== '' + rtPage) { img.src = im.data; img.dataset.k = '' + rtPage; }
     $('rtpgno').textContent = 'p.' + rtPage + ' / ' + W.imgs.length; var box = $('rtpg'); Array.prototype.slice.call(box.querySelectorAll('.rtm,.rtl,.rtt,.rtg')).forEach(function (e) { e.remove(); });
     var rkn = rtRank(rtMarks()), cols = rtColors(), pas = rtPasses();      // the small number to the right of a mark = its place in the order the app reads the marks (marks at the same spot share a number)
@@ -3774,7 +3834,7 @@
     var nt = $('rttoolnote'); nt.parentNode.insertBefore(lab, nt);
     sel.onchange = function () { if (!W || !W.rt) return; W.rt.staves = +sel.value || 0; rtSave(); rtDetectBars(); };
   })();
-  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } $('rtimg').dataset.k = ''; $('rtimg').removeAttribute('src'); rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 12) { W.rt.showBars = true; rtDetectBars(); } else W.rt.showBars = true; $('rtstaves').value = '' + (W.rt.staves || 0); };      // bars found by an older way of searching are searched again once
+  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } $('rtimg').dataset.k = ''; $('rtimg').removeAttribute('src'); rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 15) { W.rt.showBars = true; rtDetectBars(); } else W.rt.showBars = true; $('rtstaves').value = '' + (W.rt.staves || 0); };      // bars found by an older way of searching are searched again once
 
   /* ---------- repeats: a flag where the repeat returns to, an arrow at the repeat sign ---------- */
   /* "back to the start / to the Segno" families: D.C. al Fine, D.S. al Fine, D.C. al Coda, D.S. al Coda. The marks of each, in reading order: */
