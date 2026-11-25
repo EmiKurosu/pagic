@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v433</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v434</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -4503,7 +4503,7 @@
     var preK = wPreK(); wMulti();      // the pin where playing starts is on an earlier page: that page is shown first (the app turns it by itself, no tap)
     $('wpageimg').src = W.imgs[p - 1].data; $('wh').textContent = 'p.' + (wpartK() || p) + ' / ' + n; repMarks($('wpgmk'), p, W.reps, 30); zfPins($('wpgmk'), p);
     $('wautomsg').hidden = !preK; $('wautomsg').textContent = preK ? _t('このページでは、「ここでめくりたい」は押しません。録音が{k}ページ目に入ったら、すぐ下の「録音が{k}ページ目に入ったら、ここを押す」を押してください。').replace(/\{k\}/g, preK) : ''; $('wprenext').hidden = !preK; if (preK) $('wprenext').textContent = _t('録音が{k}ページ目に入ったら、ここを押す').replace('{k}', preK);
-    var showRep = !!pend && (rr || p >= pend.page); $('wrepbtns').hidden = !showRep; var has = function (k) { return !!pend && (pend.group ? pend.group.some(function (g) { return g.kind === k; }) : pend.kind === k); }; $('wflagb').hidden = !showRep || !has('f'); $('warrowb').hidden = !showRep || !has('a'); $('wjumpb').hidden = !showRep || !has('j');
+    var showRep = !!pend && (p >= pend.page || (rr && !!pend.second));      /* a first-pass mark is asked for only from the page it stands on; the second-pass ones (after the jump back) belong to an earlier page than the one shown */ $('wrepbtns').hidden = !showRep; var has = function (k) { return !!pend && (pend.group ? pend.group.some(function (g) { return g.kind === k; }) : pend.kind === k); }; $('wflagb').hidden = !showRep || !has('f'); $('warrowb').hidden = !showRep || !has('a'); $('wjumpb').hidden = !showRep || !has('j');
     $('wfineb').hidden = !showRep || !has('fi'); $('wdcb').hidden = !showRep || !has('dc'); $('wsegb').hidden = !showRep || !has('sg'); $('wtcb').hidden = !showRep || !has('tc'); $('wcdb').hidden = !showRep || !has('cd');
     if (pend && pend.r && isDA(pend.r)) $('wdcb').textContent = daName(pend.r, 'dc') + _t(' の小節を弾き終えた');
     if (showRep) [['f', 'wflagb'], ['j', 'wjumpb'], ['a', 'warrowb'], ['fi', 'wfineb'], ['dc', 'wdcb'], ['sg', 'wsegb'], ['tc', 'wtcb'], ['cd', 'wcdb']].forEach(function (q) { if (has(q[0])) { var bt = $(q[1]); bt.style.borderColor = pend.r.color; bt.style.boxShadow = '0 0 0 3px ' + pend.r.color; } });
