@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v416</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v417</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3520,7 +3520,7 @@
         var NS = W.rt.staves || 0; if (!NS) { Object.keys(cnt).forEach(function (k) { if (cnt[k] >= 2 && +k > NS) NS = +k; }); if (!NS) NS = (nTall >= 3 && nTall >= 0.3 * nAll) ? 4 : 2; }
         W.rt.nStaves = NS; W.rt.duo = NS >= 4;
         Object.keys(W.rt.bars).forEach(function (p) { var pb = W.rt.bars[p]; if (!W.rt.duo && pb.raw) pb.systems = pb.raw; delete pb.raw; });
-        if (W.rt.duo) rtMergeHalves(); W.rt.barsVer = 11; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); var miss = [], ends2 = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends2.push(l); }); }); ends2.sort(function (u, v) { return u - v; }); var ref2 = ends2.length ? ends2[ends2.length >> 1] : 0;
+        if (W.rt.duo) rtMergeHalves(); W.rt.barsVer = 12; W.rt.showBars = true; rtSave(); rtShow(); rtRun(); rtToolUi(); var miss = [], ends2 = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy) { var l = sy.xs.length ? Math.max.apply(null, sy.xs) : 0; if (l > 0.85) ends2.push(l); }); }); ends2.sort(function (u, v) { return u - v; }); var ref2 = ends2.length ? ends2[ends2.length >> 1] : 0;
       if (ref2) Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (sy.xs.length && Math.max.apply(null, sy.xs) < ref2 - 0.06) miss.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); });
       $('rttoolnote').textContent = '小節線を探しました（1小節は、五線' + NS + '段）。' + (function () { var sp = []; Object.keys(W.rt.bars).forEach(function (p) { (W.rt.bars[p].systems || []).forEach(function (sy, si) { if (rtSusp(sy)) sp.push('p.' + p + '（上から' + (si + 1) + '段目）'); }); }); return sp.length ? '五線が2つを超える段があったので、小節線を引くのを止めました：' + sp.join('、') + '。' : ''; })() + (miss.length ? '右端の小節線が見つからない段があります：' + miss.join('、') + '。足すときは「小節線をペンで引く」で引いてください（自動では足しません）。' : '違うところは「小節線をペンで引く」か「小節線を消す」で直してください。'); if (cb) cb(); return; }
       var im = new Image(), k = ++i; im.onload = function () { try { var fr = Song.findBars(im); W.rt.bars[k] = { systems: fr, raw: fr.raw }; } catch (e) { W.rt.bars[k] = { systems: [] }; } setTimeout(next, 10); }; im.onerror = function () { W.rt.bars[k] = { systems: [] }; next(); }; im.src = W.imgs[k - 1].data;
@@ -3774,7 +3774,7 @@
     var nt = $('rttoolnote'); nt.parentNode.insertBefore(lab, nt);
     sel.onchange = function () { if (!W || !W.rt) return; W.rt.staves = +sel.value || 0; rtSave(); rtDetectBars(); };
   })();
-  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } $('rtimg').dataset.k = ''; $('rtimg').removeAttribute('src'); rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 11) { W.rt.showBars = true; rtDetectBars(); } else W.rt.showBars = true; $('rtstaves').value = '' + (W.rt.staves || 0); };      // bars found by an older way of searching are searched again once
+  $('rtopen').onclick = function () { if (!W || !W.imgs.length) { return; } $('rtimg').dataset.k = ''; $('rtimg').removeAttribute('src'); rtMarks(); rtPage = 1; rtTool = null; rtTools(); rtNumUI(); $('rtdlg').hidden = false; rtShow(); rtRun(); rtSettings(); if (!(W.rt.bars && Object.keys(W.rt.bars).length) || W.rt.barsVer !== 12) { W.rt.showBars = true; rtDetectBars(); } else W.rt.showBars = true; $('rtstaves').value = '' + (W.rt.staves || 0); };      // bars found by an older way of searching are searched again once
 
   /* ---------- repeats: a flag where the repeat returns to, an arrow at the repeat sign ---------- */
   /* "back to the start / to the Segno" families: D.C. al Fine, D.S. al Fine, D.C. al Coda, D.S. al Coda. The marks of each, in reading order: */
