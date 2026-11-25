@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v415</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v416</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -1703,17 +1703,22 @@
     else merged.forEach(function (o) { if (o.xl >= 0 && o.xl < 0.15 && o.xs[0] - o.xl > 0.1) o.xs.unshift(Math.round((o.xl + 0.004) * 1000) / 1000); });      /* no left edge found anywhere on the page: the bar starts where the staff lines start */      // the left edge of a system that the stroke search missed
     merged = merged.filter(function (o) { return o.xs.length >= 2; });
     /* one bar = four staves (Primo's two + Secondo's two): the photo breaks a system into two bands (a pair of staves each); put the two together again, and keep only the barlines that really stand in BOTH halves (a stroke seen in one half only must be found again in the other half, otherwise it is a stem or a shadow) */
-    var stavesOf = function (o) {      /* how many staves does this band hold: rows of a staff line (a dark row across most of the width between two barlines), counted in fives */
-      var a = Math.max(0, Math.round(o.y0 * h)), b = Math.min(h - 1, Math.round(o.y1 * h)), cs = [], i2, yy2, xx2;
+    var stavesOf = function (o) {      /* how many staves does this band hold, and where are its first and last staff line: rows of a staff line (a dark row across most of the width between two barlines), counted in fives */
+      var a = Math.max(0, Math.round(o.y0 * h)), b = Math.min(h - 1, Math.round(o.y1 * h)), cs = [], tops = [], bots = [], i2, yy2, xx2;
       for (i2 = 0; i2 + 1 < o.xs.length; i2++) {
         var xa = Math.round((o.xs[i2] + 0.01) * w), xb = Math.round((o.xs[i2 + 1] - 0.01) * w); if (xb - xa < 60) continue;
-        var c0 = xa + Math.floor((xb - xa) / 5), c1 = xb - Math.floor((xb - xa) / 5), n = 0, pv = false;
-        for (yy2 = a; yy2 <= b; yy2++) { var ct = 0; for (xx2 = c0; xx2 <= c1; xx2++) ct += m[yy2 * w + xx2]; var on3 = ct >= 0.7 * (c1 - c0 + 1); if (on3 && !pv) n++; pv = on3; }
-        if (n >= 6) cs.push(n);
+        var c0 = xa + Math.floor((xb - xa) / 5), c1 = xb - Math.floor((xb - xa) / 5), n = 0, pv = false, st0 = 0, cen = [];
+        for (yy2 = a; yy2 <= b; yy2++) { var ct = 0; for (xx2 = c0; xx2 <= c1; xx2++) ct += m[yy2 * w + xx2]; var on3 = ct >= 0.7 * (c1 - c0 + 1); if (on3 && !pv) { n++; st0 = yy2; } if (!on3 && pv) cen.push((st0 + yy2 - 1) / 2); pv = on3; }
+        if (pv) cen.push((st0 + b) / 2);
+        if (n >= 6) { cs.push(n); tops.push(cen[0]); bots.push(cen[cen.length - 1]); }
       }
-      if (!cs.length) return null; cs.sort(function (p, q) { return p - q; }); return Math.max(1, Math.round(cs[cs.length >> 1] / 5));
+      if (!cs.length) return null; var md = function (q) { q = q.slice().sort(function (p, r) { return p - r; }); return q[q.length >> 1]; };
+      return { st: Math.max(1, Math.round(md(cs) / 5)), top: md(tops) / h, bot: md(bots) / h };
     };
-    merged.forEach(function (o) { o.st = stavesOf(o); });
+    merged.forEach(function (o) {
+      var r0 = stavesOf(o); o.st = r0 ? r0.st : null;
+      if (r0 && r0.bot - r0.top >= 0.6 * (o.y1 - o.y0) && r0.top >= o.y0 - 0.02 && r0.bot <= o.y1 + 0.02) { o.y0 = Math.round(r0.top * 1000) / 1000; o.y1 = Math.round(r0.bot * 1000) / 1000; }      /* a barline runs from the top staff line to the bottom one: stems and ledger lines that touch it do not make it longer */
+    });
     var raw = merged.slice();      /* the bands as found (before Primo and Secondo are put together): a solo piece keeps them */
     var mxh = 0; merged.forEach(function (o) { mxh = Math.max(mxh, o.y1 - o.y0); });
     var isHalf = function (o) { return o && (o.st ? o.st <= 2 : ((o.y1 - o.y0) < 0.65 * mxh || (o.y1 - o.y0) < 0.17)); };
@@ -3434,11 +3439,16 @@
 
   /* ---------- numbered marks and the order they give (trial): marks are placed on the pages, AutoRoute.route() works out the order ---------- */
   var RT_TOOLS = [['rs', 0, '繰り返しの始め'], ['re', 0, '繰り返しの終わり'], ['e1', 0, '第1括弧の始め'], ['f1', 0, '第1括弧の終わり'], ['f2', 0, '第2括弧の終わり'],
-    ['sg', -1, '𝄋'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to 𝄌'], ['cd', -1, '𝄌 Coda'], ['del', 0, '印を消す'], ['bpen', 0, '小節線をペンで引く'], ['bdel', 0, '小節線を消す']];
-  var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり（＝第2括弧の始め）', f2: '第2括弧の終わり（＝第3括弧の始め）', f3: '第3括弧の終わり', sg: '𝄋', ds: 'D.S. ', dc: 'D.C. ', tc: 'to 𝄌 ', cd: '𝄌 Coda ' }, ROM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']      // the number of a Segno / Coda: Roman numerals (the order numbers of the marks are circled Arabic numerals - the two must not look alike);
+    ['sg', -1, 'セーニョ'], ['ds', -1, 'D.S.'], ['dc', -1, 'D.C.'], ['tc', -1, 'to Coda'], ['cd', -1, 'Coda'], ['del', 0, '印を消す'], ['bpen', 0, '小節線をペンで引く'], ['bdel', 0, '小節線を消す']];
+  var RT_NAME = { rs: '繰り返しの始め', re: '繰り返しの終わり', e1: '第1括弧の始め', e2: '第2括弧の始め', e3: '第3括弧の始め', f1: '第1括弧の終わり（＝第2括弧の始め）', f2: '第2括弧の終わり（＝第3括弧の始め）', f3: '第3括弧の終わり', sg: 'セーニョ', ds: 'D.S. ', dc: 'D.C. ', tc: 'to Coda ', cd: 'Coda ' }, ROM = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X']      // the number of a Segno / Coda: Roman numerals (the order numbers of the marks are circled Arabic numerals - the two must not look alike);
   var rtTool = null, rtPage = 1, rtTimer = null, rtFrame = null, rtTipT = null;
   function rtName(k, n) { return RT_NAME[k] + (n ? ROM[n] : ''); }
   function rtNo(n) { return n >= 1 && n <= 20 ? String.fromCharCode(0x2460 + n - 1) : '(' + n + ')'; }
+  function rtIcon(k) {      // the segno and coda signs drawn as pictures (the iPad has no font for the musical symbols)
+    var sv = function (b, w) { return '<svg width="' + (w || 22) + '" height="22" viewBox="0 0 24 24" style="vertical-align:middle;overflow:visible" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + b + '</svg>'; };
+    var coda = '<circle cx="12" cy="12" r="5.5"/><path d="M12 1.5V22.5M1.5 12H22.5"/>', segno = '<path d="M16.5 5.5C14.5 2.5 8.5 3 8.5 7C8.5 11.5 16.5 12.5 16.5 17C16.5 21 9.5 21.5 7.5 18"/><path d="M4.5 21L19.5 3"/><circle cx="5.5" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="18.5" cy="14" r="1.1" fill="currentColor" stroke="none"/>';
+    return k === 'sg' ? sv(segno) : k === 'cd' ? sv(coda) + ' Coda' : k === 'tc' ? 'to ' + sv(coda) + ' Coda' : null;
+  }
   function rtGlyph(k, n, col) {      // thin, small, see-through marks that cover as little of the music as possible: the point that counts is the tip / the line at (ax, ay)
     var C = col || '#555', S = 'stroke="' + C + '" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"', T = function (x, y, t, fs) { return '<text x="' + x + '" y="' + y + '" font-family="Inter,sans-serif" font-weight="700" font-size="' + (fs || 11) + '" fill="' + C + '" stroke="none">' + t + '</text>'; }, d;
     var i = k.charAt(1);
@@ -3557,18 +3567,24 @@
     pts.forEach(function (p) { sx += p.x; a = Math.min(a, p.y); b = Math.max(b, p.y); }); var x = Math.round(sx / n * 1000) / 1000; a = Math.round(a * 1000) / 1000; b = Math.round(b * 1000) / 1000;
     var dx = Math.max.apply(null, pts.map(function (p) { return p.x; })) - Math.min.apply(null, pts.map(function (p) { return p.x; }));
     if (b - a < 0.03 || dx > 0.5 * (b - a)) { $('rttoolnote').textContent = '上から下へ、まっすぐ縦に引いてください。'; return; }
-    var best = -1, bo = 0; pb.systems.forEach(function (sy, k) { var ov = Math.min(sy.y1, b) - Math.max(sy.y0, a); if (ov > bo) { bo = ov; best = k; } });
+    /* the line the person draws is the truth: its height is the height of the bar (the whole group of staves it crosses) */
     var add = function (sy) { (sy.ux = sy.ux || []).push(x); if (!sy.xs.some(function (u) { return Math.abs(u - x) < 0.006; })) sy.xs.push(x); sy.xs.sort(function (p, q) { return p - q; }); };
-    if (best < 0 || bo < 0.5 * (b - a)) { var nw = { y0: a, y1: b, xs: [], fixed: true }; add(nw); pb.systems.push(nw); pb.systems.sort(function (p, q) { return p.y0 - q.y0; }); }
-    else {
-      var S = pb.systems[best];
-      if ((S.y1 - S.y0) > 1.4 * (b - a)) {      /* a band that holds more than the bar drawn: the drawn bar is cut out of it, what is left above / below stays open for the next lines */
+    var cov = []; pb.systems.forEach(function (sy, k) { var ov = Math.min(sy.y1, b) - Math.max(sy.y0, a); if (ov > 0 && ov >= 0.5 * (sy.y1 - sy.y0)) cov.push(k); });
+    if (!cov.length) { var nw = { y0: a, y1: b, xs: [], fixed: true }; add(nw); pb.systems.push(nw); }
+    else if (cov.length >= 2) {      /* the line crosses several bands: they are one group */
+      var xsU = [], uxU = []; cov.forEach(function (k) { xsU = xsU.concat(pb.systems[k].xs); uxU = uxU.concat(pb.systems[k].ux || []); });
+      var cl3 = []; xsU.sort(function (p, q) { return p - q; }).forEach(function (v) { var l = cl3[cl3.length - 1]; if (l && v - l < 0.01) return; cl3.push(v); });
+      var mg = { y0: a, y1: b, xs: cl3, ux: uxU, fixed: true }; add(mg); pb.systems = pb.systems.filter(function (q, k) { return cov.indexOf(k) < 0; }); pb.systems.push(mg);
+    } else {
+      var S = pb.systems[cov[0]], k0 = cov[0];
+      if ((S.y1 - S.y0) > 1.4 * (b - a)) {      /* a band that holds more than the bar drawn: the drawn bar is cut out of it, what is left above / below stays open */
         var parts = [], pad = 0.004; if (a - pad - S.y0 >= 0.03) parts.push({ y0: S.y0, y1: Math.round((a - pad) * 1000) / 1000, xs: [], fixed: true });
         var mid = { y0: a, y1: b, xs: [], fixed: true }; add(mid); parts.push(mid);
         if (S.y1 - (b + pad) >= 0.03) parts.push({ y0: Math.round((b + pad) * 1000) / 1000, y1: S.y1, xs: [], fixed: true });
-        pb.systems.splice.apply(pb.systems, [best, 1].concat(parts));
-      } else add(S);
+        pb.systems.splice.apply(pb.systems, [k0, 1].concat(parts));
+      } else { S.y0 = a; S.y1 = b; S.fixed = true; add(S); }
     }
+    pb.systems.sort(function (p, q) { return p.y0 - q.y0; });
     rtSave(); rtShow(); rtRun(); $('rttoolnote').textContent = '小節線を足しました（オレンジ）。続けて引けます。';
   }
   function rtSplitBar(fy) {      // tap inside a band: it is cut in two at that height (both keep the barlines); each part can then be fitted with "段を直す"
@@ -3713,7 +3729,7 @@
   function rtNextN(k) { var used = {}; rtMarks().forEach(function (m) { if (m.k === k) used[m.n] = true; }); var n = 1; while (used[n]) n++; return Math.min(n, 10); }      // the first Segno / Coda / D.S. / to Coda you put gets I, the next II, ... (the smallest number not used yet)
   function rtTools() {
     var box = $('rttools'); box.innerHTML = '';
-    RT_TOOLS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.textContent = t[2]; b.dataset.k = t[0] + t[1]; b.style.cssText = 'min-height:40px;padding:0 10px;font-size:15px'; b.onclick = function () { if (t[0] === 'bdet') { rtDetectBars(); return; } if (t[0] === 'bshow') { W.rt.showBars = !W.rt.showBars; rtSave(); rtShow(); return; } var tk = t[0] === 'del' ? 'del' : t[0] + ':' + t[1]; rtTool = rtTool === tk ? null : tk; rtToolUi(); rtShow(); }; box.appendChild(b); });
+    RT_TOOLS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; if (rtIcon(t[0])) b.innerHTML = rtIcon(t[0]); else b.textContent = t[2]; b.dataset.k = t[0] + t[1]; b.style.cssText = 'min-height:40px;padding:0 10px;font-size:15px'; b.onclick = function () { if (t[0] === 'bdet') { rtDetectBars(); return; } if (t[0] === 'bshow') { W.rt.showBars = !W.rt.showBars; rtSave(); rtShow(); return; } var tk = t[0] === 'del' ? 'del' : t[0] + ':' + t[1]; rtTool = rtTool === tk ? null : tk; rtToolUi(); rtShow(); }; box.appendChild(b); });
     rtToolUi();
   }
   function rtToolUi() { Array.prototype.forEach.call($('rttools').children, function (b, i) { var t = RT_TOOLS[i], on = t[0] === 'del' ? rtTool === 'del' : rtTool === t[0] + ':' + t[1]; b.classList.toggle('sel', on); b.style.outline = on ? '3px solid #2a5bd7' : ''; }); $('rttoolnote').textContent = !rtTool ? '上のボタンを押してから、楽譜をタップして置きます（印の右の数字は、通る順番）' : rtTool === 'del' ? '消したい印をタップ' : rtTool === 'badd:0' ? '小節線を足したい場所を、楽譜でタップ' : rtTool === 'bdel:0' ? '消したい小節線をタップ' : rtTool === 'bpen:0' ? 'ペン（または指）で、小節線を上から下へ、引いてください。五線2つ分を、上から下まで（ほかの段の小節線の上に引くと、その段に足されます）' : rtTool === 'bfix:0' ? '青い丸を上下にドラッグして、段の上と下を合わせてください（小節線は、段の中の五線に引かれます）。小節線も、横にドラッグして動かせます' : rtTool === 'bsplit:0' ? '分けたい高さを、段の中でタップ' : rtTool === 'bjoin:0' ? 'つなげたい二つの段の間（Primo と Secondo の間）をタップ' : 'この印を置く場所を、楽譜でタップ'; }
@@ -3753,7 +3769,7 @@
   $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; };
   $('rtopen').hidden = window.LANG !== 'ja';      // trial: Japanese only
   (function () {      // the number of staves in one bar: the app reads it from the staff lines; the person can tell it
-    var sel = document.createElement('select'), lab = document.createElement('label'); lab.style.cssText = 'display:inline-flex;gap:6px;align-items:center;font-size:15px;margin:0 10px 0 0'; lab.appendChild(document.createTextNode('1小節の五線の数：'));
+    var sel = document.createElement('select'), lab = document.createElement('label'); lab.style.cssText = 'white-space:nowrap;flex:none;display:inline-flex;gap:6px;align-items:center;font-size:15px;margin:0 10px 0 0'; lab.appendChild(document.createTextNode('1小節の五線の数：'));
     [['0', '自動'], ['2', '2段（ソロ）'], ['4', '4段（連弾・トリオなど）'], ['6', '6段']].forEach(function (o) { var op = document.createElement('option'); op.value = o[0]; op.textContent = o[1]; sel.appendChild(op); }); sel.id = 'rtstaves'; sel.style.cssText = 'min-height:40px;font-size:15px'; lab.appendChild(sel);
     var nt = $('rttoolnote'); nt.parentNode.insertBefore(lab, nt);
     sel.onchange = function () { if (!W || !W.rt) return; W.rt.staves = +sel.value || 0; rtSave(); rtDetectBars(); };
