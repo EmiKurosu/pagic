@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v430</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v431</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -4446,7 +4446,7 @@
         var dm = daMarks(r), prevK = null, KD = { sg: 'sg', fine: 'fi', tc: 'tc', dc: 'dc' };
         for (var di = 0; di < dm.length; di++) { var m = dm[di];
           if (m === 'cd') { if (wrec() && e.tc2 === undefined) return { r: r, kind: 'cd', page: r.tc.page, key: 'tc2', second: true, prev: prevK }; continue; }
-          if (m === 'sg' && wrec() && !(W.needSg && W.needSg[r.id])) continue;      /* the recording plays the D.S. through: the Segno of the first pass is found from the repeated pass, no tap for it */
+          if ((m === 'sg' || m === 'tc') && wrec() && !(W.needSg && W.needSg[r.id])) continue;      /* the recording plays the D.S. through: the Segno of the first pass is found from the repeated pass, no tap for it */
           if (e[DAT[m]] === undefined) return { r: r, kind: KD[m], page: r[m].page, key: DAT[m], prev: prevK }; prevK = DAT[m]; }
         continue;
       }
@@ -4819,10 +4819,11 @@
         if (partKd) reps = partReps();
         var dcI = W.reps.filter(isDA)[0], fiF = function (t) { return Math.max(0, Math.ceil((t - t00) / fsec)); };
         if (dcI && !wrec() && !partKd && W.rev[dcI.id]) { var ee = W.rev[dcI.id], nf = fiF(ee.tdc); if (!daOrderOK(dcI, ee)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); if (daKind(dcI).indexOf('coda') < 0) { frames = frames.slice(0, nf); rmsA = rmsA.slice(0, nf); } }       // the piece ends at the D.C. mark: whatever the recording has after it is cut off
-        if (!partKd && wrec()) W.reps.forEach(function (q) {      // D.S.: the Segno time of the first pass comes from the repeated pass (no tap)
-          var e = W.rev[q.id]; if (!isDA(q) || !q.sg || !e || e.tsg !== undefined || e.tdc === undefined) return;
+        if (!partKd && wrec()) W.reps.forEach(function (q) {      // D.S. / D.C.: the first-pass times of the Segno and of "To Coda" come from the repeated pass (no taps for them)
+          var e = W.rev[q.id], kd = isDA(q) ? daKind(q) : ''; if (!e || e.tdc === undefined) return;
+          var needS = !!q.sg && e.tsg === undefined, needT = kd.indexOf('coda') >= 0 && e.ttc === undefined && e.tc2 !== undefined; if (!needS && !needT) return;
           var g = wSgGuess(frames, fsec, t00, e.tdc); if (g === null) { W.needSg = W.needSg || {}; W.needSg[q.id] = true; throw new Error(_t('セーニョの時刻を、繰り返した演奏から探せませんでした。もう一度、「最初からやり直す」を押して、セーニョの小節に着いたときにもボタンを押してください。')); }
-          e.tsg = g;
+          if (needS) e.tsg = g; if (needT) e.ttc = g + (e.tc2 - e.tdc);      // the repeated pass runs like the first: "To Coda" lies as far after the Segno (or the start) as the jump to the Coda lies after the D.S.
         });
         if (!partKd && wseq()) {                                                  // the recording repeats: cut the repeated passage out, so that the reference runs without repeating
           var sq = wpageSeq(), cuts = [], fi = function (t) { return Math.max(0, Math.ceil((t - t00) / fsec)); };
