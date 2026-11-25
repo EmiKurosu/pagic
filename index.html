@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v423</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v425</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -570,7 +570,7 @@
 </div>
 <div id="rtdlg" hidden style="position:fixed;inset:0;z-index:45;background:var(--bg);overflow:auto;padding:14px 14px 90px">
   <h2 style="margin:0 0 6px;font-size:20px">番号つきの印と演奏順（試作）</h2>
-  <small style="display:block;line-height:1.5;margin-bottom:8px">楽譜の記号を、見えたとおりに置くと、弾く順番を計算して確かめられます。ピアノ2台（Primo / Secondo）の楽譜では、印は上の段（Primo）に置いてください。<br>室内楽の楽譜では、印はピアノの段に置いてください。括弧のある曲では、「第1括弧の始め」と、最後の括弧より前の括弧の「括弧の終わり」を置けば足ります（「括弧の終わり」は、置くたびに第1、第2、第3、…と楽譜の順に番号がつくので、括弧がいくつあっても使えます。括弧が2つなら1回、3つなら2回。最後の括弧の終わりは要りません。前の括弧の終わりを置けば、次の括弧の始めも省けます）。セーニョ・D.S.・D.C.・to Coda・Codaは、置いた順にI、II、…と自動で番号がつきます（印をタップして「−」「＋」で番号を変えられます）。印のすぐ右の数字は、その印を通る順番です（何度も通る印には、①③⑤のように数字が並びます）（アプリが楽譜を上から下、左から右に読む順番です）。印をタップすると、名前と読む順番が大きな字で出ます。印は、ドラッグで動かせます。ここで置いた印は、まだ録音とはつながっていません（順番の確認だけです）。</small>
+  <small style="display:block;line-height:1.5;margin-bottom:8px">楽譜の記号を、見えたとおりに置くと、弾く順番を計算して確かめられます。ピアノ2台（Primo / Secondo）の楽譜では、印は上の段（Primo）に置いてください。<br>室内楽の楽譜では、印はピアノの段に置いてください。括弧のある曲では、「第1括弧の始め」と、最後の括弧より前の括弧の「括弧の終わり」を置けば足ります（「括弧の終わり」は、置くたびに第1、第2、第3、…と楽譜の順に番号がつくので、括弧がいくつあっても使えます。括弧が2つなら1回、3つなら2回。最後の括弧の終わりは要りません。前の括弧の終わりを置けば、次の括弧の始めも省けます）。セーニョ・D.S.・D.C.・to Coda・Codaは、置いた順にI、II、…と自動で番号がつきます（印をタップして「−」「＋」で番号を変えられます）。印のすぐ右の数字は、その印を通る順番です（何度も通る印には、①③⑤のように数字が並びます）（アプリが楽譜を上から下、左から右に読む順番です）。印をタップすると、名前と読む順番が大きな字で出ます。印は、ドラッグで動かせます。ここで置いた印は、閉じると曲に反映されます（「曲を作る」の画面に戻るだけです。お手本演奏の取り込みは、始まりません）。</small>
   <div id="rttools" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px"><button type="button" id="rtprev">◀</button><b id="rtpgno" style="white-space:nowrap">p.1</b><button type="button" id="rtnext">▶</button><button type="button" id="rtnum" style="min-height:40px;white-space:nowrap"></button><span id="rttoolnote" style="color:var(--dim);font-size:14px"></span></div>
   <div style="text-align:center"><div id="rtpg" style="position:relative;display:inline-block;max-width:100%;touch-action:manipulation;line-height:0"><img id="rtimg" alt="楽譜のページ" style="max-width:100%;max-height:64vh;display:block"></div></div>
@@ -3682,6 +3682,45 @@
     plan.bars = bars; return plan;
   }
   function rtGoStretch(i) { if (!rtPlan || !rtPlan[i]) return; rtHi = { s: i, u: rtPlan[i].list.length }; var fl = rtFlat(), q; for (q = 0; q < fl.length; q++) if (fl[q].s === i && fl[q].u === rtHi.u) rtCur = q; rtPage = rtPlan.bars[rtPlan[i].list[0]].page; rtShow(); }
+
+  /* ---------- the marks of the trial screen -> the repeat items the recording screen works with (flag / arrow / D.C. ... ): the same marks, in the form the learning of the reference playing already uses ---------- */
+  function rtToReps() {
+    var marks = rtMarks(), b = rtBuild(), P = b.rk.pos, warn = [], items = [], pg = function (m) { return m ? { page: m.page, fx: m.fx, fy: m.fy } : null; };
+    var at = function (pos) { var f = null; marks.forEach(function (m) { if (!f && P[m.id] === pos) f = m; }); return f; }, byId = {}; marks.forEach(function (m) { byId[m.id] = m; });
+    var start0 = { page: 1, fx: 0, fy: 0 };
+    b.m.groups.forEach(function (g) {
+      var rs = byId[g.id], id = 'rt_' + g.id;
+      if (g.ends) {
+        var e1 = at(g.ends[0]), arrow = (g.endAt && g.endAt[0] !== undefined) ? at(g.endAt[0]) : at(g.ends[1]);
+        if (!e1 || !arrow) { warn.push('第1括弧の印が足りません。'); return; }
+        if (g.ends.length - 1 > 2) warn.push('第3括弧以降は、録音の取り込みにはまだ使われません（弾く順番の確認にだけ使われます）。');
+        items.push({ id: id, jf: pg(e1), arrow: pg(arrow), flag: pg(rs) || start0 });
+      } else {
+        var re = at(g.end); if (!re) return;
+        items.push({ id: id, flag: pg(rs) || start0, arrow: pg(re) });
+      }
+    });
+    var firstK = function (o) { var k = Object.keys(o).sort(function (x, y) { return o[x] - o[y]; })[0]; return k === undefined ? undefined : +k; };
+    b.m.ds.forEach(function (d, i) {
+      var dc = at(d.pos), fi = (b.m.fine || []).filter(function (p) { return true; })[0], id = 'rt_' + (dc ? dc.id : i);
+      if (d.n && b.m.segno[d.n] === undefined) { return; }
+      if (fi !== undefined) {
+        var o = { id: id, da: d.n ? 'dsfine' : 'fine', dc: pg(dc), fine: pg(at(fi)) }; if (d.n) o.sg = pg(at(b.m.segno[d.n]));
+        items.push(o); return;
+      }
+      var tn = b.m.toCoda[d.n] !== undefined ? d.n : firstK(b.m.toCoda);
+      if (tn !== undefined && b.m.coda[tn] !== undefined) {
+        var o2 = { id: id, da: d.n ? 'dscoda' : 'ccoda', dc: pg(dc), tc: pg(at(b.m.toCoda[tn])), cd: pg(at(b.m.coda[tn])) }; if (d.n) o2.sg = pg(at(b.m.segno[d.n]));
+        items.push(o2); return;
+      }
+      warn.push((d.n ? 'D.S.' : 'D.C.') + 'に対応するFine、または to Coda と Coda がないので、録音の取り込みには使われません。');
+    });
+    return { items: items.filter(function (q) { return repOK(q); }), warn: warn };
+  }
+  function rtSyncReps() {      /* handed to the recording screen when the trial screen is closed (only when marks were placed here) */
+    if (!W || !W.rt || !rtMarks().length) { if (W && W.reps) { var n0 = W.reps.length; W.reps = W.reps.filter(function (r) { return String(r.id).indexOf('rt_') !== 0; }); if (n0 !== W.reps.length) { try { wreplist(); } catch (e) {} } } return []; }
+    var r = rtToReps(); W.reps = (W.reps || []).filter(function (q) { return String(q.id).indexOf('rt_') !== 0; }).concat(r.items); repSort(); try { wreplist(); } catch (e) {} return r.warn;
+  }
   function rtRun() {
     var b = rtBuild(), marks = rtMarks(), res = $('rtres'); res.innerHTML = ''; var warn = b.warn.slice(); $('rtwarn').textContent = '';
     if (!marks.length) { $('rtwarn').textContent = '印を置くと、ここに弾く順番が出ます。'; rtFrame = null; return; }
@@ -3826,7 +3865,7 @@
   $('rtfirst').onclick = function () { rtHoldStop(); rtCur = -1; rtHi = null; rtPage = 1; try { rtShow(); } catch (e) {} $('rtplaymsg').textContent = ''; };      // back to the very beginning of the play-through
   $('rtexp').onclick = function () { try { exportText('pagic-marks', JSON.stringify({ rt: W.rt, plan: (rtPlan || []).map(function (p) { return { list: p.list, why: p.why, dup: p.dup }; }), bars: rtPlan && rtPlan.bars ? rtPlan.bars.length : 0 })); } catch (e) { $('rtplaymsg').textContent = '書き出せませんでした：' + e.message; } };      // for finding mistakes: the marks, the bars and the order, as one file
   $('rtstop').onclick = rtStopPlay;
-  $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; };
+  $('rtclose').onclick = function () { rtStopPlay(); $('rtdlg').hidden = true; try { rtSyncReps(); } catch (e) {} };
   $('rtopen').hidden = window.LANG !== 'ja';      // trial: Japanese only
   (function () {      // the number of staves in one bar: the app reads it from the staff lines; the person can tell it
     var sel = document.createElement('select'), lab = document.createElement('label'); lab.style.cssText = 'white-space:nowrap;flex:none;display:inline-flex;gap:6px;align-items:center;font-size:15px;margin:0 10px 0 0'; lab.appendChild(document.createTextNode('1小節の五線の数：'));
