@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v434</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v435</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3690,11 +3690,13 @@
     var start0 = { page: 1, fx: 0, fy: 0 };
     b.m.groups.forEach(function (g) {
       var rs = byId[g.id], id = 'rt_' + g.id;
-      if (g.ends) {
-        var e1 = at(g.ends[0]), arrow = (g.endAt && g.endAt[0] !== undefined) ? at(g.endAt[0]) : at(g.ends[1]);
-        if (!e1 || !arrow) { warn.push('第1括弧の印が足りません。'); return; }
-        if (g.ends.length - 1 > 2) warn.push('第3括弧以降は、録音の取り込みにはまだ使われません（弾く順番の確認にだけ使われます）。');
-        items.push({ id: id, jf: pg(e1), arrow: pg(arrow), flag: pg(rs) || start0 });
+      if (g.ends) {      /* 2 endings: one repeat with a first ending; 3 or more: a chain of such repeats that share the flag (A E1 | A E2 | A E3 ...): each one is "the first ending" of its own repeat */
+        var nEnd = g.ends.length - 1, pid = null, ii;
+        for (ii = 0; ii < Math.max(1, nEnd - 1); ii++) {
+          var ej = at(g.ends[ii]), ar = (g.endAt && g.endAt[ii] !== undefined) ? at(g.endAt[ii]) : at(g.ends[ii + 1]);
+          if (!ej || !ar) { warn.push('第' + (ii + 1) + '括弧の印が足りません。'); break; }
+          var it0 = { id: id + (ii ? '_' + ii : ''), jf: pg(ej), arrow: pg(ar), flag: pg(rs) || start0, en: ii + 1 }; if (pid) it0.chainFrom = pid; pid = it0.id; items.push(it0);
+        }
       } else {
         var re = at(g.end); if (!re) return;
         items.push({ id: id, flag: pg(rs) || start0, arrow: pg(re) });
@@ -4432,6 +4434,7 @@
     if (!W || !r.flag || r.skip || isDA(r) || r.flag.page < 2 || !(r.flag.fy <= 0.3)) return false;
     return W.reps.some(function (q) { return q !== r && wAutoEnd(q) && q.arrow.page === r.flag.page - 1; });
   }
+  function enName(r) { var n = (r && r.en) || 1; return ['第一', '第二', '第三', '第四', '第五', '第六', '第七', '第八', '第九', '第十'][n - 1] ? ['第一', '第二', '第三', '第四', '第五', '第六', '第七', '第八', '第九', '第十'][n - 1] + '括弧' : '第' + n + '括弧'; }
   function wSgGuess(frames, fsec, t00, tdc) {      /* the time of the Segno on the first pass, found from the repeated pass: after the D.S. the player starts again at the Segno, so the music right after the D.S. mark is looked for in the music before it (chroma, cosine); null when it is not clear */
     var o = Math.round(0.7 / fsec), N = Math.min(Math.round(8 / fsec), 400), nf = Math.max(0, Math.ceil((tdc - t00) / fsec)), a = nf + o, i, s0, n = frames.length;
     if (N < 20 || a + N > n || nf - N < 0) return null;
@@ -4508,13 +4511,13 @@
     if (pend && pend.r && isDA(pend.r)) $('wdcb').textContent = daName(pend.r, 'dc') + _t(' の小節を弾き終えた');
     if (showRep) [['f', 'wflagb'], ['j', 'wjumpb'], ['a', 'warrowb'], ['fi', 'wfineb'], ['dc', 'wdcb'], ['sg', 'wsegb'], ['tc', 'wtcb'], ['cd', 'wcdb']].forEach(function (q) { if (has(q[0])) { var bt = $(q[1]); bt.style.borderColor = pend.r.color; bt.style.boxShadow = '0 0 0 3px ' + pend.r.color; } });
     var skp = !!pend && !!pend.r && !!pend.r.skip;
-    $('wflagb').textContent = skp ? (wskipB(pend.r) ? _t('ここで飛ばした') : _t('ここから飛ばす（[ の位置）')) : _t('ここから繰り返す（旗のマークの位置）'); $('warrowb').textContent = skp ? _t('ここまで飛ばした（] の位置）') : _t('矢印（繰り返し記号・第一括弧はここまで）に着いた');
+    $('wflagb').textContent = skp ? (wskipB(pend.r) ? _t('ここで飛ばした') : _t('ここから飛ばす（[ の位置）')) : _t('ここから繰り返す（旗のマークの位置）'); $('warrowb').textContent = skp ? _t('ここまで飛ばした（] の位置）') : _t('矢印（繰り返し記号・第一括弧はここまで）に着いた').replace('第一括弧', enName(pend && pend.r)); $('wjumpb').textContent = _t('第一括弧はここから、に着いた').replace('第一括弧', enName(pend && pend.r));
     var t = $('wtap'); t.style.display = (showRep && pend && !wpartK() && pend.page === p) ? 'none' : '';      // a mark has to be pressed first: the turn button waits
     if (k >= nT && pend) { t.disabled = true; t.textContent = _t('最後のページです'); $('wstat').textContent = _t('旗と矢印の印が、まだ残っています。'); }
     else if (wEndsHere()) { t.disabled = true; t.textContent = _t('この曲は、このページで終わります'); $('wstat').textContent = _t('コーダで曲が終わるので、ここでは譜めくりは要りません。弾き終わりのピンの所まで録音を聞かせたら、「できた（曲を作る）」を押してください。'); }
     else if (done) { t.disabled = true; t.textContent = _t('最後のページです'); $('wstat').textContent = (wpartK() && W.zf && W.zf.e) ? _t('めくる位置の印は付きました。赤いピンの所まで録音を聞かせたら、「できた（曲を作る）」を押してください。') : _t('印はすべて付きました。演奏を最後まで聞かせてから「できた」を押してください。'); }
     else if (wSkipEnd()) { t.disabled = false; t.textContent = _t('ここでめくりたい'); $('wstat').textContent = _t('1回目はコーダを飛ばして、次のページへめくります。コーダの直前の小節を弾き終えるところで、「ここでめくりたい」を押してください。'); }
-    else { t.disabled = false; t.textContent = _t('ここでめくりたい'); $('wstat').textContent = _t('{n} ページ目：このページを「めくりたい」と思う瞬間に、タップしてください').replace('{n}', p) + (showRep ? (pend.kind === 'sg' ? _t('　Segno の小節に着いた瞬間に、色つきのボタンを押します。') : pend.kind === 'cd' ? _t('　もう一度 To Coda の小節を弾き終えて、Coda へ飛ぶ瞬間に、色つきのボタンを押します。') : (pend.kind === 'fi' || pend.kind === 'dc' || pend.kind === 'tc') ? _t('　{m} の小節を、弾き終えた瞬間に、色つきのボタンを押します。').replace('{m}', daName(pend.r, pend.kind === 'fi' ? 'fine' : pend.kind)) : pend.kind === 'j' ? (pend.second ? _t('　もう一度、「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。') : _t('　「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。')) : pend.second ? (pend.kind === 'f' ? _t('　もう一度、旗の小節に戻った瞬間に、色つきのボタンを押します。') : _t('　もう一度、矢印の小節に着いた瞬間に、色つきのボタンを押します。')) : (pend.kind === 'f' ? (skp ? (wskipB(pend.r) ? _t('　録音が、飛ばした部分を終えて、ここから楽譜通りに演奏する場所から始まる瞬間に、色つきのボタンを押します。') : _t('　「[」のボタン：録音が楽譜にない部分、楽譜と合わなくなる部分に入った瞬間に押します。')) : _t('　旗の位置（ここから繰り返す小節）に入った瞬間に、色つきのボタンを押します。')) : (skp ? _t('　「]」のボタン：録音の演奏が、楽譜と合わない部分を終えた、ここから楽譜通りに演奏する場所に着いた瞬間に押します。') : _t('　矢印の小節（繰り返し記号）に着いた瞬間に、色つきのボタンを押します。')))) : ''); }
+    else { t.disabled = false; t.textContent = _t('ここでめくりたい'); $('wstat').textContent = _t('{n} ページ目：このページを「めくりたい」と思う瞬間に、タップしてください').replace('{n}', p) + (showRep ? (pend.kind === 'sg' ? _t('　Segno の小節に着いた瞬間に、色つきのボタンを押します。') : pend.kind === 'cd' ? _t('　もう一度 To Coda の小節を弾き終えて、Coda へ飛ぶ瞬間に、色つきのボタンを押します。') : (pend.kind === 'fi' || pend.kind === 'dc' || pend.kind === 'tc') ? _t('　{m} の小節を、弾き終えた瞬間に、色つきのボタンを押します。').replace('{m}', daName(pend.r, pend.kind === 'fi' ? 'fine' : pend.kind)) : pend.kind === 'j' ? (pend.second ? _t('　もう一度、「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。') : _t('　「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。')).replace('第一括弧', enName(pend.r)) : pend.second ? (pend.kind === 'f' ? _t('　もう一度、旗の小節に戻った瞬間に、色つきのボタンを押します。') : _t('　もう一度、矢印の小節に着いた瞬間に、色つきのボタンを押します。')) : (pend.kind === 'f' ? (skp ? (wskipB(pend.r) ? _t('　録音が、飛ばした部分を終えて、ここから楽譜通りに演奏する場所から始まる瞬間に、色つきのボタンを押します。') : _t('　「[」のボタン：録音が楽譜にない部分、楽譜と合わなくなる部分に入った瞬間に押します。')) : _t('　旗の位置（ここから繰り返す小節）に入った瞬間に、色つきのボタンを押します。')) : (skp ? _t('　「]」のボタン：録音の演奏が、楽譜と合わない部分を終えた、ここから楽譜通りに演奏する場所に着いた瞬間に押します。') : _t('　矢印の小節（繰り返し記号）に着いた瞬間に、色つきのボタンを押します。')))) : ''); }
 
     if (W.mic) { $('wdone').disabled = !dn2; if (W.micErr) { $('wstat').textContent = '⚠ ' + W.micErr; $('wtap').disabled = true; return; } if (!W.micOn && !done) { $('wstat').textContent = _t('マイクを準備しています…（許可の確認が出たら「許可」を押してください）'); } else if (!done) $('wstat').textContent = _t('● 録音中 ') + Math.round(W.now()) + _t(' 秒　') + (W.frames.length < 10 && W.micOn ? _t('⚠ まだ音が入ってきません。画面を1回タップしてみてください。 ') : '') + $('wstat').textContent; if (done) $('wstat').textContent = _t('印はすべて付きました。演奏を最後まで聞かせてから「できた」を押してください。'); return; }
     $('wdone').disabled = !dn2;      // (also while a recording that is imported while it plays is still going: the applause at the end is not music - the song is made from what was played up to the press)
@@ -4547,6 +4550,12 @@
     var ev0 = W.rev[pend.r.id] || {}, prevK = pend.prev ? ev0[pend.prev] : 0;
     if (t < wlastT() + 0.03 || (kind !== 'f' && t < (prevK || 0) + 0.5)) { var mm = $('wstat'); wupdate(); mm.textContent = _t('⚠ 前の印より後ろの位置で押してください（今の再生位置は、前の印より前か、ほぼ同じです）。') + mm.textContent; return; }
     var e = W.rev[pend.r.id] = W.rev[pend.r.id] || {}; e[pend.key] = t; W.log.push({ k: kind, id: pend.r.id, t: t, key: pend.key });
+    /* a chain of endings (3 or more): the jump to the 2nd ending (the first ending of the 2nd repeat) is the same moment as the 2nd ending's start */
+    if (wrec()) W.reps.forEach(function (q) {
+      var eq = W.rev[q.id] = W.rev[q.id] || {};
+      if (pend.key === 'tj2' && q.chainFrom === pend.r.id && eq.tj === undefined) eq.tj = t;
+      if (pend.key === 'tj' && pend.r.chainFrom === q.id && eq.tj2 === undefined && eq.ta !== undefined && t > eq.ta) eq.tj2 = t;
+    });
     /* two marks that stand at the same bar (a repeat's flag and the Segno, ...) are reached at the same moment: the one tap serves both */
     (function () {
       var fld = { tf: 'flag', tsg: 'sg' }, src = fld[pend.key] && pend.r[fld[pend.key]]; if (!src) return;
