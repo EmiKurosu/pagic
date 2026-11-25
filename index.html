@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v438</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v439</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -656,6 +656,14 @@
       <h2 id="wh">印を付けます</h2>
       <div id="wstat"></div>
       <div id="wlevelbox" hidden><div class="meter" style="width:100%;height:12px"><i id="wlevel"></i></div><div id="wlevelmsg" style="font-size:14px;margin-top:4px"></div></div>
+      <div id="wbtrow" hidden><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="wbtmode"> <span>拍を叩いて覚える方式（試験）：1拍目のたびに、下のボタンを押します</span></label></div>
+      <div id="wbt" hidden>
+        <div id="wbtst" style="margin:6px 0;font-weight:600"></div>
+        <div id="wbtwrap" style="position:relative;line-height:0"><img id="wbtimg" alt="" style="width:100%"><div id="wbtov" style="position:absolute;inset:0;pointer-events:none"></div></div>
+        <button type="button" id="wbtb" style="width:100%;font-size:26px;padding:22px 0;margin:8px 0">1拍目</button>
+        <div class="wrow"><button type="button" id="wbtback">↩ やり直す（区切りまで戻る）</button><button type="button" id="wbtfin" hidden>叩き終えた（印の形に直す）</button></div>
+        <div id="wbtmsg" style="margin:6px 0"></div>
+      </div>
       <div id="wpgwrap"><img id="wpageimg" alt="楽譜のページ"><div id="wpgmk"></div><div id="wautomsg" hidden></div></div>
       <div id="wmulti" hidden></div>
       <div class="wrow" id="wrepbtns" hidden><button type="button" id="wflagb">ここから繰り返す（旗のマークの位置）</button><button type="button" id="wsegb">Segno の小節に着いた</button><button type="button" id="wtcb">To Coda の小節を弾き終えた</button><button type="button" id="wcdb">もう一度 To Coda を弾き終えて、Coda へ飛んだ</button><button type="button" id="wfineb">Fine の小節を弾き終えた</button><button type="button" id="wdcb">D.C. の小節を弾き終えた</button><button type="button" id="wjumpb">第一括弧はここから、に着いた</button><button type="button" id="warrowb">矢印（繰り返し記号・第一括弧はここまで）に着いた</button></div>
@@ -3386,6 +3394,7 @@
   det.addEventListener('toggle', function () { document.body.classList.toggle('setopen', det.open); });
   /* ---------- make a song from page photos + a reference recording ---------- */
   var W = null;                                    // wizard state
+  var wForceT = null, wPendForce = null;      // (the bar-tap mode feeds its times through the old press logic)
   var TAP_DELAY = 0.35;                            // seconds a person needs to react
   function wshow(which) { ['wsetup', 'wtapview', 'wbusy'].forEach(function (k) { $(k).hidden = k !== which; }); if (which === 'wsetup') { try { wpickBuild(); } catch (e) {} } }
   function wopen() {
@@ -3986,7 +3995,7 @@
           if (isDA(r)) { var od = old[r.id], sd = od && od.tdc !== undefined && daSame(r, od); return daTimes(r, daItem(r), function (kk) { return sd && od[kk] !== undefined ? od[kk] : est(r[kk === 'tsg' ? 'sg' : kk === 'tfi' ? 'fine' : kk === 'ttc' ? 'tc' : 'dc']); }); }
           var o = old[r.id], same = o && o.tf !== undefined && !(W.hitIds && W.hitIds[r.id] && !(r.skip && o.gap)) && JSON.stringify(o.flag) === JSON.stringify(r.flag) && JSON.stringify(o.arrow) === JSON.stringify(r.arrow) && JSON.stringify(o.jf) === JSON.stringify(r.jf);
           if (r.skip && o && o.gap && !same) throw new Error(_t('飛ばして演奏した録音の「飛ばす印」は、位置を変えられません。いったん消して、録音から作り直してください。'));
-          var it = { id: r.id, color: r.color, flag: r.flag, arrow: r.arrow, tf: same ? o.tf : est(r.flag), ta: same ? o.ta : est(r.arrow) }; if (r.skip) { it.skip = true; if (o && o.gap) it.gap = true; } if (r.jf) { it.jf = r.jf; it.tj = same ? o.tj : est(r.jf); } return it;
+          var it = { id: r.id, color: r.color, flag: r.flag, arrow: r.arrow, tf: same ? o.tf : est(r.flag), ta: same ? o.ta : est(r.arrow) }; if (r.en) it.en = r.en; if (r.chainFrom) it.chainFrom = r.chainFrom; if (r.skip) { it.skip = true; if (o && o.gap) it.gap = true; } if (r.jf) { it.jf = r.jf; it.tj = same ? o.tj : est(r.jf); } return it;
         });
         items.forEach(function (r) {
           if (r.tdc === undefined && !r.skip && typeof r.tf === 'number' && typeof r.ta === 'number') {      // positions on the page are only a guess of the time: a mark that is a little out of order is put back in order (flag < jump < arrow)
@@ -4438,6 +4447,7 @@
     var c = function (v) { return v === undefined ? '・' : '✓'; };
     return W.reps.map(function (r) { var e = W.rev[r.id] || {}; return isDA(r) ? ('D.S./D.C.: sg' + c(e.tsg) + ' tc' + c(e.ttc) + ' dc' + c(e.tdc) + ' fi' + c(e.tfi) + ' tc2' + c(e.tc2)) : ('繰り返し' + (r.en ? '(' + r.en + ')' : '') + (r.flag ? ' p.' + r.flag.page : '') + ': 旗' + c(e.tf) + ' 括弧始' + c(e.tj) + ' 終' + c(e.ta) + ' 2回目始' + c(e.tj2) + (r.skip ? ' (飛ばす)' : '')); }).join(' / ');
   }
+  function enNameK(pd) { var r = pd && pd.r; return (pd && pd.key === 'tj2' && r) ? enName({ en: (r.en || 1) + 1 }) : enName(r); }      // the second-pass moment of an ending is the start of the NEXT ending
   function enName(r) { var n = (r && r.en) || 1; return ['第一', '第二', '第三', '第四', '第五', '第六', '第七', '第八', '第九', '第十'][n - 1] ? ['第一', '第二', '第三', '第四', '第五', '第六', '第七', '第八', '第九', '第十'][n - 1] + '括弧' : '第' + n + '括弧'; }
   function wSgGuess(frames, fsec, t00, tdc) {      /* the time of the Segno on the first pass, found from the repeated pass: after the D.S. the player starts again at the Segno, so the music right after the D.S. mark is looked for in the music before it (chroma, cosine); null when it is not clear */
     var o = Math.round(0.7 / fsec), N = Math.min(Math.round(8 / fsec), 400), nf = Math.max(0, Math.ceil((tdc - t00) / fsec)), a = nf + o, i, s0, n = frames.length;
@@ -4448,6 +4458,7 @@
     if (best < 0 || bs < 0.85 || bs < second + 0.03) return null; return t00 + (best - o) * fsec;
   }
   function wrepPending() {                                    // the next flag / arrow moment to be tapped: of all the repeats the one whose next mark comes first in the score (the repeats are listed by their first mark, but a D.S. is listed before a repeat that starts in the same place and is reached much later)
+    if (wPendForce) return wPendForce; W.cands = [];
     if (wpartK()) return null;      // one page is learned: the marks of the repeats stay as they are
     var cands = [], wait = false; W.pendWhy = '';
     W.reps.forEach(function (r, ri) {
@@ -4457,6 +4468,8 @@
     if (!cands.length) return null;      /* (an automatic flag that waits for its page turn only holds back what comes after it in the list, not what comes before it) */
     var posOf = function (c) { var r = c.c.r, m = c.c.group ? (r.jf || r.arrow) : (c.c.kind === 'f' ? r.flag : c.c.kind === 'a' ? r.arrow : c.c.kind === 'j' ? r.jf : c.c.kind === 'sg' ? r.sg : c.c.kind === 'tc' ? r.tc : c.c.kind === 'fi' ? r.fine : c.c.kind === 'dc' ? r.dc : c.c.kind === 'cd' ? r.tc : null) || r.flag || r.sg || r.tc || { page: 99, fy: 0, fx: 0 }; return [c.c.second ? 1 : 0, m.page, m.fy, m.fx, c.ri]; };
     cands.sort(function (a, b) { var x = posOf(a), y = posOf(b), k; for (k = 0; k < 5; k++) if (x[k] !== y[k]) return x[k] - y[k]; return 0; });
+    W.cands = cands.map(function (x) { return x.c; });
+    if (wrec()) { var sw0 = wstate(), nx0 = sw0.sq[sw0.ptr + 1]; if (nx0 && nx0.ev) { for (var ci = 0; ci < cands.length; ci++) { var cc = cands[ci].c; if (cc.r && cc.r.id === nx0.id && (cc.group ? cc.group.some(function (g) { return g.key === nx0.ev; }) : cc.key === nx0.ev)) return cc; } } }      /* the page turn is waiting for this very moment (e.g. the jump to the third ending): ask for it now, not for a D.S. that comes much later */
     return cands[0].c;
     function pendOne(r, e) {
       if (isDA(r)) {
@@ -4503,25 +4516,26 @@
       if (sk) { if (!(W.zf && W.zf.e && W.zf.e.p === K)) return false; return !zfAfter(W.zf.e, { p: K, x: sk.flag.fx, y: sk.flag.fy, f: null }); }      // the end pin stands before the start of the skipped part: not the Coda
       return true; } catch (x) { return false; }
   }
-  function wupdate() { wupdate0(); if (W && W.err) $('wstat').textContent = '⚠ ' + W.err; }       // an error stays on the screen (the microphone view rewrites the status line twice a second)
+  function wupdate() { if (W && W.btBusy) return; wupdate0(); try { wbtShow(); } catch (e) {} if (W && W.err) $('wstat').textContent = '⚠ ' + W.err; }       // an error stays on the screen (the microphone view rewrites the status line twice a second)
   function wupdate0() {
     if (!W) return;
     var n = W.imgs.length, nT = wnT(), k = W.taps.length, p = wpage(), pend = wrepPending(), done = k >= nT && !pend, dn2 = done || (wNoTurn() && !pend), rr = wseq();
     var preK = wPreK(); wMulti();      // the pin where playing starts is on an earlier page: that page is shown first (the app turns it by itself, no tap)
     $('wpageimg').src = W.imgs[p - 1].data; $('wh').textContent = 'p.' + (wpartK() || p) + ' / ' + n; repMarks($('wpgmk'), p, W.reps, 30); zfPins($('wpgmk'), p);
     $('wautomsg').hidden = !preK; $('wautomsg').textContent = preK ? _t('このページでは、「ここでめくりたい」は押しません。録音が{k}ページ目に入ったら、すぐ下の「録音が{k}ページ目に入ったら、ここを押す」を押してください。').replace(/\{k\}/g, preK) : ''; $('wprenext').hidden = !preK; if (preK) $('wprenext').textContent = _t('録音が{k}ページ目に入ったら、ここを押す').replace('{k}', preK);
-    var showRep = !!pend && (p >= pend.page || (rr && !!pend.second));      /* a first-pass mark is asked for only from the page it stands on; the second-pass ones (after the jump back) belong to an earlier page than the one shown */ $('wrepbtns').hidden = !showRep; var has = function (k) { return !!pend && (pend.group ? pend.group.some(function (g) { return g.kind === k; }) : pend.kind === k); }; $('wflagb').hidden = !showRep || !has('f'); $('warrowb').hidden = !showRep || !has('a'); $('wjumpb').hidden = !showRep || !has('j');
+    var evW = false; if (rr && pend) { var sw = wstate(), nxw = sw.sq[sw.ptr + 1]; evW = !!(nxw && nxw.ev && pend.r && nxw.id === pend.r.id && (pend.group ? pend.group.some(function (g) { return g.key === nxw.ev; }) : pend.key === nxw.ev)); }      /* the page changes at the moment of this very press (back to the flag, to the second ending): its button must be there before that page is reached */
+    var showRep = !!pend && (p >= pend.page || (rr && !!pend.second) || evW);      /* a first-pass mark is asked for only from the page it stands on; the second-pass ones (after the jump back) belong to an earlier page than the one shown */ $('wrepbtns').hidden = !showRep; var has = function (k) { return !!pend && (pend.group ? pend.group.some(function (g) { return g.kind === k; }) : pend.kind === k); }; $('wflagb').hidden = !showRep || !has('f'); $('warrowb').hidden = !showRep || !has('a'); $('wjumpb').hidden = !showRep || !has('j');
     $('wfineb').hidden = !showRep || !has('fi'); $('wdcb').hidden = !showRep || !has('dc'); $('wsegb').hidden = !showRep || !has('sg'); $('wtcb').hidden = !showRep || !has('tc'); $('wcdb').hidden = !showRep || !has('cd');
     if (pend && pend.r && isDA(pend.r)) $('wdcb').textContent = daName(pend.r, 'dc') + _t(' の小節を弾き終えた');
     if (showRep) [['f', 'wflagb'], ['j', 'wjumpb'], ['a', 'warrowb'], ['fi', 'wfineb'], ['dc', 'wdcb'], ['sg', 'wsegb'], ['tc', 'wtcb'], ['cd', 'wcdb']].forEach(function (q) { if (has(q[0])) { var bt = $(q[1]); bt.style.borderColor = pend.r.color; bt.style.boxShadow = '0 0 0 3px ' + pend.r.color; } });
     var skp = !!pend && !!pend.r && !!pend.r.skip;
-    $('wflagb').textContent = skp ? (wskipB(pend.r) ? _t('ここで飛ばした') : _t('ここから飛ばす（[ の位置）')) : _t('ここから繰り返す（旗のマークの位置）'); $('warrowb').textContent = skp ? _t('ここまで飛ばした（] の位置）') : _t('矢印（繰り返し記号・第一括弧はここまで）に着いた').replace('第一括弧', enName(pend && pend.r)); $('wjumpb').textContent = _t('第一括弧はここから、に着いた').replace('第一括弧', enName(pend && pend.r));
+    $('wflagb').textContent = skp ? (wskipB(pend.r) ? _t('ここで飛ばした') : _t('ここから飛ばす（[ の位置）')) : _t('ここから繰り返す（旗のマークの位置）'); $('warrowb').textContent = skp ? _t('ここまで飛ばした（] の位置）') : _t('矢印（繰り返し記号・第一括弧はここまで）に着いた').replace('第一括弧', enNameK(pend)); $('wjumpb').textContent = _t('第一括弧はここから、に着いた').replace('第一括弧', enNameK(pend));
     var t = $('wtap'); t.style.display = (showRep && pend && !wpartK() && pend.page === p) ? 'none' : '';      // a mark has to be pressed first: the turn button waits
     if (k >= nT && pend) { t.disabled = true; t.textContent = _t('最後のページです'); $('wstat').textContent = _t('旗と矢印の印が、まだ残っています。'); }
     else if (wEndsHere()) { t.disabled = true; t.textContent = _t('この曲は、このページで終わります'); $('wstat').textContent = _t('コーダで曲が終わるので、ここでは譜めくりは要りません。弾き終わりのピンの所まで録音を聞かせたら、「できた（曲を作る）」を押してください。'); }
     else if (done) { t.disabled = true; t.textContent = _t('最後のページです'); $('wstat').textContent = (wpartK() && W.zf && W.zf.e) ? _t('めくる位置の印は付きました。赤いピンの所まで録音を聞かせたら、「できた（曲を作る）」を押してください。') : _t('印はすべて付きました。演奏を最後まで聞かせてから「できた」を押してください。'); }
     else if (wSkipEnd()) { t.disabled = false; t.textContent = _t('ここでめくりたい'); $('wstat').textContent = _t('1回目はコーダを飛ばして、次のページへめくります。コーダの直前の小節を弾き終えるところで、「ここでめくりたい」を押してください。'); }
-    else { t.disabled = false; t.textContent = _t('ここでめくりたい'); $('wstat').textContent = _t('{n} ページ目：このページを「めくりたい」と思う瞬間に、タップしてください').replace('{n}', p) + (showRep ? (pend.kind === 'sg' ? _t('　Segno の小節に着いた瞬間に、色つきのボタンを押します。') : pend.kind === 'cd' ? _t('　もう一度 To Coda の小節を弾き終えて、Coda へ飛ぶ瞬間に、色つきのボタンを押します。') : (pend.kind === 'fi' || pend.kind === 'dc' || pend.kind === 'tc') ? _t('　{m} の小節を、弾き終えた瞬間に、色つきのボタンを押します。').replace('{m}', daName(pend.r, pend.kind === 'fi' ? 'fine' : pend.kind)) : pend.kind === 'j' ? (pend.second ? _t('　もう一度、「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。') : _t('　「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。')).replace('第一括弧', enName(pend.r)) : pend.second ? (pend.kind === 'f' ? _t('　もう一度、旗の小節に戻った瞬間に、色つきのボタンを押します。') : _t('　もう一度、矢印の小節に着いた瞬間に、色つきのボタンを押します。')) : (pend.kind === 'f' ? (skp ? (wskipB(pend.r) ? _t('　録音が、飛ばした部分を終えて、ここから楽譜通りに演奏する場所から始まる瞬間に、色つきのボタンを押します。') : _t('　「[」のボタン：録音が楽譜にない部分、楽譜と合わなくなる部分に入った瞬間に押します。')) : _t('　旗の位置（ここから繰り返す小節）に入った瞬間に、色つきのボタンを押します。')) : (skp ? _t('　「]」のボタン：録音の演奏が、楽譜と合わない部分を終えた、ここから楽譜通りに演奏する場所に着いた瞬間に押します。') : _t('　矢印の小節（繰り返し記号）に着いた瞬間に、色つきのボタンを押します。')))) : ''); }
+    else { t.disabled = false; t.textContent = _t('ここでめくりたい'); $('wstat').textContent = _t('{n} ページ目：このページを「めくりたい」と思う瞬間に、タップしてください').replace('{n}', p) + (showRep ? (pend.kind === 'sg' ? _t('　Segno の小節に着いた瞬間に、色つきのボタンを押します。') : pend.kind === 'cd' ? _t('　もう一度 To Coda の小節を弾き終えて、Coda へ飛ぶ瞬間に、色つきのボタンを押します。') : (pend.kind === 'fi' || pend.kind === 'dc' || pend.kind === 'tc') ? _t('　{m} の小節を、弾き終えた瞬間に、色つきのボタンを押します。').replace('{m}', daName(pend.r, pend.kind === 'fi' ? 'fine' : pend.kind)) : pend.kind === 'j' ? (pend.second ? _t('　もう一度、「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。') : _t('　「第一括弧はここから」の小節に着いた瞬間に、色つきのボタンを押します。')).replace('第一括弧', enNameK(pend)) : pend.second ? (pend.kind === 'f' ? _t('　もう一度、旗の小節に戻った瞬間に、色つきのボタンを押します。') : _t('　もう一度、矢印の小節に着いた瞬間に、色つきのボタンを押します。')) : (pend.kind === 'f' ? (skp ? (wskipB(pend.r) ? _t('　録音が、飛ばした部分を終えて、ここから楽譜通りに演奏する場所から始まる瞬間に、色つきのボタンを押します。') : _t('　「[」のボタン：録音が楽譜にない部分、楽譜と合わなくなる部分に入った瞬間に押します。')) : _t('　旗の位置（ここから繰り返す小節）に入った瞬間に、色つきのボタンを押します。')) : (skp ? _t('　「]」のボタン：録音の演奏が、楽譜と合わない部分を終えた、ここから楽譜通りに演奏する場所に着いた瞬間に押します。') : _t('　矢印の小節（繰り返し記号）に着いた瞬間に、色つきのボタンを押します。')))) : ''); }
 
     if (!pend && W.reps.length && !wpartK()) $('wstat').textContent += '　［確認用：印を聞かない理由：' + (W.pendWhy || '聞く印がありません') + '　' + wDiag() + '］';
     if (W.mic) { $('wdone').disabled = !dn2; if (W.micErr) { $('wstat').textContent = '⚠ ' + W.micErr; $('wtap').disabled = true; return; } if (!W.micOn && !done) { $('wstat').textContent = _t('マイクを準備しています…（許可の確認が出たら「許可」を押してください）'); } else if (!done) $('wstat').textContent = _t('● 録音中 ') + Math.round(W.now()) + _t(' 秒　') + (W.frames.length < 10 && W.micOn ? _t('⚠ まだ音が入ってきません。画面を1回タップしてみてください。 ') : '') + $('wstat').textContent; if (done) $('wstat').textContent = _t('印はすべて付きました。演奏を最後まで聞かせてから「できた」を押してください。'); return; }
@@ -4533,7 +4547,7 @@
     $('wautorow').hidden = !(W.redoId && W.srcSong && !W.srcSong.recPg && !wpartK() && !(W.srcSong.rep && W.srcSong.rep.items && W.srcSong.rep.items.length) && !W.taps.length && !done);
   }
   function wtapTime() {                                       // the moment (in the recording) of a tap, or null if it can't be taken now
-    var m = $('wmedia'); if (W.mic) { if (!W.micOn) { $('wstat').textContent = _t('⚠ まだマイクの準備ができていません。少し待つか、マイクの許可を確認してください。'); return null; } } else if (m.paused && !m.ended) return null;
+    if (wForceT !== null) return wForceT; var m = $('wmedia'); if (W.mic) { if (!W.micOn) { $('wstat').textContent = _t('⚠ まだマイクの準備ができていません。少し待つか、マイクの許可を確認してください。'); return null; } } else if (m.paused && !m.ended) return null;
     return Math.max(0, (W.mic ? W.now() : m.currentTime) - TAP_DELAY * (W.mic ? 1 : (m.playbackRate || 1)));
   }
   $('wtap').onclick = function () {
@@ -4575,6 +4589,95 @@
   }
   $('wsegb').onclick = function () { wrepTap('sg'); }; $('wtcb').onclick = function () { wrepTap('tc'); }; $('wcdb').onclick = function () { wrepTap('cd'); }; $('wfineb').onclick = function () { wrepTap('fi'); }; $('wdcb').onclick = function () { wrepTap('dc'); }; $('wjumpb').onclick = function () { wrepTap('j'); }; $('wflagb').onclick = function () { wrepTap('f'); }; $('warrowb').onclick = function () { wrepTap('a'); };
 
+
+  /* ---------- bar-tap mode: the player taps "beat 1" at every bar while the recording plays; the bars are coloured along the play order the trial marks give. The tapped times are then fed through the same presses the old way uses (page turns, flags, arrows ...). ---------- */
+  var WBT_WHY = { start: 'はじめ', repeat: '繰り返し', 'go on': '続き', ending2: '第二括弧', ending3: '第三括弧', ds1: 'D.S. のあと', ds2: 'D.S. のあと', coda1: 'コーダ', coda2: 'コーダ' };
+  function wbtPlan() {
+    try { if (!W || !W.rt || !W.rt.bars) return null; var b = rtBuild(), st = AutoRoute.route(b.m), pl = rtMakePlan(st, b); if (!pl || !pl.length) return null;
+      var flat = [], R = [], i; pl.forEach(function (sg, si) { sg.list.forEach(function (bi, k) { flat.push({ bi: bi, s: si, k: k, why: sg.why, page: pl.bars[bi].page }); }); });
+      for (i = 0; i < flat.length; i++) if ((i === 0 || flat[i].k === 0 || flat[i].page !== flat[i - 1].page) && (!R.length || i - R[R.length - 1] >= 3)) R.push(i);      // (points one or two bars apart are one point)
+      return { plan: pl, flat: flat, bars: pl.bars, R: R }; } catch (e) { return null; }
+  }
+  function wbtShow() {
+    if (!W) return; if (W.btP === undefined) W.btP = wbtPlan();
+    var can = !!W.btP && !wpartK(), on = can && !!W.btOn; $('wpgwrap').style.display = on ? 'none' : ''; $('wbtrow').hidden = !can; $('wbtmode').checked = !!W.btOn; $('wbt').hidden = !on;
+    if (!on) return;
+    $('wpgwrap').style.display = 'none'; $('wrepbtns').hidden = true; $('wtap').style.display = 'none';
+    var B = W.bt = W.bt || { times: [] }, P = W.btP, N = P.flat.length, j = B.times.length, cur = P.flat[Math.min(j, N - 1)];
+    $('wbtimg').src = W.imgs[cur.page - 1].data;
+    var ov = $('wbtov'); ov.innerHTML = '';
+    [[j, 'rgba(255,150,0,.40)', '3px solid #f08c00'], [j + 1, 'rgba(30,120,220,.18)', '2px dashed #1c7ed6']].forEach(function (q) {
+      var f = P.flat[q[0]]; if (!f || f.page !== cur.page) return; var b = P.bars[f.bi], d = document.createElement('div');
+      d.style.cssText = 'position:absolute;box-sizing:border-box;left:' + (b.x0 * 100) + '%;top:' + (b.y0 * 100) + '%;width:' + ((b.x1 - b.x0) * 100) + '%;height:' + ((b.y1 - b.y0) * 100) + '%;background:' + q[1] + ';border:' + q[2]; ov.appendChild(d); });
+    $('wbtst').textContent = j >= N ? _t('最後まで叩きました。「叩き終えた」を押してください。') : _t('{p}ページ目　{j} / {n} 小節目（{w}）　いま光っている小節の1拍目で、ボタンを押します').replace('{p}', cur.page).replace('{j}', j + 1).replace('{n}', N).replace('{w}', WBT_WHY[cur.why] || cur.why);
+    $('wbtb').disabled = j >= N; $('wbtfin').hidden = j < N; $('wbtback').hidden = !!W.mic || !j;
+  }
+  $('wbtmode').onchange = function () { if (!W) return; W.btOn = this.checked; if (W.btOn && !W.bt) W.bt = { times: [] }; wupdate(); };
+  $('wbtb').onclick = function () {
+    if (!W || !W.btP) return; var B = W.bt = W.bt || { times: [] }, N = W.btP.flat.length; if (B.times.length >= N) return;
+    var t = wtapTime(); if (t === null) { $('wbtmsg').textContent = _t('録音が止まっています。再生してから、叩いてください。'); return; }
+    var last = B.times.length ? B.times[B.times.length - 1] : -1; if (t < last + 0.3) { $('wbtmsg').textContent = _t('前の小節から、まだ時間が経っていません。'); return; }
+    $('wbtmsg').textContent = ''; B.times.push(t); wupdate();
+  };
+  $('wbtback').onclick = function () {
+    if (!W || !W.bt || !W.btP) return; var B = W.bt, R = W.btP.R, j = B.times.length, tg = 0, i; for (i = 0; i < R.length; i++) if (R[i] < j) tg = R[i];
+    var old = B.times.slice(), ts = tg > 0 ? old[tg - 1] : (old[0] !== undefined ? Math.max(0, old[0] - 3) : 0); B.times.length = tg;
+    try { var m = $('wmedia'); m.currentTime = Math.max(0, ts); } catch (e) {}
+    var f = W.btP.flat[tg]; $('wbtmsg').textContent = _t('{p}ページ目の「{w}」の頭の小節まで戻りました。録音も少し前に戻したので、そこから叩き直してください。').replace('{p}', f.page).replace('{w}', WBT_WHY[f.why] || f.why); wupdate();
+  };
+  function wbtApply() {
+    var B = W.bt, P = W.btP, flat = P.flat, N = flat.length, T = B.times.slice(), bars = P.bars, ev = {}, notes = [], i, kk;
+    if (T.length < N) return { ok: false, notes: ['まだ最後まで叩いていません。'] };
+    T[N] = T[N - 1] + Math.max(1, T[N - 1] - T[N - 2]);
+    W.taps = []; W.rev = {}; W.log = []; W.needSg = {}; W.btBusy = true; var nudge = 0;
+    function barOf(m, st) { return m ? rtBarOf(m, bars, st) : -1; }
+    function describe(c) {
+      var r = c.r, k = c.kind, m, st;
+      if (c.key === 'tj2') { var ab = barOf(r.arrow, false); return ab < 0 ? null : { bar: ab + 1, start: true }; }
+      if (k === 'f') { m = r.flag; st = true; } else if (k === 'j') { m = r.jf; st = true; } else if (k === 'a') { m = r.arrow; st = false; } else if (k === 'sg') { m = r.sg; st = true; }
+      else if (k === 'tc') { m = r.tc; st = false; } else if (k === 'cd') { m = r.cd; st = true; } else if (k === 'fi') { m = r.fine; st = false; } else if (k === 'dc') { m = r.dc; st = false; } else return null;
+      var b = barOf(m, st); return b < 0 ? null : { bar: b, start: st };
+    }
+    function expand() { wPendForce = null; wrepPending(); var out = []; (W.cands || []).forEach(function (c) { if (c.group) c.group.forEach(function (g) { out.push({ r: c.r, kind: g.kind, key: g.key, prev: g.prev }); }); else out.push(c); }); return out; }
+    function fireEv(j) {
+      var cs = expand(), c, d, a, pj, fired = false;
+      for (a = 0; a < cs.length; a++) {
+        c = cs[a]; if (ev[c.r.id + ':' + c.key] === 'fail') continue; d = describe(c); if (!d) continue;
+        if (d.start ? !(j < N && flat[j].bi === d.bar) : !(j >= 1 && flat[j - 1].bi === d.bar)) continue;
+        if (c.prev) { pj = (W.rev[c.r.id] || {})[c.prev]; if (pj === undefined || !(T[j] > pj + 0.01)) continue; }
+        wForceT = T[j] + (nudge += 0.031); wPendForce = { r: c.r, kind: c.kind, key: c.key, prev: c.prev }; var kind = c.kind;
+        try { wrepTap(kind); } finally { wPendForce = null; wForceT = null; }
+        var e = W.rev[c.r.id]; if (e && e[c.key] !== undefined) { ev[c.r.id + ':' + c.key] = j; fired = true; } else { ev[c.r.id + ':' + c.key] = 'fail'; notes.push(c.key + ' ' + (c.r.id || '')); }
+        break;
+      }
+      return fired;
+    }
+    try {
+      for (var j = 0; j <= N; j++) {
+        var turned = false, guard = 0, more = true; nudge = 0;
+        while (more && guard++ < 14) {
+          more = fireEv(j);
+          if (!more && !turned && j >= 1 && j < N && flat[j].page !== flat[j - 1].page) {
+            var st = wstate(), nx = st.sq[st.ptr + 1]; turned = true;
+            if (nx && !nx.ev) { var n0 = W.taps.length; wForceT = T[j] + (nudge += 0.031); try { $('wtap').onclick(); } finally { wForceT = null; } if (W.taps.length > n0) more = true; else notes.push('page ' + flat[j].page); }
+            else if (!nx) notes.push('page ' + flat[j].page + ' (sequence end)');
+            else notes.push('page ' + flat[j].page + ' (event ' + nx.ev + ')');
+          }
+        }
+      }
+      /* D.S. / Coda: the first-pass times of the Segno and of "To Coda" are in the taps themselves */
+      W.reps.filter(isDA).forEach(function (q) {
+        var e = W.rev[q.id]; if (!e) return; var kd = daKind(q), x, b;
+        if (q.sg && e.tsg === undefined) { b = barOf(q.sg, true); for (x = 0; x < N; x++) if (flat[x].bi === b) { e.tsg = T[x]; break; } }
+        if (kd.indexOf('coda') >= 0 && q.tc && e.ttc === undefined) { b = barOf(q.tc, false); for (x = 0; x < N; x++) if (flat[x].bi === b) { e.ttc = T[x + 1]; break; } }
+      });
+    } finally { W.btBusy = false; wForceT = null; wPendForce = null; }
+    W.btApplied = true; wupdate();
+    return { ok: !wrepPending() && W.taps.length >= wnT(), notes: notes };
+  }
+  $('wbtfin').onclick = function () {
+    var r = wbtApply(); $('wbtmsg').textContent = r.ok ? _t('叩いた内容を、印の形に直しました。「できた（曲を作る）」を押してください。') : _t('叩いた内容を印に直せないところがありました：') + r.notes.join(' / ') + '　' + wDiag();
+  };
 
   function silentZone(ref, p, K, fsO, t0O) {      // the old reference has no sound around the turn K (digital silence): returns the silent stretch (in frames) and the pages it covers, else null
     var ic = ref.order.indexOf('p' + K + 'c'), inx = ref.order.indexOf('p' + (K + 1)); if (ic < 0 || inx < 0 || !ref.barStart) return null;
