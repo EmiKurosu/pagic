@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v462</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v464</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2070,7 +2070,24 @@
     return res;
   }
 
-  var API = { floats: unb64, replaceRef: replaceRef, effective: effective, findFirstBar: firstBarOrCorner, findSystems: findSystems, findBars: findBars, inkMap: inkMap, firstInk: firstInk, buildSong: buildSong };
+  /* A song made straight from the play order: o.pieces = [{ a, b, page, role }] in the order the piece is played (seconds of the recording); a stretch of the recording may be used more than once (a repeat that was not recorded). No repeat marks are needed: the reference simply runs in the order it is played. */
+  function buildDirect(o) {
+    var n = o.images.length, fs = o.frameSec, t0 = o.t0 || 0, T = o.frames.length, labels = [], barPage = {}, segText = [], used = {}, st = [], RA = [], fbA = [], total = 0, rects = {}, i, c;
+    var tr = (typeof _t === 'function' ? _t : function (s) { return s; });
+    o.pieces.forEach(function (pc) {
+      var j0 = Math.max(0, Math.min(T - 2, Math.ceil((pc.a - t0) / fs))), j1 = j0; while (j1 < T && t0 + j1 * fs < pc.b) j1++; if (j1 - j0 < 2) j1 = Math.min(T, j0 + 2);
+      var base = 'p' + pc.page + (pc.role === 'b' ? 'b' : pc.role === 'c' ? 'c' : ''), lab = used[base] ? base + '#' + (++used[base]) : (used[base] = 1, base), q = labels.length;
+      labels.push(lab); barPage[lab] = pc.page; segText.push(pc.role === 'b' ? tr('終盤') : pc.role === 'c' ? tr('最終') : ''); st.push(t0 + total * fs);
+      var span = Math.max(fs, pc.b - pc.a);
+      for (i = j0; i < j1; i++) { var t = t0 + i * fs; for (c = 0; c < 12; c++) RA.push(o.frames[i][c]); fbA.push(q + Math.min(0.999, Math.max(0, (t - pc.a) / span))); }
+      total += j1 - j0;
+    });
+    st.push(t0 + total * fs + fs); for (i = 1; i < st.length; i++) if (!(st[i] > st[i - 1])) st[i] = st[i - 1] + 0.01;
+    for (var p = 1; p <= n; p++) { var fb = o.firstBars && o.firstBars[p - 1]; if (fb && labels.indexOf('p' + p) >= 0) rects['p' + p] = { img: p - 1, x0: fb.x0, x1: fb.x1, y0: fb.y0, y1: fb.y1 }; }
+    var barFrames = Math.max(10, (o.barSec || 3) / fs);
+    return { kind: 'song', title: o.title || tr('新しい曲'), T: total, chroma: b64(Float32Array.from(RA)), frame_bars: b64(Float32Array.from(fbA)), bar_start: b64(Float32Array.from(st)), bar_frames: barFrames, order: labels, bar_page: barPage, images: o.images, sizes: o.sizes, rects: rects, segText: segText, tempo: 100, direct: true, nkey: labels.length };
+  }
+  var API = { floats: unb64, replaceRef: replaceRef, effective: effective, findFirstBar: firstBarOrCorner, findSystems: findSystems, findBars: findBars, inkMap: inkMap, firstInk: firstInk, buildSong: buildSong, buildDirect: buildDirect };
   if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.Song = API;
 })(typeof window !== 'undefined' ? window : this);
 
@@ -2897,7 +2914,7 @@
   var prevRuns = [];                                           // earlier parts of the same session, kept when the follower is restarted (a tap on "here now", the slow button, ...): [{...record, endedBy}]
   function runRecord(maxPts) {
     if (!pager || !pager.trace || !pager.trace.length) return null; var tr = pager.trace, st = Math.max(1, Math.round(tr.length / maxPts)), r2 = function (v) { return Math.round(v * 100) / 100; };
-    return { app: 'v392', recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
+    return { app: (($('ver') && $('ver').textContent) || '').trim(), recOnly: !!recOnlyRun, title: pkg.title, learned: !!(tempo && tempo.barSec), twoUp: !!twoUpOn, at: new Date().toISOString(), start: { page: startPos.page, pos: r2(startPos.pos), mark: !!startPos.mark }, frac: Math.round(turnPar().frac * 100), previewBars: +$('prevbars').value, noiseFloor: pager.gate && pager.gate.floor, nBars: pkg.order.length, onsetT: pager.turner && pager.turner.onsetT, rmsMax: pager.turner && pager.turner.rmsMax, barStart: (function () { try { return Array.prototype.map.call(pager.nominal.barStart, r2); } catch (e) { return null; } })(), slowPace: slowOn ? slowPace() : null, tempoMode: tmode, slowOn: !!slowOn, gaps: micGaps.slice(),
       turns: pager.turner.events.map(function (e) { return { t: r2(e.t), kind: e.kind, from: e.from, to: e.to, pos: r2(e.pos) }; }), previews: pager.turner.previews.map(function (e) { return { t: r2(e.t), from: e.from, to: e.to, pos: r2(e.pos) }; }), shows: shows.slice(0, 400),
       trace: tr.filter(function (r, i) { return i % st === 0; }).map(function (r) { return [r2(r[0]), r2(r[1]), r2(r[2]), r[3], r2(r[4] || 0), r2(r[5] === undefined ? r[1] : r[5])]; }) };      // (the last number: where the tracker itself was, before a doubtful jump was held back)
   }
@@ -4635,6 +4652,20 @@
     if (W.btSel === undefined) { W.btSel = W.btP0.plan.some(function (q) { return /^(ds|coda|dc)/.test(q.why); }) ? 'bt' : 'old'; $('wmbt').checked = W.btSel === 'bt'; $('wmold').checked = W.btSel !== 'bt'; }
   }
   $('wmold').onchange = $('wmbt').onchange = function () { if (W) W.btSel = $('wmbt').checked ? 'bt' : 'old'; };
+  function wbtDirectPieces() {      // the bar-tap way: the play order (with the repeats that were not recorded) -> the pieces of the recording in the order they are played
+    var P = W.btP, T = W.bt && W.bt.times, N = P && P.flat.length; if (!P || !T || T.length < N || !N) return null;
+    var d = [], j; for (j = 0; j + 1 < N; j++) if (T[j + 1] > T[j]) d.push(T[j + 1] - T[j]); d.sort(function (a, b) { return a - b; }); var med = d.length ? d[d.length >> 1] : 1.5, rec = W.dur || (T[N - 1] + med);
+    var tm = []; for (j = 0; j < N; j++) tm.push([T[j], j + 1 < N ? T[j + 1] : Math.min(rec, T[N - 1] + med)]);
+    var seen = {}, seq = [], q = 0;
+    P.plan.forEach(function (sg) { sg.list.forEach(function (bi) { var a, b; if (sg.dup) { var s0 = seen[bi]; if (!s0) return; a = s0[0]; b = s0[1]; } else { if (q >= N) return; a = tm[q][0]; b = tm[q][1]; seen[bi] = [a, b]; q++; } seq.push({ a: a, b: b, page: P.bars[bi].page }); }); });
+    if (!seq.length || q !== N) return null;
+    var groups = [], g = null; seq.forEach(function (x) { if (g && g.page === x.page && Math.abs(x.a - g.b) < 1e-6) { g.b = x.b; g.bars.push(x); } else { g = { page: x.page, a: x.a, b: x.b, bars: [x] }; groups.push(g); } });
+    var pieces = []; groups.forEach(function (gr) { var n = gr.bars.length;
+      if (n >= 3) { pieces.push({ a: gr.bars[0].a, b: gr.bars[n - 2].a, page: gr.page, role: 'a' }); pieces.push({ a: gr.bars[n - 2].a, b: gr.bars[n - 1].a, page: gr.page, role: 'b' }); pieces.push({ a: gr.bars[n - 1].a, b: gr.b, page: gr.page, role: 'c' }); }
+      else if (n === 2) { pieces.push({ a: gr.bars[0].a, b: gr.bars[1].a, page: gr.page, role: 'b' }); pieces.push({ a: gr.bars[1].a, b: gr.b, page: gr.page, role: 'c' }); }
+      else pieces.push({ a: gr.a, b: gr.b, page: gr.page, role: 'c' }); });
+    return { pieces: pieces, barSec: med };
+  }
   function wbtNew() { return { times: [wbtOnset()] }; }
   function wbtShow() {
     if (!W) return; if (!W.btOn || !W.btP) { $('wbt').hidden = true; $('wbtrow').hidden = true; $('wpgwrap').style.display = ''; return; }      // (the old way: nothing of the bar-tap way is shown)
@@ -5029,7 +5060,8 @@
         }
         var marks = [], k, S = 0; for (k = 0; k < W.imgs.length - 1; k++) { var T = taps[k], dur = T - S, bl = Math.max(1.5, Math.min(5, 0.07 * dur, 0.4 * dur)); marks.push({ lastBar: T - 0.55 * bl, next: T + 0.45 * bl }); S = T + 0.45 * bl; }   // the tap is the moment of the turn (55 % into the last bar)
         { var zr1 = (W.noRecNew || partKd) ? [] : zeroRuns(frames, fsec, 20); if (zr1.length) throw new Error(_t('お手本の録音に、音が入っていない部分があります：') + zeroText(zr1) + _t('。録音（または動画）を確かめて、別の録音で作り直してください。')); }
-        var p = Song.buildSong({
+        var dpl = (!partKd && W.btOn && W.btApplied) ? wbtDirectPieces() : null;      /* the bar-tap way: the song is made straight from the play order */
+        var p = dpl ? Song.buildDirect({ frames: W.frames, frameSec: ex.hop / W.sr, t0: ex.nfft / 2 / W.sr, pieces: dpl.pieces, barSec: dpl.barSec, title: $('wtitle').value.trim() || _t('新しい曲'), images: W.imgs.map(function (i) { return i.data; }), sizes: W.imgs.map(function (i) { return { w: i.w, h: i.h }; }), firstBars: W.imgs.map(function (i) { return i.rect; }) }) : Song.buildSong({
           frames: frames, rms: rmsA, frameSec: ex.hop / W.sr, t0: ex.nfft / 2 / W.sr, marks: marks, title: $('wtitle').value.trim() || _t('新しい曲'),
           images: W.imgs.map(function (i) { return i.data; }), sizes: W.imgs.map(function (i) { return { w: i.w, h: i.h }; }), firstBars: W.imgs.map(function (i) { return i.rect; }),
           repeats: reps
