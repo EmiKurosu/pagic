@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v460</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v461</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3471,7 +3471,8 @@
     var d; try { d = JSON.parse(text); } catch (e) { return; } if (!d || d.kind !== 'draft') return;
     $('lib').hidden = true; wopen(); W.draftId = id; $('wtitle').value = d.title || '';
     W.imgs = d.images.map(function (data, i) { return { data: data, w: d.sizes[i].w, h: d.sizes[i].h, thumb: data, name: d.names && d.names[i] || '', rect: d.rects && d.rects[i] ? d.rects[i] : null }; });
-    W.reps = d.reps || []; wthumbs(); wcheck(); wreplist(); $('wsetmsg').textContent = _t('作りかけの曲です。録音がなくても、「録音なしで曲を作る」を押すと、すぐ開いて練習できます。録音があるときは、録音を選んで③から続けてください。');
+    var nUf = W.imgs.length; W.imgs = W.imgs.filter(function (m) { return !/^(並べ替え|Reordered)/.test(m.name || ''); }); nUf -= W.imgs.length; if (nUf) { W.reps = []; }      /* the pages of the dropped "re-ordered score" try are removed: the original photos have to be chosen again */
+    W.reps = d.reps || []; wthumbs(); wcheck(); wreplist(); $('wsetmsg').textContent = _t('作りかけの曲です。録音がなくても、「録音なしで曲を作る」を押すと、すぐ開いて練習できます。録音があるときは、録音を選んで③から続けてください。') + (nUf ? ' ' + _t('並べ替えた楽譜のページ（{n}枚）は消しました。元の楽譜の写真を、もう一度選んでください。').replace('{n}', nUf) : '');
   }
   $('wtitle').addEventListener('input', wDraftSave);
   var lbI = 0;
