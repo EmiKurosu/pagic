@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v461</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v462</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -4630,7 +4630,7 @@
   function wbtPickKey() { return 'pagic-pick:' + (($('wtitle').value || '').trim()); }
   $('wbtpick').onchange = function () { if (!W) return; W.btPick = this.checked; try { localStorage.setItem(wbtPickKey(), this.checked ? '1' : '0'); } catch (e) {} wupdate(); };
   function wbtChoiceUi() {      // the choice of the two ways: shown when the marks of the trial screen give a play order
-    if (!W) return; var key = ($('wtitle').value || '').trim(); if (W.btCK !== key) { W.btCK = key; if (W.rt && !(W.rt.marks || []).length) W.rt = null; W.btP0 = wbtPlan(); W.btSel = undefined; }
+    if (!W) return; var key = ($('wtitle').value || '').trim() + '|' + W.imgs.length + '|' + (W.rt && W.rt.marks ? W.rt.marks.length : -1); if (W.btCK !== key) { W.btCK = key; if (W.rt && !(W.rt.marks || []).length) W.rt = null; W.btP0 = wbtPlan(); W.btSel = undefined; }
     $('wmodebox').hidden = !W.btP0; if (!W.btP0) return;
     if (W.btSel === undefined) { W.btSel = W.btP0.plan.some(function (q) { return /^(ds|coda|dc)/.test(q.why); }) ? 'bt' : 'old'; $('wmbt').checked = W.btSel === 'bt'; $('wmold').checked = W.btSel !== 'bt'; }
   }
