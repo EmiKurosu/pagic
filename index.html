@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v466</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v467</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2243,6 +2243,10 @@
   }
   var baseCv = null, baseKey = '', baseL = [];      // finished page pictures are kept for a few pages (the page before and after too), so that turning a page is only a copy
   function baseGet(k) { for (var i = 0; i < baseL.length; i++) if (baseL[i].key === k) { var e = baseL.splice(i, 1)[0]; baseL.push(e); return e.cv; } return null; }
+  var cmpL = [];      /* the finished picture of a page with much writing (page + pen + highlighter): kept for a few pages, so that a swipe lays ONE picture on the screen (the highlighter used to be drawn stroke by stroke at every swipe) */
+  function cmpKey(k, pg, v) { var list = ink.strokes[pg]; if (!list || list.length <= 40 || ink.cur || twoUpOn || geoEdit()) return null; var vk = ''; for (var kk in v) if (typeof v[kk] === 'number') vk += kk + ':' + v[kk] + ','; var hc = 0, pc = 0; for (var i = 0; i < list.length; i++) { if (list[i].h) hc++; pc += list[i].p ? list[i].p.length : 0; } return k + '#' + list.length + '/' + hc + '/' + pc + '#' + vk + '#' + JSON.stringify(pa[pg] || 0); }
+  function cmpGet(key) { for (var i = 0; i < cmpL.length; i++) if (cmpL[i].key === key) { var e = cmpL.splice(i, 1)[0]; cmpL.push(e); return e.cv; } return null; }
+  function cmpPut(key, w, h) { var e; if (cmpL.length >= 4) { e = cmpL.shift(); } else e = { cv: document.createElement('canvas') }; e.key = key; e.cv.width = w; e.cv.height = h; cmpL.push(e); return e.cv; }
   function baseNew(k) { var e; if (baseL.length >= 4) e = baseL.shift(); else e = { cv: document.createElement('canvas') }; e.key = k; baseL.push(e); return e.cv; }
   var twoUpPref = true;      // tablet (or phone) held sideways: the shown page and the next one side by side
   function devPortrait() {      // home-screen app on iPad: at start-up the page can have the size of the OTHER orientation for a few seconds - the device's own orientation decides then (never two pages side by side on an upright iPad)
@@ -2315,9 +2319,10 @@
      cxI = a ? a.cx : reg.x0 + w / 2, cyI = a ? a.cy : reg.y0 + h / 2;
     var ox = px0(c) + viewW(c) / 2 - (cxI - reg.x0) * s, oy = c.height / 2 - (cyI - reg.y0) * s;
     view = { s: s, s0: s0, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb };
-    g.imageSmoothingQuality = 'high';
+    g.imageSmoothingQuality = 'high'; var cmpHit = false, cmpK = null;
     if (gp) {                                    // (rotated / tilted pages are costly to draw: the finished picture is kept and reused while only the writing, flags or the curl change)
       var pa0 = paOf(shownPage), bk = [shownPage, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), JSON.stringify(gp), pa0 ? [pa0.b, pa0.c, pa0.t, pa0.A ? 1 : 0].join(',') : '', ed ? 1 : 0, geoDial ? 1 : 0, reg0.img].join('|');
+      cmpK = cmpKey(bk, shownPage, view); var cc1 = cmpK ? cmpGet(cmpK) : null; if (cc1) { g.drawImage(cc1, 0, 0); cmpHit = true; } else {
       baseCv = baseGet(bk);
       if (!baseCv) {
         baseCv = baseNew(bk); baseCv.width = c.width; baseCv.height = c.height; var bg = baseCv.getContext('2d'); bg.imageSmoothingQuality = 'high';
@@ -2328,20 +2333,22 @@
           bg.drawImage(paSrc(reg0.img, shownPage), reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0); }
         bg.restore();
       }
-      g.drawImage(baseCv, 0, 0);
+      g.drawImage(baseCv, 0, 0); }
     } else {                                     // an ordinary page: its picture is also kept (while zoomed it is a big picture, and redrawing it after every stroke made the pencil stall)
       var pb = paOf(shownPage), bk2 = ['n', shownPage, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), pb ? [pb.b, pb.c, pb.t, pb.A ? 1 : 0].join(',') : '', reg.img].join('|');
+      cmpK = cmpKey(bk2, shownPage, view); var cc2 = cmpK ? cmpGet(cmpK) : null; if (cc2) { g.drawImage(cc2, 0, 0); cmpHit = true; } else {
       baseCv = baseGet(bk2);
       if (!baseCv) {
         baseCv = baseNew(bk2); baseCv.width = c.width; baseCv.height = c.height; var bg2 = baseCv.getContext('2d'); bg2.imageSmoothingQuality = 'high';
         bg2.fillStyle = '#ffffff'; bg2.fillRect(0, 0, c.width, c.height); bg2.drawImage(paSrc(reg.img, shownPage), reg.x0, reg.y0, w, h, ox, oy, w * s, h * s);
       }
-      g.drawImage(baseCv, 0, 0);
+      g.drawImage(baseCv, 0, 0); }
     }
     if (twoUpOn) drawSecond(g, c, d);
     try { var fnL = $('fspgL'), fnR = $('fspgR'); if (twoUpOn && view2) { var pr = playedRight(), pl = pr ? view2.page : shownPage, pq = pr ? shownPage : view2.page; fnL.textContent = _t('{n}ページ').replace('{n}', pl); fnR.textContent = _t('{n}ページ').replace('{n}', pq); fnL.classList.add('on'); fnR.classList.add('on'); } else { fnL.classList.remove('on'); fnR.classList.remove('on'); } } catch (e) {}      // full screen has no header: each page's number stands at the top in the middle of that page
     var b = playBar != null ? pkg.rects[playBar] : null;
-    if (gp) { g.save(); g.beginPath(); g.rect(ox, oy, w * s, h * s); g.clip(); drawInk(g, view); g.restore(); } else drawInk(g, view);
+    if (!cmpHit) { if (gp) { g.save(); g.beginPath(); g.rect(ox, oy, w * s, h * s); g.clip(); drawInk(g, view); g.restore(); } else drawInk(g, view);
+      if (cmpK) { try { var cvN = cmpPut(cmpK, c.width, c.height); cvN.getContext('2d').drawImage(c, 0, 0); } catch (e) { cmpL = []; } } }      /* (the finished picture is kept for the next time) */
     if (!ed) drawReps(g, view, d);
     if (!ed) drawPeel(g, view, d);
     if (!ed) drawProb(g, view, d);
