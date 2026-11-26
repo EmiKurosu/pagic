@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v455</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v457</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -647,6 +647,7 @@
           <b>お手本の取り込み方</b>
           <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="wmode2" id="wmold" checked> <span>音楽を聞かせながら、「ここでめくりたい」を押す（これまでの方式。繰り返しだけの曲、第一・第二括弧だけの曲向け）</span></label>
           <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="wmode2" id="wmbt"> <span>小節の1拍目を叩く（ダ・カーポ、ダル・セーニョ、コーダのある曲向け）</span></label>
+          <div style="display:grid;gap:6px;border-top:1px solid var(--line,#ccc);padding-top:8px"><span><b>おすすめ：</b>楽譜を、演奏する順に並べ替えて、繰り返しのない1本の楽譜にします。並べ替えたあとは、上の「これまでの方式」で（ただめくるだけの楽譜として）取り込めます。</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="wunfold" style="position:static">楽譜を並べ替える</button><button type="button" id="wunfoldundo" style="position:static" hidden>元の楽譜に戻す</button></div><small id="wunfoldmsg"></small></div>
         </div>
         <button type="button" id="wnext" disabled>再生して、めくる場所に印を付ける</button>
       </div>
@@ -2441,7 +2442,7 @@
     if (!o) { if (peel) { peel = null; drawPage(null, 0); } peelLast = -1; return; }
     if (peel && peel.np === o.np && Math.abs(o.sc - peelLast) < 0.012) return; peel = o; peelLast = o.sc; drawPage(null, 0);
   }
-  var peelSnoozeUntil = 0, pendingTurn = null;
+  var peelSnoozeUntil = 0, pendingTurn = null, manHold = { until: 0, from: -1 };
   function peelSnooze() {      // swiped the curl upwards: "not yet" - the curl goes away, and a turn that comes meanwhile is shown only after a while
     peelSnoozeUntil = performance.now() + 3000; peelKey = ''; peelHold = null; setPeel(null); toast(_t('まだめくりません')); log(_t('めくりを待たせました')); shows.push([pager && pager.last.t ? Math.round(pager.last.t * 100) / 100 : -1, shownPage, 'wait']);
   }
@@ -2479,6 +2480,7 @@
 
   /* ---------- events from the follower ---------- */
   function onEvent(ev) {
+    if (manHold.until > performance.now() && ev.kind !== 'preview' && ev.page !== shownPage && (ev.kind !== 'turn' || ev.page === manHold.from)) { log(_t('手でめくった直後なので無視: ') + 'p.' + ev.page); return; }      // you just turned by hand: the follower may not drag the page back (position corrections, or a turn back to the page you left)
     if (ev.kind === 'preview') {
       var run = pager.turner.runs[pager.turner.disp + 1], lab = pkg.order[run[0]];
       showPreview(lab, ev.page); log(_t('予告: ') + lab + ' (p.' + ev.page + ')');
@@ -3095,7 +3097,7 @@
     if (!pkg) return;
     pendingTurn = null;
     var cur = shownPage || 1; if (twoUpOn && Math.abs(delta) === 1 && $('padj').hidden && !geoEdit()) { var L = cur % 2 === 1 ? cur : cur - 1; delta = delta * 2; cur = L; if (delta > 0 && L + 2 > maxPage) return; }      // two pages side by side: ONE swipe moves a whole spread (1|2 -> 3|4), it lands on the left page
-    var p = Math.min(maxPage, Math.max(1, cur + delta)); hidePreview(); showWhy = 'swipe'; showPage(p); showWhy = 'auto';
+    var p = Math.min(maxPage, Math.max(1, cur + delta)); if (running && p !== shownPage) manHold = { until: performance.now() + 20000, from: shownPage }; hidePreview(); showWhy = 'swipe'; showPage(p); showWhy = 'auto';
     if (pager) { var rs = pager.turner.runs, cr = pager.turner.runOf[Math.min(Math.max(Math.floor(pager.last.pos || 0), 0), pkg.order.length - 1)], bk = -1; for (var k = 0; k < rs.length; k++) if (rs[k][2] === p && (bk < 0 || Math.abs(k - cr) < Math.abs(bk - cr))) bk = k; if (bk >= 0) { pager.turner.disp = bk; pager.turner.previewed = -1; } }   // the follower continues from the page you chose
   }
   ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (n) { document.addEventListener(n, function (e) { e.preventDefault(); }, { passive: false }); });      // iOS: no browser zoom of the whole screen (the score has its own pinch zoom)
@@ -4627,11 +4629,47 @@
   function wbtPickKey() { return 'pagic-pick:' + (($('wtitle').value || '').trim()); }
   $('wbtpick').onchange = function () { if (!W) return; W.btPick = this.checked; try { localStorage.setItem(wbtPickKey(), this.checked ? '1' : '0'); } catch (e) {} wupdate(); };
   function wbtChoiceUi() {      // the choice of the two ways: shown when the marks of the trial screen give a play order
-    if (!W) return; var key = ($('wtitle').value || '').trim(); if (W.btCK !== key) { W.btCK = key; if (W.rt && !(W.rt.marks || []).length) W.rt = null; W.btP0 = wbtPlan(); W.btSel = undefined; }
-    $('wmodebox').hidden = !W.btP0; if (!W.btP0) return;
+    if (!W) return; if (W.unfoldOrig) { $('wmodebox').hidden = false; return; } var key = ($('wtitle').value || '').trim(); if (W.btCK !== key) { W.btCK = key; if (W.rt && !(W.rt.marks || []).length) W.rt = null; W.btP0 = wbtPlan(); W.btSel = undefined; }
+    $('wmodebox').hidden = !W.btP0 && !W.unfoldOrig; if (!W.btP0) return;
     if (W.btSel === undefined) { W.btSel = W.btP0.plan.some(function (q) { return /^(ds|coda|dc)/.test(q.why); }) ? 'bt' : 'old'; $('wmbt').checked = W.btSel === 'bt'; $('wmold').checked = W.btSel !== 'bt'; }
   }
   $('wmold').onchange = $('wmbt').onchange = function () { if (W) W.btSel = $('wmbt').checked ? 'bt' : 'old'; };
+
+  /* ---------- unfolding: the score is cut into bars and laid out again in the order they are played (no repeats, no jumps: only turning) ---------- */
+  function wLoadImg(src) { return new Promise(function (ok, ng) { var im = new Image(); im.onload = function () { ok(im); }; im.onerror = function () { ng(new Error('image')); }; im.src = src; }); }
+  function wUnfold() {
+    var P = W && wbtPlan(); if (!P || !P.flat.length) return Promise.reject(new Error(_t('印から演奏順を決められません。')));
+    var N = W.imgs.length, ims = [], i;
+    return Promise.all(W.imgs.map(function (m) { return wLoadImg(m.data); })).then(function (loaded) {
+      ims = loaded; var crops = P.flat.map(function (f) { var b = P.bars[f.bi], im = ims[b.page - 1]; if (!im) throw new Error('p.' + b.page); var w = im.naturalWidth, h = im.naturalHeight, pad = 0.004, py = 0.012, y0 = Math.max(0, b.y0 - py), y1 = Math.min(1, b.y1 + py);
+        return { im: im, sx: Math.max(0, (b.x0 - pad) * w), sy: y0 * h, sw: (b.x1 - b.x0 + 2 * pad) * w, sh: (y1 - y0) * h }; });
+      var hs = crops.map(function (c) { return c.sh; }).sort(function (a, b) { return a - b; }), H0 = hs[hs.length >> 1];
+      var PW = 1400, PH = 1980, M = 50, GAP = Math.round(0.22 * H0), avail = PW - 2 * M, pages = [], lines = [], cur = [], cw = 0;
+      crops.forEach(function (c) { c.k = H0 / c.sh; c.dw = c.sw * c.k; c.dh = H0; });
+      crops.forEach(function (c) { if (cur.length && cw + c.dw > avail) { lines.push({ c: cur, w: cw }); cur = []; cw = 0; } cur.push(c); cw += c.dw; }); if (cur.length) lines.push({ c: cur, w: cw });
+      var perPage = Math.max(1, Math.floor((PH - 2 * M + GAP) / (H0 + GAP))), outs = [];
+      for (i = 0; i < lines.length; i += perPage) outs.push(lines.slice(i, i + perPage));
+      var res = [];
+      outs.forEach(function (grp, pi) {
+        var cv = document.createElement('canvas'); cv.width = PW; cv.height = PH; var g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, PW, PH); g.imageSmoothingQuality = 'high';
+        grp.forEach(function (ln, li) { var f = ln.w < 0.6 * avail || li === grp.length - 1 && ln.w < 0.5 * avail ? 1 : Math.min(1.12, avail / ln.w), x = M, y = M + li * (H0 + GAP);
+          ln.c.forEach(function (c) { var dw = c.dw * f, dh = c.dh * f; g.drawImage(c.im, c.sx, c.sy, c.sw, c.sh, x, y + (H0 - dh) / 2, dw, dh); x += dw; }); });
+        var t = document.createElement('canvas'); t.width = 192; t.height = 256; var tg = t.getContext('2d'); tg.fillStyle = '#fff'; tg.fillRect(0, 0, 192, 256); var ts = Math.min(192 / PW, 256 / PH); tg.drawImage(cv, 0, 0, PW * ts, PH * ts);
+        var rect = null; try { rect = Song.findFirstBar(cv); } catch (e) {}
+        res.push({ data: cv.toDataURL('image/jpeg', 0.88), w: PW, h: PH, thumb: t.toDataURL('image/jpeg', 0.7), rect: rect, name: _t('並べ替え') + ' ' + (pi + 1) });
+      });
+      return { imgs: res, nBars: crops.length };
+    });
+  }
+  $('wunfold').onclick = function () {
+    if (!W || W.unfoldBusy) return; W.unfoldBusy = true; var msg = $('wunfoldmsg'); msg.textContent = _t('並べ替えています…'); $('wunfold').disabled = true;
+    wUnfold().then(function (r) {
+      W.unfoldOrig = W.unfoldOrig || { imgs: W.imgs, reps: W.reps, rt: W.rt, mode: W.btOn }; W.imgs = r.imgs; W.reps = []; W.rt = null; W.btP0 = null; W.btP = null; W.btOn = false; W.bt = null; W.btApplied = false; W.btSel = 'old'; W.taps = []; W.rev = {};
+      try { $('wmold').checked = true; } catch (e) {} msg.textContent = _t('並べ替えました（{n}小節、{p}ページ）。下の「再生して、めくる場所に印を付ける」で、これまで通り取り込めます。').replace('{n}', r.nBars).replace('{p}', r.imgs.length); $('wunfoldundo').hidden = false; $('wmodebox').hidden = false;
+      try { wthumbs(); wcheck(); wreplist(); wupdate(); } catch (e) {}
+    }).catch(function (e) { msg.textContent = _t('並べ替えられませんでした: ') + (e && e.message || e); }).then(function () { W.unfoldBusy = false; $('wunfold').disabled = false; });
+  };
+  $('wunfoldundo').onclick = function () { if (!W || !W.unfoldOrig) return; var o = W.unfoldOrig; W.unfoldOrig = null; W.imgs = o.imgs; W.reps = o.reps; W.rt = o.rt; W.btP0 = null; W.btCK = undefined; W.btSel = undefined; $('wunfoldundo').hidden = true; $('wunfoldmsg').textContent = _t('元の楽譜に戻しました。'); try { wthumbs(); wcheck(); wreplist(); wbtChoiceUi(); wupdate(); } catch (e) {} };
   function wbtNew() { return { times: [wbtOnset()] }; }
   function wbtShow() {
     if (!W) return; if (!W.btOn || !W.btP) { $('wbt').hidden = true; $('wbtrow').hidden = true; $('wpgwrap').style.display = ''; return; }      // (the old way: nothing of the bar-tap way is shown)
