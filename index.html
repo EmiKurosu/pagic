@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v450</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v452</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -667,7 +667,7 @@
         <label style="display:flex;gap:8px;align-items:center;font-size:15px"><input type="checkbox" id="wbtpick"> <span>最初にアウフタクトがある（最初の小節線の前に、短い部分がある）</span></label>
         <div id="wbtarea" style="flex:1;min-height:0;display:flex;justify-content:center;align-items:center;gap:8px"></div>
         <button type="button" id="wbtb" style="width:100%;font-size:30px;height:110px;background:#1d4ed8;color:#fff;border:none;border-radius:16px;font-weight:700">1拍目</button>
-        <div class="wrow" style="padding-right:84px"><button type="button" id="wbtback">↩ やり直す（区切りまで戻る）</button><button type="button" id="wbtpause">⏸ 一時停止</button><button type="button" id="wbtfin" hidden>叩き終えた（印の形に直す）</button><button type="button" id="wbtdone" hidden>できた（曲を作る）</button></div>
+        <div class="wrow" style="padding-right:84px"><button type="button" id="wbtback">↩ やり直す（区切りまで戻る）</button><button type="button" id="wbtpause">⏸ 一時停止</button><button type="button" id="wbtfin" hidden>叩き終えた（曲を作る）</button><button type="button" id="wbtdone" hidden>できた（曲を作る）</button></div>
         <div id="wbtmsg" style="min-height:1.4em;padding-right:84px"></div>
       </div>
       <div id="wpgwrap"><img id="wpageimg" alt="楽譜のページ"><div id="wpgmk"></div><div id="wautomsg" hidden></div></div>
@@ -4649,6 +4649,7 @@
     $('wbtst').textContent = j >= N ? _t('最後まで叩きました。「叩き終えた」を押してください。') : j <= 1 ? (W.btPick ? _t('アウフタクト（最初の小節線の前の短い部分）は叩きません。音が鳴り始めた所から、自動で数えます。録音を流して、最初の小節線のあとの小節の頭（1拍目）から、「1拍目」を押してください。') : _t('最初の小節は叩きません。音が鳴り始めた所から、自動で数えます。録音を流して、2小節目の頭（1拍目）から、「1拍目」を押してください。')) : _t('{p}ページ目　{j} / {n} 小節を叩きました（{w}）　次の小節の1拍目で押します').replace('{p}', cur.page).replace('{j}', W.btPick ? j - 1 : j).replace('{n}', W.btPick ? N - 1 : N).replace('{w}', last ? (WBT_WHY[last.why] || last.why) : '');
     $('wbtb').disabled = j >= N; $('wbtfin').hidden = j < N || !!W.btApplied; $('wbtback').hidden = !!W.mic || j <= 1 || !!W.btApplied; $('wbtpause').textContent = $('wplay').textContent;
     $('wbtdone').hidden = !W.btApplied; $('wbtdone').disabled = $('wdone').disabled;
+    if (W.err) $('wbtmsg').textContent = '⚠ ' + W.err;      // (an error of making the song is shown here: the old status line is under this screen)
   }
   $('wbtclose').onclick = function () {      // stop here and go back to the page where the song is made
     try { $('wmedia').pause(); } catch (e) {} if (W) { W.bt = null; W.btApplied = false; W.taps = []; W.rev = {}; W.log = []; } wshow('wsetup'); try { wcheck(); } catch (e) {}
@@ -4721,8 +4722,9 @@
     var okk = !wrepPending() && W.taps.length >= wnT(); W.btApplied = okk; wupdate();
     return { ok: okk, notes: notes };
   }
-  $('wbtfin').onclick = function () {
-    var r = wbtApply(); $('wbtmsg').textContent = r.ok ? _t('叩いた内容を、印の形に直しました。「できた（曲を作る）」を押してください。') : _t('叩いた内容を印に直せないところがありました：') + r.notes.join(' / ') + '　' + wDiag();
+  $('wbtfin').onclick = function () {      // the tapped bars are turned into the turn / repeat times the app works with, then the song is made
+    var r = wbtApply(); if (r.ok && !$('wdone').disabled) { $('wbtmsg').textContent = _t('曲を作っています…'); $('wdone').onclick(); return; }
+    $('wbtmsg').textContent = r.ok ? _t('叩いた内容は、整理できました。「できた（曲を作る）」を押してください。') : _t('叩いた内容から、めくる場所や繰り返しの時刻を作れないところがありました：') + r.notes.join(' / ') + '　' + wDiag();
   };
 
   function silentZone(ref, p, K, fsO, t0O) {      // the old reference has no sound around the turn K (digital silence): returns the silent stretch (in frames) and the pages it covers, else null
