@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v442</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v443</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -657,12 +657,14 @@
       <div id="wstat"></div>
       <div id="wlevelbox" hidden><div class="meter" style="width:100%;height:12px"><i id="wlevel"></i></div><div id="wlevelmsg" style="font-size:14px;margin-top:4px"></div></div>
       <div id="wbtrow" hidden><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="wbtmode"> <span>拍を叩いて覚える方式（試験）：1拍目のたびに、下のボタンを押します</span></label></div>
-      <div id="wbt" hidden>
-        <div id="wbtst" style="margin:6px 0;font-weight:600"></div>
-        <div id="wbtwrap" style="position:relative;line-height:0"><img id="wbtimg" alt="" style="width:100%"><div id="wbtov" style="position:absolute;inset:0;pointer-events:none"></div></div>
-        <button type="button" id="wbtb" style="width:100%;font-size:26px;padding:22px 0;margin:8px 0">1拍目</button>
-        <div class="wrow"><button type="button" id="wbtback">↩ やり直す（区切りまで戻る）</button><button type="button" id="wbtfin" hidden>叩き終えた（印の形に直す）</button></div>
-        <div id="wbtmsg" style="margin:6px 0"></div>
+      <div id="wbt" hidden style="position:fixed;inset:0;z-index:45;background:var(--bg,#fff);display:flex;flex-direction:column;gap:6px;padding:max(8px,env(safe-area-inset-top)) 12px max(8px,env(safe-area-inset-bottom)) 12px;box-sizing:border-box">
+        <div id="wbtst" style="font-weight:600;min-height:2.6em;line-height:1.3"></div>
+        <div id="wbtarea" style="flex:1;min-height:0;display:flex;justify-content:center;align-items:center">
+          <div id="wbtwrap" style="position:relative;line-height:0"><img id="wbtimg" alt="" style="width:100%;height:100%;display:block"><div id="wbtov" style="position:absolute;inset:0;pointer-events:none"></div></div>
+        </div>
+        <button type="button" id="wbtb" style="width:100%;font-size:30px;height:110px;background:#1d4ed8;color:#fff;border:none;border-radius:16px;font-weight:700">1拍目</button>
+        <div class="wrow" style="padding-right:84px"><button type="button" id="wbtback">↩ やり直す（区切りまで戻る）</button><button type="button" id="wbtpause">⏸ 一時停止</button><button type="button" id="wbtfin" hidden>叩き終えた（印の形に直す）</button><button type="button" id="wbtdone" hidden>できた（曲を作る）</button></div>
+        <div id="wbtmsg" style="min-height:1.4em;padding-right:84px"></div>
       </div>
       <div id="wpgwrap"><img id="wpageimg" alt="楽譜のページ"><div id="wpgmk"></div><div id="wautomsg" hidden></div></div>
       <div id="wmulti" hidden></div>
@@ -4334,7 +4336,7 @@
     if (wPinsMissing()) return;
     W.mic = false; ['wplay', 'wback', 'wfwd', 'wseekrow'].forEach(function (k) { $(k).hidden = false; });
     if (!W.ready) { $('wsetmsg').textContent = _t('録音の解析が終わるまで、少しお待ちください。'); return; }
-    W.marks = []; W.taps = []; W.capFrames = []; W.preDone = false; wshow('wtapview');
+    W.marks = []; W.taps = []; W.capFrames = []; W.preDone = false; W.bt = null; W.btApplied = false; wshow('wtapview');
     try { if (micKeep) micRelease(micKeep); clearTimeout(micTimer); } catch (e) {}   // a mic left open keeps iOS in 'record' mode: playback gets quiet or goes to the receiver
     try { if (navigator.audioSession) { navigator.audioSession.type = 'playback'; asSet = true; } } catch (e) {}   // iOS: play out loud even with the silent switch on / after the mic was used
     try { $('wstartm').pause(); } catch (e) {} var st0 = (!W.capture && wpartK() && W.startT > 0) ? W.startT : 0;      // start from the chosen place of the recording (only for one page)
@@ -4598,21 +4600,31 @@
       for (i = 0; i < flat.length; i++) if ((i === 0 || flat[i].k === 0 || flat[i].page !== flat[i - 1].page) && (!R.length || i - R[R.length - 1] >= 3)) R.push(i);      // (points one or two bars apart are one point)
       return { plan: pl, flat: flat, bars: pl.bars, R: R }; } catch (e) { return null; }
   }
+  function wbtFit() {
+    if (!W || !W.btP || $('wbt').hidden) return; var P = W.btP, j = W.bt ? W.bt.times.length : 0, cur = P.flat[Math.min(j, P.flat.length - 1)], im = W.imgs[cur.page - 1], ar = $('wbtarea'); if (!im || !ar) return;
+    var iw = im.w || 1, ih = im.h || 1, sc = Math.min(ar.clientWidth / iw, ar.clientHeight / ih); if (!(sc > 0)) return;
+    $('wbtwrap').style.width = Math.floor(iw * sc) + 'px'; $('wbtwrap').style.height = Math.floor(ih * sc) + 'px';
+  }
+  window.addEventListener('resize', function () { try { wbtFit(); } catch (e) {} });
   function wbtShow() {
     if (!W) return; var bk = ($('wtitle').value || '').trim(); if (W.btKey !== bk) { W.btKey = bk; W.btP = undefined; if (W.rt && !(W.rt.marks || []).length) W.rt = null; }      // (the marks are kept per title: they are read again when the title is known)
     if (W.btP === undefined) W.btP = wbtPlan();
-    var can = !!W.btP && !wpartK(), on = can && !!W.btOn; $('wpgwrap').style.display = on ? 'none' : ''; $('wbtrow').hidden = !can; $('wbtmode').checked = !!W.btOn; $('wbt').hidden = !on;
+    if (W.btOn === undefined) W.btOn = true;      // (the bar-tap way is the one that is shown)
+    var can = !!W.btP && !wpartK(), on = can && !!W.btOn; $('wbtrow').hidden = true; $('wbt').hidden = !on; $('wpgwrap').style.display = on ? 'none' : '';
     if (!on) return;
-    $('wpgwrap').style.display = 'none'; $('wrepbtns').hidden = true; $('wtap').style.display = 'none';
+    $('wrepbtns').hidden = true; $('wtap').style.display = 'none';
     var B = W.bt = W.bt || { times: [] }, P = W.btP, N = P.flat.length, j = B.times.length, cur = P.flat[Math.min(j, N - 1)];
-    $('wbtimg').src = W.imgs[cur.page - 1].data;
+    if ($('wbtimg').dataset.pg !== '' + cur.page + '|' + W.imgs.length) { $('wbtimg').dataset.pg = '' + cur.page + '|' + W.imgs.length; $('wbtimg').src = W.imgs[cur.page - 1].data; }
+    wbtFit();
     var ov = $('wbtov'); ov.innerHTML = '';
-    [[j, 'rgba(255,150,0,.40)', '3px solid #f08c00'], [j + 1, 'rgba(30,120,220,.18)', '2px dashed #1c7ed6']].forEach(function (q) {
-      var f = P.flat[q[0]]; if (!f || f.page !== cur.page) return; var b = P.bars[f.bi], d = document.createElement('div');
-      d.style.cssText = 'position:absolute;box-sizing:border-box;left:' + (b.x0 * 100) + '%;top:' + (b.y0 * 100) + '%;width:' + ((b.x1 - b.x0) * 100) + '%;height:' + ((b.y1 - b.y0) * 100) + '%;background:' + q[1] + ';border:' + q[2]; ov.appendChild(d); });
-    $('wbtst').textContent = j >= N ? _t('最後まで叩きました。「叩き終えた」を押してください。') : _t('{p}ページ目　{j} / {n} 小節目（{w}）　いま光っている小節の1拍目で、ボタンを押します').replace('{p}', cur.page).replace('{j}', j + 1).replace('{n}', N).replace('{w}', WBT_WHY[cur.why] || cur.why);
-    $('wbtb').disabled = j >= N; $('wbtfin').hidden = j < N; $('wbtback').hidden = !!W.mic || !j;
+    var last = j > 0 ? P.flat[j - 1] : null;      /* only the bar that has begun with the last tap is coloured */
+    if (last && last.page === cur.page) { var b = P.bars[last.bi], d = document.createElement('div'); d.style.cssText = 'position:absolute;box-sizing:border-box;left:' + (b.x0 * 100) + '%;top:' + (b.y0 * 100) + '%;width:' + ((b.x1 - b.x0) * 100) + '%;height:' + ((b.y1 - b.y0) * 100) + '%;background:rgba(255,150,0,.38);border:3px solid #f08c00'; ov.appendChild(d); }
+    $('wbtst').textContent = j >= N ? _t('最後まで叩きました。「叩き終えた」を押してください。') : j === 0 ? _t('録音を流して、最初の小節の頭（1拍目）で、「1拍目」を押してください。') : _t('{p}ページ目　{j} / {n} 小節を叩きました（{w}）　次の小節の1拍目で押します').replace('{p}', cur.page).replace('{j}', j).replace('{n}', N).replace('{w}', WBT_WHY[last.why] || last.why);
+    $('wbtb').disabled = j >= N; $('wbtfin').hidden = j < N || !!W.btApplied; $('wbtback').hidden = !!W.mic || !j || !!W.btApplied; $('wbtpause').textContent = $('wplay').textContent;
+    $('wbtdone').hidden = !W.btApplied; $('wbtdone').disabled = $('wdone').disabled;
   }
+  $('wbtpause').onclick = function () { $('wplay').onclick(); $('wbtpause').textContent = $('wplay').textContent; };
+  $('wbtdone').onclick = function () { $('wdone').onclick(); };
   $('wbtmode').onchange = function () { if (!W) return; W.btOn = this.checked; if (W.btOn && !W.bt) W.bt = { times: [] }; wupdate(); };
   $('wbtb').onclick = function () {
     if (!W || !W.btP) return; var B = W.bt = W.bt || { times: [] }, N = W.btP.flat.length; if (B.times.length >= N) return;
@@ -4673,8 +4685,8 @@
         if (kd.indexOf('coda') >= 0 && q.tc && e.ttc === undefined) { b = barOf(q.tc, false); for (x = 0; x < N; x++) if (flat[x].bi === b) { e.ttc = T[x + 1]; break; } }
       });
     } finally { W.btBusy = false; wForceT = null; wPendForce = null; }
-    W.btApplied = true; wupdate();
-    return { ok: !wrepPending() && W.taps.length >= wnT(), notes: notes };
+    var okk = !wrepPending() && W.taps.length >= wnT(); W.btApplied = okk; wupdate();
+    return { ok: okk, notes: notes };
   }
   $('wbtfin').onclick = function () {
     var r = wbtApply(); $('wbtmsg').textContent = r.ok ? _t('叩いた内容を、印の形に直しました。「できた（曲を作る）」を押してください。') : _t('叩いた内容を印に直せないところがありました：') + r.notes.join(' / ') + '　' + wDiag();
