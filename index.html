@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v465</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v466</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -5046,9 +5046,10 @@
           for (var oi = 0; oi < fr0.length; oi++) { var ott = omT0 + oi * omF; if (!oms.some(function (o) { return ott >= o.a && ott < o.b; })) { nfr.push(fr0[oi]); if (sameN) nrm.push(rm0[oi]); } }
           W.frames = nfr; W.rms = sameN ? nrm : rm0;
         }
-        var ex = W.ex, fsec = ex.hop / W.sr, t00 = ex.nfft / 2 / W.sr, taps = W.taps, frames = W.frames, rmsA = W.rms, reps = partKd ? [] : W.reps.map(function (q) { var e = W.rev[q.id]; if (isDA(q)) return daTimes(q, daItem(q), function (kk) { return e[kk]; }); return { id: q.id, color: q.color, flag: q.flag, arrow: q.arrow, skip: q.skip, jf: q.jf, en: q.en, chainFrom: q.chainFrom, tf: e.tf, tj: q.jf ? e.tj : undefined, ta: e.ta }; });
+        var dirW = !partKd && W.btOn && W.btApplied;      /* the bar-tap way: repeat flags and arrows are not used (the play order comes from the bars) */
+        var ex = W.ex, fsec = ex.hop / W.sr, t00 = ex.nfft / 2 / W.sr, taps = W.taps, frames = W.frames, rmsA = W.rms, reps = (partKd || dirW) ? [] : W.reps.map(function (q) { var e = W.rev[q.id]; if (isDA(q)) return daTimes(q, daItem(q), function (kk) { return e[kk]; }); return { id: q.id, color: q.color, flag: q.flag, arrow: q.arrow, skip: q.skip, jf: q.jf, en: q.en, chainFrom: q.chainFrom, tf: e.tf, tj: q.jf ? e.tj : undefined, ta: e.ta }; });
         if (partKd) reps = partReps();
-        var dcI = W.reps.filter(isDA)[0], fiF = function (t) { return Math.max(0, Math.ceil((t - t00) / fsec)); };
+        var dcI = dirW ? null : W.reps.filter(isDA)[0], fiF = function (t) { return Math.max(0, Math.ceil((t - t00) / fsec)); };
         if (dcI && !wrec() && !partKd && W.rev[dcI.id]) { var ee = W.rev[dcI.id], nf = fiF(ee.tdc); if (!daOrderOK(dcI, ee)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); if (daKind(dcI).indexOf('coda') < 0) { frames = frames.slice(0, nf); rmsA = rmsA.slice(0, nf); } }       // the piece ends at the D.C. mark: whatever the recording has after it is cut off
         if (!partKd && wrec()) W.reps.forEach(function (q) {      // D.S. / D.C.: the first-pass times of the Segno and of "To Coda" come from the repeated pass (no taps for them)
           var e = W.rev[q.id], kd = isDA(q) ? daKind(q) : ''; if (!e || e.tdc === undefined) return;
@@ -5056,7 +5057,7 @@
           var g = wSgGuess(frames, fsec, t00, e.tdc); if (g === null) { W.needSg = W.needSg || {}; W.needSg[q.id] = true; throw new Error(_t('セーニョの時刻を、繰り返した演奏から探せませんでした。もう一度、「最初からやり直す」を押して、セーニョの小節に着いたときにもボタンを押してください。')); }
           if (needS) e.tsg = g; if (needT) e.ttc = g + (e.tc2 - e.tdc);      // the repeated pass runs like the first: "To Coda" lies as far after the Segno (or the start) as the jump to the Coda lies after the D.S.
         });
-        if (!partKd && wseq()) {                                                  // the recording repeats: cut the repeated passage out, so that the reference runs without repeating
+        if (!partKd && !dirW && wseq()) {                                                  // the recording repeats: cut the repeated passage out, so that the reference runs without repeating
           var sq = wpageSeq(), cuts = [], fi = function (t) { return Math.max(0, Math.ceil((t - t00) / fsec)); };
           W.reps.forEach(function (q) { if (q.skip || !wrec() || q.recOnce) return; var e = W.rev[q.id]; if (isDA(q)) { if (!daOrderOK(q, e)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); if (daKind(q).indexOf('coda') < 0) cuts.push({ a: e.tdc, b: 1e9, fa: fi(e.tdc), fb: frames.length + 1 }); else { if (!(e.tc2 > e.tdc + 0.5)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); cuts.push({ a: e.tdc, b: e.tc2, fa: fi(e.tdc), fb: fi(e.tc2) }); } return; } var te = q.jf ? e.tj2 : e.ta2; if (te === undefined && wAutoLast(q)) { if (!(e.tf < e.ta)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); cuts.push({ a: e.ta, b: 1e9, fa: fi(e.ta), fb: frames.length + 1 }); return; } if (!(e.tf < e.ta && e.ta < te && (!q.jf || (e.tf < e.tj && e.tj < e.ta)))) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); cuts.push({ a: e.ta, b: te, fa: fi(e.ta), fb: fi(te) }); });
           cuts.sort(function (x, y) { return x.a - y.a; }); for (var cq = 1; cq < cuts.length; cq++) if (cuts[cq].a < cuts[cq - 1].b) throw new Error(_t('繰り返しの旗と矢印の順番が合いません'));
@@ -5076,7 +5077,7 @@
         }
         var marks = [], k, S = 0; for (k = 0; k < W.imgs.length - 1; k++) { var T = taps[k], dur = T - S, bl = Math.max(1.5, Math.min(5, 0.07 * dur, 0.4 * dur)); marks.push({ lastBar: T - 0.55 * bl, next: T + 0.45 * bl }); S = T + 0.45 * bl; }   // the tap is the moment of the turn (55 % into the last bar)
         { var zr1 = (W.noRecNew || partKd) ? [] : zeroRuns(frames, fsec, 20); if (zr1.length) throw new Error(_t('お手本の録音に、音が入っていない部分があります：') + zeroText(zr1) + _t('。録音（または動画）を確かめて、別の録音で作り直してください。')); }
-        var dpl = (!partKd && W.btOn && W.btApplied) ? wbtDirectPieces() : null;      /* the bar-tap way: the song is made straight from the play order */
+        var dpl = dirW ? wbtDirectPieces() : null;      /* the bar-tap way: the song is made straight from the play order */
         var p = dpl ? Song.buildDirect({ frames: W.frames, frameSec: ex.hop / W.sr, t0: ex.nfft / 2 / W.sr, pieces: dpl.pieces, barSec: dpl.barSec, title: $('wtitle').value.trim() || _t('新しい曲'), images: W.imgs.map(function (i) { return i.data; }), sizes: W.imgs.map(function (i) { return { w: i.w, h: i.h }; }), firstBars: W.imgs.map(function (i) { return i.rect; }) }) : Song.buildSong({
           frames: frames, rms: rmsA, frameSec: ex.hop / W.sr, t0: ex.nfft / 2 / W.sr, marks: marks, title: $('wtitle').value.trim() || _t('新しい曲'),
           images: W.imgs.map(function (i) { return i.data; }), sizes: W.imgs.map(function (i) { return { w: i.w, h: i.h }; }), firstBars: W.imgs.map(function (i) { return i.rect; }),
