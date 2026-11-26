@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v467</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v470</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -351,7 +351,7 @@
   </div>
   <div id="pgeo" hidden>
     <div class="rot"><button type="button" id="geoL" aria-label="左に90度回す"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/></svg></button><button type="button" id="geoR" aria-label="右に90度回す"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></button></div>
-    <div class="gm"><button type="button" id="gm0" class="on"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l16-5"/><path d="M5 20h14" stroke-dasharray="2 3"/><path d="M12 4v3"/></svg><span>傾き</span></button><button type="button" id="gm1"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10l4 14H3z"/></svg><span>上下</span></button><button type="button" id="gm2"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7v10l14 4V3z"/></svg><span>左右</span></button></div>
+    <div class="gm"><button type="button" id="gm0" class="on"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l16-5"/><path d="M5 20h14" stroke-dasharray="2 3"/><path d="M12 4v3"/></svg><span>傾き</span></button><button type="button" id="gm1"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10l4 14H3z"/></svg><span>上下</span></button><button type="button" id="gm2"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7v10l14 4V3z"/></svg><span>左右</span></button><button type="button" id="gm3"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9c4 0 7 1 18 1"/><path d="M3 14c4 0 7 1 18 1"/><path d="M3 19c4 0 7 1 18 1" stroke-dasharray="2 3"/></svg><span>左端の反り</span></button><button type="button" id="gm4"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10c11 0 14 1 18 1"/><path d="M3 15c11 0 14 1 18 1"/><path d="M3 20c11 0 14 1 18 1" stroke-dasharray="2 3"/></svg><span>右端の反り</span></button></div>
     <div id="dial"><canvas id="dialc"></canvas><b id="dialv">0</b></div>
     <small id="geohint" style="color:rgba(255,255,255,.75);line-height:1.4">枠の角や辺を、ページの外側へドラッグすると、紙と同じ色の余白を足せます。</small>
     <button type="button" id="georeset">このページをもとに戻す</button>
@@ -646,7 +646,7 @@
         <div id="wmodebox" hidden style="display:grid;gap:6px;margin:8px 0;padding:10px;border:1px solid var(--line,#ccc);border-radius:12px">
           <b>お手本の取り込み方</b>
           <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="wmode2" id="wmold" checked> <span>音楽を聞かせながら、「ここでめくりたい」を押す（これまでの方式。繰り返しだけの曲、第一・第二括弧だけの曲向け）</span></label>
-          <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="wmode2" id="wmbt"> <span>小節の1拍目を叩く（ダ・カーポ、ダル・セーニョ、コーダのある曲向け）</span></label>
+          <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="wmode2" id="wmbt"> <span>小節の1拍目をタップする（ダ・カーポ、ダル・セーニョ、コーダのある曲向け）</span></label>
         </div>
         <button type="button" id="wnext" disabled>再生して、めくる場所に印を付ける</button>
       </div>
@@ -661,13 +661,13 @@
       <h2 id="wh">印を付けます</h2>
       <div id="wstat"></div>
       <div id="wlevelbox" hidden><div class="meter" style="width:100%;height:12px"><i id="wlevel"></i></div><div id="wlevelmsg" style="font-size:14px;margin-top:4px"></div></div>
-      <div id="wbtrow" hidden><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="wbtmode"> <span>拍を叩いて覚える方式（試験）：1拍目のたびに、下のボタンを押します</span></label></div>
+      <div id="wbtrow" hidden><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="wbtmode"> <span>拍をタップして覚える方式（試験）：1拍目のたびに、下のボタンを押します</span></label></div>
       <div id="wbt" hidden style="position:fixed;inset:0;z-index:45;background:var(--bg,#fff);display:flex;flex-direction:column;gap:6px;padding:max(8px,env(safe-area-inset-top)) 12px max(8px,env(safe-area-inset-bottom)) 12px;box-sizing:border-box">
         <div style="display:flex;gap:10px;align-items:flex-start"><div id="wbtst" style="font-weight:600;min-height:2.6em;line-height:1.3;flex:1"></div><button type="button" id="wbtclose" style="flex:none;min-height:44px;padding:0 16px">✕ 閉じる</button></div>
         <label style="display:flex;gap:8px;align-items:center;font-size:15px"><input type="checkbox" id="wbtpick"> <span>最初にアウフタクトがある（最初の小節線の前に、短い部分がある）</span></label>
         <div id="wbtarea" style="flex:1;min-height:0;display:flex;justify-content:center;align-items:center;gap:8px"></div>
         <button type="button" id="wbtb" style="width:100%;font-size:30px;height:110px;background:#1d4ed8;color:#fff;border:none;border-radius:16px;font-weight:700">1拍目</button>
-        <div class="wrow" style="padding-right:84px"><button type="button" id="wbtback">↩ やり直す（区切りまで戻る）</button><button type="button" id="wbtpause">⏸ 一時停止</button><button type="button" id="wbtfin" hidden>叩き終えた（曲を作る）</button><button type="button" id="wbtdone" hidden>できた（曲を作る）</button></div>
+        <div class="wrow" style="padding-right:84px"><button type="button" id="wbtback">↩ やり直す（区切りまで戻る）</button><button type="button" id="wbtpause">⏸ 一時停止</button><button type="button" id="wbtfin" hidden>1拍目を最後までタップした（曲を作る）</button><button type="button" id="wbtdone" hidden>できた（曲を作る）</button></div>
         <div id="wbtmsg" style="min-height:1.4em;padding-right:84px"></div>
       </div>
       <div id="wpgwrap"><img id="wpageimg" alt="楽譜のページ"><div id="wpgmk"></div><div id="wautomsg" hidden></div></div>
@@ -2198,14 +2198,15 @@
   function nk() { return pkg.nkey || pkg.order.length; }      // bar count of the song as it was made (stays the same whether repeats are on or off)
   var view = null;                                // how the current page is placed on the canvas
   var adj = {};                                   // per page: zoom / centre chosen with two fingers {z, cx, cy}
-  function vX(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; return v.ox + (rx / (1 + v.ka * rx + v.kb * ry) + v.pcx - v.reg.x0) * v.s; }          // page picture -> canvas
-  function vY(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; return v.oy + (ry / (1 + v.ka * rx + v.kb * ry) + v.pcy - v.reg.y0) * v.s; }
-  function vInv(v, X, Y) { var xp = (X - v.ox) / v.s + v.reg.x0 - v.pcx, yp = (Y - v.oy) / v.s + v.reg.y0 - v.pcy; var den = 1 - v.ka * xp - v.kb * yp; xp /= den; yp /= den; return [v.cs * xp + v.sn * yp + v.pcx, -v.sn * xp + v.cs * yp + v.pcy]; }    // canvas -> page picture
+  function vWarp(v, rx) { var u = rx / (v.cw || 1) + 0.5, l = Math.max(0, 1 - u / 0.4), r = Math.max(0, 1 - (1 - u) / 0.4); return (v.wc || 0) * l * l + (v.wd || 0) * r * r; }      /* a page whose left / right edge curls up or down (a thick book): near that edge every line is moved up or down by a smooth amount */
+  function vX(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; ry += (v.wc || v.wd) ? vWarp(v, rx) : 0; return v.ox + (rx / (1 + v.ka * rx + v.kb * ry) + v.pcx - v.reg.x0) * v.s; }          // page picture -> canvas
+  function vY(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; ry += (v.wc || v.wd) ? vWarp(v, rx) : 0; return v.oy + (ry / (1 + v.ka * rx + v.kb * ry) + v.pcy - v.reg.y0) * v.s; }
+  function vInv(v, X, Y) { var xp = (X - v.ox) / v.s + v.reg.x0 - v.pcx, yp = (Y - v.oy) / v.s + v.reg.y0 - v.pcy; var den = 1 - v.ka * xp - v.kb * yp; xp /= den; yp /= den; if (v.wc || v.wd) yp -= vWarp(v, xp); return [v.cs * xp + v.sn * yp + v.pcx, -v.sn * xp + v.cs * yp + v.pcy]; }    // canvas -> page picture
   var geo = {}, geoT = null;                     // per page: q = quarter turns, f = fine tilt in degrees, l/t/r/b = cropped margins (fractions)
   function geoKey() { return 'geo:' + (pkg && pkg.title || '') + ':' + (pkg ? nk() : 0); }
   function geoSave() { clearTimeout(geoT); geoT = setTimeout(function () { store.putKey(geoKey(), JSON.stringify(geo)); }, 500); }
   function geoLoad() { geo = {}; if (!pkg) return; store.getKey(geoKey(), function (t) { try { if (t) geo = JSON.parse(t) || {}; } catch (e) {} geoUI(); gateDone(); drawPage(null, 0); }); }
-  function geoOf(p) { var g = geo[p]; return g && (g.q || g.f || g.l || g.t || g.r || g.b || g.v || g.h) ? g : null; }
+  function geoOf(p) { var g = geo[p]; return g && (g.q || g.f || g.l || g.t || g.r || g.b || g.v || g.h || g.c || g.d) ? g : null; }
   function geoEdit() { return !$('pgeo').hidden; }
   var GMARG = 0.3, toneCache = {};      // the crop frame may be pulled outwards by up to 30 % of the page on every side: that adds a margin in the colour of the paper
   function pageTone(img, page) {      // the colour of the paper of this page (the brightest third of a small copy of the whole picture)
@@ -2282,14 +2283,14 @@
   function drawSecond(g, c, d, kOv) {      // the other page of the spread (the partner: the next page when the played page is on the left, the one before when it is on the right; nothing after the last odd page), plain, in its half (no writing, no flag); it is cut and turned like the left one, and as large
     var k = kOv || shownPage || 0, pr = kOv ? k % 2 === 0 : playedRight(), p2 = k % 2 === 1 ? (k + 1 <= maxPage ? k + 1 : 0) : k - 1, vw = viewW(c), x0 = pr ? 0 : vw, wd = c.width - vw, v2; if (!kOv) view2 = null; var tp = (p2 >= 1 && p2 <= maxPage) ? p2 : k, rt = tp >= 1 && tp <= maxPage ? pageRegion(tp) : null; g.fillStyle = (rt && imgs[rt.img] && imgs[rt.img].complete) ? pageTone(rt.img, tp) : '#fff'; g.fillRect(x0, 0, wd, c.height);      // the space around the page is the colour of its own paper
     if (p2 < 1 || p2 > maxPage) return; var r0 = pageRegion(p2); if (!r0 || !imgs[r0.img] || !imgs[r0.img].complete) return;
-    var gp = geoOf(p2), reg = r0, th = 0, ka = 0, kb = 0, pcx = (r0.x0 + r0.x1) / 2, pcy = (r0.y0 + r0.y1) / 2;
+    var gp = geoOf(p2), reg = r0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, pcx = (r0.x0 + r0.x1) / 2, pcy = (r0.y0 + r0.y1) / 2;
     if (gp) { var w0 = r0.x1 - r0.x0, h0 = r0.y1 - r0.y0, odd = gp.q % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, bx = pcx - bw / 2, by = pcy - bh / 2;
-      th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2);
+      th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wc = (gp.c || 0) * 0.0012 * bh; wd = (gp.d || 0) * 0.0012 * bh; cw = bw;
       reg = { img: r0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh }; }
     var w = reg.x1 - reg.x0, h = reg.y1 - reg.y0, full = document.body.classList.contains('full'), s2 = spreadScale(k, c), ox = x0 + wd / 2 - w * s2 / 2, oy = c.height / 2 - h * s2 / 2;
-    v2 = { page: p2, s: s2, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb }; if (!kOv) view2 = v2;
+    v2 = { page: p2, s: s2, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wc: wc, wd: wd, cw: cw }; if (!kOv) view2 = v2;
     g.save(); g.beginPath(); g.rect(ox, oy, w * s2, h * s2); g.clip(); g.imageSmoothingQuality = 'high'; g.fillStyle = gp ? pageTone(r0.img, p2) : '#fff'; g.fillRect(ox, oy, w * s2, h * s2);
-    if (gp && (ka || kb)) { g.setTransform(1, 0, 0, 1, 0, 0); meshDraw(g, paSrc(r0.img, p2), r0, v2, 14); }
+    if (gp && (ka || kb || wc || wd)) { g.setTransform(1, 0, 0, 1, 0, 0); meshDraw(g, paSrc(r0.img, p2), r0, v2, (wc || wd) ? 28 : 14); }
     else if (gp) { g.translate(ox - reg.x0 * s2, oy - reg.y0 * s2); g.scale(s2, s2); g.translate(pcx, pcy); g.rotate(th); g.translate(-pcx, -pcy); g.drawImage(paSrc(r0.img, p2), r0.x0, r0.y0, r0.x1 - r0.x0, r0.y1 - r0.y0, r0.x0, r0.y0, r0.x1 - r0.x0, r0.y1 - r0.y0); }
     else g.drawImage(paSrc(r0.img, p2), r0.x0, r0.y0, w, h, ox, oy, w * s2, h * s2);
     g.restore();
@@ -2305,11 +2306,11 @@
     g.fillStyle = '#ffffff'; g.fillRect(0, 0, c.width, c.height);
     var reg0 = shownPage != null ? pageRegion(shownPage) : null;
     if (!reg0 || !imgs[reg0.img] || !imgs[reg0.img].complete) { view = null; return; }
-    var ed = geoEdit(), gp = ed ? (geo[shownPage] || GZ) : geoOf(shownPage), reg = reg0, th = 0, ka = 0, kb = 0, fr = null, bx, by, bw, bh, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2;
+    var ed = geoEdit(), gp = ed ? (geo[shownPage] || GZ) : geoOf(shownPage), reg = reg0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, fr = null, bx, by, bw, bh, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2;
     if (gp) {                                    // rotated and/or cropped page: the "page space" is the picture turned about its centre; the crop is a rectangle in that space
       var w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = gp.q % 2 !== 0; bw = odd ? h0 : w0; bh = odd ? w0 : h0; bx = pcx - bw / 2; by = pcy - bh / 2;
       th = (gp.q * 90 + gp.f) * Math.PI / 180;
-      ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2);
+      ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wc = (gp.c || 0) * 0.0012 * bh; wd = (gp.d || 0) * 0.0012 * bh; cw = bw;
       if (ed) { fr = [gp.l, gp.t, gp.r, gp.b]; reg = { img: reg0.img, x0: bx - GMARG * bw, x1: bx + bw + GMARG * bw, y0: by - GMARG * bh, y1: by + bh + GMARG * bh }; } else
       reg = { img: reg0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh };
     }
@@ -2318,7 +2319,7 @@
     var a = (ed || (twoUpOn && document.body.classList.contains('playing'))) ? null : adj[shownPage], s = s0 * (a ? a.z : 1),      // two pages: the pinch zoom (for writing) works, but while the app follows both pages stand at the same size
      cxI = a ? a.cx : reg.x0 + w / 2, cyI = a ? a.cy : reg.y0 + h / 2;
     var ox = px0(c) + viewW(c) / 2 - (cxI - reg.x0) * s, oy = c.height / 2 - (cyI - reg.y0) * s;
-    view = { s: s, s0: s0, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb };
+    view = { s: s, s0: s0, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wc: wc, wd: wd, cw: cw };
     g.imageSmoothingQuality = 'high'; var cmpHit = false, cmpK = null;
     if (gp) {                                    // (rotated / tilted pages are costly to draw: the finished picture is kept and reused while only the writing, flags or the curl change)
       var pa0 = paOf(shownPage), bk = [shownPage, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), JSON.stringify(gp), pa0 ? [pa0.b, pa0.c, pa0.t, pa0.A ? 1 : 0].join(',') : '', ed ? 1 : 0, geoDial ? 1 : 0, reg0.img].join('|');
@@ -2327,7 +2328,7 @@
       if (!baseCv) {
         baseCv = baseNew(bk); baseCv.width = c.width; baseCv.height = c.height; var bg = baseCv.getContext('2d'); bg.imageSmoothingQuality = 'high';
         bg.save(); bg.beginPath(); bg.rect(ox, oy, w * s, h * s); bg.clip(); bg.fillStyle = pageTone(reg0.img, shownPage); bg.fillRect(ox, oy, w * s, h * s);
-        if (ka || kb) { bg.setTransform(1, 0, 0, 1, 0, 0); meshDraw(bg, paSrc(reg0.img, shownPage), reg0, view, geoDial ? 8 : 14); }
+        if (ka || kb || wc || wd) { bg.setTransform(1, 0, 0, 1, 0, 0); meshDraw(bg, paSrc(reg0.img, shownPage), reg0, view, (wc || wd) ? (geoDial ? 14 : 28) : (geoDial ? 8 : 14)); }
         else {
           bg.translate(ox - reg.x0 * s, oy - reg.y0 * s); bg.scale(s, s); bg.translate(pcx, pcy); bg.rotate(th); bg.translate(-pcx, -pcy);
           bg.drawImage(paSrc(reg0.img, shownPage), reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0); }
@@ -2431,17 +2432,17 @@
   var npCv = null, npKey = '';
   function nextPageCv(c, np) {      // the next page exactly as it will stand after the turn (rotation, crop, tilt, tone, writing): the curl uncovers this, so nothing changes when the page turns
     var reg0 = pageRegion(np); if (!reg0 || !imgs[reg0.img] || !imgs[reg0.img].complete) return null;
-    var gp = geoOf(np), reg = reg0, th = 0, ka = 0, kb = 0, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2;
-    if (gp) { var w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = gp.q % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, bx = pcx - bw / 2, by = pcy - bh / 2; th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); reg = { img: reg0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh }; }
+    var gp = geoOf(np), reg = reg0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2;
+    if (gp) { var w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = gp.q % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, bx = pcx - bw / 2, by = pcy - bh / 2; th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wc = (gp.c || 0) * 0.0012 * bh; wd = (gp.d || 0) * 0.0012 * bh; cw = bw; reg = { img: reg0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh }; }
     var w = reg.x1 - reg.x0, h = reg.y1 - reg.y0, full = document.body.classList.contains('full'), a = twoUpOn ? null : adj[np], s = (twoUpOn ? spreadScale(np, c) : Math.min(viewW(c) / w, c.height / h) * (full ? 1 : 0.98)) * (a ? a.z : 1);
     var cxI = a ? a.cx : reg.x0 + w / 2, cyI = a ? a.cy : reg.y0 + h / 2, ox = viewW(c) / 2 - (cxI - reg.x0) * s, oy = c.height / 2 - (cyI - reg.y0) * s, pa0 = paOf(np), il = ink.strokes[np];
     var key = [np, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), gp ? JSON.stringify(gp) : '', pa0 ? [pa0.b, pa0.c, pa0.t, pa0.A ? 1 : 0].join(',') : '', il ? il.length : 0, reg0.img, twoUpOn ? 1 : 0].join('|');
     if (npCv && npKey === key && npCv.width === c.width && npCv.height === c.height) return npCv;
     npCv = npCv || document.createElement('canvas'); npCv.width = c.width; npCv.height = c.height; var ng = npCv.getContext('2d'); ng.imageSmoothingQuality = 'high'; ng.fillStyle = '#ffffff'; ng.fillRect(0, 0, c.width, c.height);
-    var v = { s: s, s0: s, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb }, src = paSrc(reg0.img, np);
+    var v = { s: s, s0: s, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wc: wc, wd: wd, cw: cw }, src = paSrc(reg0.img, np);
     if (gp) {
       ng.save(); ng.beginPath(); ng.rect(ox, oy, w * s, h * s); ng.clip(); ng.fillStyle = pageTone(reg0.img, np); ng.fillRect(ox, oy, w * s, h * s);
-      if (ka || kb) { meshDraw(ng, src, reg0, v, 14); } else { ng.translate(ox - reg.x0 * s, oy - reg.y0 * s); ng.scale(s, s); ng.translate(pcx, pcy); ng.rotate(th); ng.translate(-pcx, -pcy); ng.drawImage(src, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0); }
+      if (ka || kb || wc || wd) { meshDraw(ng, src, reg0, v, (wc || wd) ? 28 : 14); } else { ng.translate(ox - reg.x0 * s, oy - reg.y0 * s); ng.scale(s, s); ng.translate(pcx, pcy); ng.rotate(th); ng.translate(-pcx, -pcy); ng.drawImage(src, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0); }
       ng.restore(); ng.save(); ng.beginPath(); ng.rect(ox, oy, w * s, h * s); ng.clip(); drawInk(ng, v, np); ng.restore();
     } else { ng.drawImage(src, reg.x0, reg.y0, w, h, ox, oy, w * s, h * s); drawInk(ng, v, np); }
     if (twoUpOn && np % 2 === 1) { try { ng.save(); drawSecond(ng, c, c.width / Math.max(1, c.getBoundingClientRect().width), np); ng.restore(); } catch (e) { ng.restore(); } }      // two pages side by side: the page that will stand beside it is turned in too
@@ -3206,11 +3207,12 @@
   var drawRaf = 0; function drawSoon() { if (drawRaf) return; drawRaf = requestAnimationFrame(function () { drawRaf = 0; drawPage(null, 0); }); }      // at most one full redraw per frame
   var penT = 0;                                      // the last moment the Apple Pencil touched the screen: a resting palm or finger at the same time must not zoom or turn the page
   document.addEventListener('pointerdown', function (e) { if (e.pointerType === 'pen') penT = Date.now(); }, true); document.addEventListener('pointermove', function (e) { if (e.pointerType === 'pen') penT = Date.now(); }, true);
-  function penNear() { return Date.now() - penT < 400; }
+  function penNear() { return Date.now() - penT < (ink.on ? 1500 : 400); }      /* with the pencil open, a hand that rests on the screen is ignored for longer after the last touch of the pencil */
+  function palmLike(t) { try { var r = Math.max(t.radiusX || t.webkitRadiusX || 0, t.radiusY || t.webkitRadiusY || 0); return r > 24; } catch (e) { return false; } }      /* a big contact area: a palm or the side of the hand, not a fingertip */
   function hasStylus(e) { for (var i = 0; i < e.touches.length; i++) if (e.touches[i].touchType === 'stylus') return true; return false; }
   (function () {
     var m = document.querySelector('main'), sx = null, sy = null, st = 0;
-    m.addEventListener('touchstart', function (e) { pdrag = false; if (e.touches.length !== 1 || e.touches[0].touchType === 'stylus' || penNear()) { sx = null; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); pdrag = peelHit(e.touches[0]); }, { passive: true });
+    m.addEventListener('touchstart', function (e) { pdrag = false; if (e.touches.length !== 1 || e.touches[0].touchType === 'stylus' || penNear() || (ink.on && palmLike(e.touches[0]))) { sx = null; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); pdrag = peelHit(e.touches[0]); }, { passive: true });
     var pdrag = false;
     function peelHit(t) {                        // is the finger on the turned-up corner (the triangle at the top left)?
       try { if (!peel || !(peel.sc > 0) || peelAnim || !view || !pkg) return false; var gm = peelGeo(view, $('page'), peel); if (!gm) return false; var cp = cpt(t), A = gm.a * peel.sc, B = gm.b * peel.sc, mg = 30 * cp[2]; var inTri = (cp[0] - gm.x0 + mg) / (A + 2 * mg) + (cp[1] - gm.y0 + mg) / (B + 2 * mg) <= 1 && cp[0] >= gm.x0 - mg && cp[1] >= gm.y0 - mg;
@@ -3218,9 +3220,10 @@
         return inTri || (sAl >= -0.12 && sAl <= 1.12 && dist > -mg && dist <= 0.38 * L + mg); } catch (er) { return false; }
     }
     m.addEventListener('touchmove', function (e) {      // the page turns as soon as the finger has clearly moved sideways - not only when it is lifted
+      if (sx !== null && ink.on && (penNear() || e.touches.length > 1 || (e.touches.length && palmLike(e.touches[0])))) { sx = null; return; }      /* with the pencil open: once the pencil or a second finger / a palm shows up, this touch can no longer turn the page */
       if (sx === null || pz || pdrag || penNear() || peelAnim || !e.touches.length || e.touches.length > 1 || !view) return;
       var t = e.touches[0], dx = t.clientX - sx, dy = t.clientY - sy;
-      if (Date.now() - st < 900 && Math.abs(dx) > 48 && Math.abs(dx) > 2 * Math.abs(dy)) { sx = null; manual(dx < 0 ? 1 : -1); }
+      if (Date.now() - st < (ink.on ? 600 : 900) && Math.abs(dx) > (ink.on ? 110 : 48) && Math.abs(dx) > (ink.on ? 2.5 : 2) * Math.abs(dy)) { sx = null; manual(dx < 0 ? 1 : -1); }
     }, { passive: true });
     m.addEventListener('touchend', function (e) {
       if (sx === null || pz || penNear()) { sx = null; return; } var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; sx = null;
@@ -3236,7 +3239,7 @@
         if (lastTap && now - lastTap.t < 420 && Math.hypot(cp[0] - lastTap.x, cp[1] - lastTap.y) < 60 * cp[2]) { lastTap = null; var ip = vInv(view, cp[0], cp[1]); setStart(ip[0], ip[1]); return; }
         lastTap = { t: now, x: cp[0], y: cp[1] }; return;
       }
-      if (Date.now() - st < 900 && Math.abs(dx) > 60 && Math.abs(dx) > 1.6 * Math.abs(dy)) { if (peelAnim) return; manual(dx < 0 ? 1 : -1); }       /* swipes may follow each other without any pause */
+      if (Date.now() - st < (ink.on ? 600 : 900) && Math.abs(dx) > (ink.on ? 110 : 60) && Math.abs(dx) > (ink.on ? 2.5 : 1.6) * Math.abs(dy)) { if (peelAnim) return; manual(dx < 0 ? 1 : -1); }       /* swipes may follow each other without any pause */
     }, { passive: true });
     var pz = null, lastTap = null, lastTouchT = 0, swT = 0, pzRaf = 0, pzSnap = null, pzV = null;
     m.addEventListener('click', function (e) { if (ink.on || !view) return; var cp = cpt(e); if (inOther(cp[0], $('page'))) return; if (Date.now() - lastTouchT > 700 && hereArm) { hereArm = false; var hp = vInv(view, cp[0], cp[1]); setStart(hp[0], hp[1]); return; } if (Date.now() - lastTouchT > 700) { var rh = repHit(cp[0], cp[1], cp[2]); if (rh) { repBtnTap(rh); return; } } if (hitFlagX(cp[0], cp[1], cp[2])) clearFlag(); });
@@ -4702,7 +4705,7 @@
     if (area.dataset.key !== key) { area.dataset.key = key; area.innerHTML = ''; pr.forEach(function (pg) { var w = document.createElement('div'); w.className = 'wbtpg'; w.dataset.pg = pg; w.style.cssText = 'position:relative;line-height:0;flex:none'; if (pg) { var im = document.createElement('img'); im.alt = ''; im.style.cssText = 'width:100%;height:100%;display:block'; im.src = W.imgs[pg - 1].data; w.appendChild(im); var ov = document.createElement('div'); ov.className = 'wbtov'; ov.style.cssText = 'position:absolute;inset:0;pointer-events:none'; w.appendChild(ov); } area.appendChild(w); }); }
     wbtFit();
     Array.prototype.forEach.call(area.querySelectorAll('.wbtov'), function (ov) { ov.innerHTML = ''; var pg = +ov.parentNode.dataset.pg; if (last && last.page === pg) { var b = P.bars[last.bi], d = document.createElement('div'); d.style.cssText = 'position:absolute;box-sizing:border-box;left:' + (b.x0 * 100) + '%;top:' + (b.y0 * 100) + '%;width:' + ((b.x1 - b.x0) * 100) + '%;height:' + ((b.y1 - b.y0) * 100) + '%;background:rgba(255,150,0,.38);border:3px solid #f08c00'; ov.appendChild(d); } });
-    $('wbtst').textContent = j >= N ? _t('最後まで叩きました。「叩き終えた」を押してください。') : j <= 1 ? (W.btPick ? _t('アウフタクト（最初の小節線の前の短い部分）は叩きません。音が鳴り始めた所から、自動で数えます。録音を流して、最初の小節線のあとの小節の頭（1拍目）から、「1拍目」を押してください。') : _t('最初の小節は叩きません。音が鳴り始めた所から、自動で数えます。録音を流して、2小節目の頭（1拍目）から、「1拍目」を押してください。')) : _t('{p}ページ目　{j} / {n} 小節を叩きました（{w}）　次の小節の1拍目で押します').replace('{p}', cur.page).replace('{j}', W.btPick ? j - 1 : j).replace('{n}', W.btPick ? N - 1 : N).replace('{w}', last ? (WBT_WHY[last.why] || last.why) : '');
+    $('wbtst').textContent = j >= N ? _t('最後までタップしました。「1拍目を最後までタップした」を押してください。') : j <= 1 ? (W.btPick ? _t('アウフタクト（最初の小節線の前の短い部分）はタップしません。音が鳴り始めた所から、自動で数えます。録音を流して、最初の小節線のあとの小節の頭（1拍目）から、「1拍目」を押してください。') : _t('最初の小節はタップしません。音が鳴り始めた所から、自動で数えます。録音を流して、2小節目の頭（1拍目）から、「1拍目」を押してください。')) : _t('{p}ページ目　{j} / {n} 小節をタップしました（{w}）　次の小節の1拍目で押します').replace('{p}', cur.page).replace('{j}', W.btPick ? j - 1 : j).replace('{n}', W.btPick ? N - 1 : N).replace('{w}', last ? (WBT_WHY[last.why] || last.why) : '');
     $('wbtb').disabled = j >= N; $('wbtfin').hidden = j < N || !!W.btApplied; $('wbtback').hidden = !!W.mic || j <= 1 || !!W.btApplied; $('wbtpause').textContent = $('wplay').textContent;
     $('wbtdone').hidden = !W.btApplied; $('wbtdone').disabled = $('wdone').disabled;
     if (W.err) $('wbtmsg').textContent = '⚠ ' + W.err;      // (an error of making the song is shown here: the old status line is under this screen)
@@ -4718,7 +4721,7 @@
   $('wbtmode').onchange = function () { if (!W) return; W.btOn = this.checked; if (W.btOn && !W.bt) W.bt = wbtNew(); wupdate(); };
   $('wbtb').onclick = function () {
     if (!W || !W.btP) return; var B = W.bt = W.bt || wbtNew(), N = W.btP.flat.length; if (B.times.length >= N) return;
-    var t = wtapTime(); if (t === null) { $('wbtmsg').textContent = _t('録音が止まっています。再生してから、叩いてください。'); return; }
+    var t = wtapTime(); if (t === null) { $('wbtmsg').textContent = _t('録音が止まっています。再生してから、タップしてください。'); return; }
     var last = B.times.length ? B.times[B.times.length - 1] : -1; if (t < last + 0.3) { $('wbtmsg').textContent = _t('前の小節から、まだ時間が経っていません。'); return; }
     $('wbtmsg').textContent = ''; B.times.push(t); wupdate();
   };
@@ -4726,11 +4729,11 @@
     if (!W || !W.bt || !W.btP) return; var B = W.bt, R = W.btP.R, j = B.times.length, tg = 1, i; for (i = 0; i < R.length; i++) if (R[i] < j && R[i] >= 1) tg = R[i];      // (the first bar, the pick-up, is never tapped: it stays)
     var old = B.times.slice(), ts = tg > 1 ? old[tg - 1] : Math.max(0, old[0] - 0.5); B.times.length = tg;
     try { var m = $('wmedia'); m.currentTime = Math.max(0, ts); } catch (e) {}
-    var f = W.btP.flat[tg]; $('wbtmsg').textContent = _t('{p}ページ目の「{w}」の頭の小節まで戻りました。録音も少し前に戻したので、そこから叩き直してください。').replace('{p}', f.page).replace('{w}', WBT_WHY[f.why] || f.why); wupdate();
+    var f = W.btP.flat[tg]; $('wbtmsg').textContent = _t('{p}ページ目の「{w}」の頭の小節まで戻りました。録音も少し前に戻したので、そこからタップし直してください。').replace('{p}', f.page).replace('{w}', WBT_WHY[f.why] || f.why); wupdate();
   };
   function wbtApply() {
     var B = W.bt, P = W.btP, flat = P.flat, N = flat.length, T = B.times.slice(), bars = P.bars, ev = {}, notes = [], i, kk;
-    if (T.length < N) return { ok: false, notes: ['まだ最後まで叩いていません。'] };
+    if (T.length < N) return { ok: false, notes: ['まだ最後までタップしていません。'] };
     T[N] = T[N - 1] + Math.max(1, T[N - 1] - T[N - 2]);
     W.taps = []; W.rev = {}; W.log = []; W.needSg = {}; W.btBusy = true; var nudge = 0, Spg = 0;
     function barOf(m, st) { return m ? rtBarOf(m, bars, st) : -1; }
@@ -4786,7 +4789,7 @@
   }
   $('wbtfin').onclick = function () {      // the tapped bars are turned into the turn / repeat times the app works with, then the song is made
     var r = wbtApply(); if (r.ok && !$('wdone').disabled) { $('wbtmsg').textContent = _t('曲を作っています…'); $('wdone').onclick(); return; }
-    $('wbtmsg').textContent = r.ok ? _t('叩いた内容は、整理できました。「できた（曲を作る）」を押してください。') : _t('叩いた内容から、めくる場所や繰り返しの時刻を作れないところがありました：') + r.notes.join(' / ') + '　' + wDiag();
+    $('wbtmsg').textContent = r.ok ? _t('タップした内容は、整理できました。「できた（曲を作る）」を押してください。') : _t('タップした内容から、めくる場所や繰り返しの時刻を作れないところがありました：') + r.notes.join(' / ') + '　' + wDiag();
   };
 
   function silentZone(ref, p, K, fsO, t0O) {      // the old reference has no sound around the turn K (digital silence): returns the silent stretch (in frames) and the pages it covers, else null
@@ -5308,7 +5311,9 @@
   var gmode = 0;                                   // 0 = straighten, 1 = vertical perspective, 2 = horizontal perspective
   var GM = [{ k: 'f', min: -15, max: 15, ppu: 14, fmt: function (v) { return (v > 0 ? '+' : '') + v.toFixed(1) + '°'; } },
             { k: 'v', min: -100, max: 100, ppu: 2.2, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } },
-            { k: 'h', min: -100, max: 100, ppu: 2.2, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } }];
+            { k: 'h', min: -100, max: 100, ppu: 2.2, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } },
+            { k: 'c', min: -40, max: 40, ppu: 5, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } },
+            { k: 'd', min: -40, max: 40, ppu: 5, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } }];
   function dialDraw() {
     var c = $('dialc'), d = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight; if (!w) return;
     if (c.width !== Math.round(w * d)) { c.width = Math.round(w * d); c.height = Math.round(h * d); }
@@ -5323,13 +5328,13 @@
   }
   function geoUI() {
     var g = geo[shownPage] || GZ; if (!$('dial')) return;
-    for (var k = 0; k < 3; k++) $('gm' + k).classList.toggle('on', k === gmode);
+    for (var k = 0; k < 5; k++) $('gm' + k).classList.toggle('on', k === gmode);
     editNavUI(); var on = geoEdit(); $('geoov').hidden = !on; $('geot').classList.toggle('sel', on); dialDraw();
   }
   function geoSet(fn) { var g = geo[shownPage] = geo[shownPage] || { q: 0, f: 0, l: 0, t: 0, r: 0, b: 0, v: 0, h: 0 }; fn(g); delete adj[shownPage]; viewSave(); geoUI(); geoSave(); drawPage(null, 0); }
   $('geoL').onclick = function () { geoSet(function (g) { g.q = (g.q + 3) % 4; g.l = g.t = g.r = g.b = 0; }); };
   $('geoR').onclick = function () { geoSet(function (g) { g.q = (g.q + 1) % 4; g.l = g.t = g.r = g.b = 0; }); };
-  [0, 1, 2].forEach(function (k) { $('gm' + k).onclick = function () { gmode = k; geoUI(); }; });
+  [0, 1, 2, 3, 4].forEach(function (k) { $('gm' + k).onclick = function () { gmode = k; geoUI(); }; });
   (function () {                                    // ruler: drag sideways to change the value
     var d = $('dial'), st = null, raf = 0;
     d.addEventListener('pointerdown', function (e) { var g = geo[shownPage] || GZ; st = { x: e.clientX, v: +g[GM[gmode].k] || 0 }; geoDial = true; try { d.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
