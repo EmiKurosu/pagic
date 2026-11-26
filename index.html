@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v446</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v450</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -643,6 +643,11 @@
           <small id="wstartt" style="line-height:1.5"></small>
           <audio id="wstartm" preload="auto" playsinline></audio>
         </div>
+        <div id="wmodebox" hidden style="display:grid;gap:6px;margin:8px 0;padding:10px;border:1px solid var(--line,#ccc);border-radius:12px">
+          <b>お手本の取り込み方</b>
+          <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="wmode2" id="wmold" checked> <span>音楽を聞かせながら、「ここでめくりたい」を押す（これまでの方式。繰り返しだけの曲、第一・第二括弧だけの曲向け）</span></label>
+          <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="wmode2" id="wmbt"> <span>小節の1拍目を叩く（ダ・カーポ、ダル・セーニョ、コーダのある曲向け）</span></label>
+        </div>
         <button type="button" id="wnext" disabled>再生して、めくる場所に印を付ける</button>
       </div>
       <div style="display:grid;gap:10px;border:1px solid var(--line);border-radius:12px;padding:12px">
@@ -658,11 +663,9 @@
       <div id="wlevelbox" hidden><div class="meter" style="width:100%;height:12px"><i id="wlevel"></i></div><div id="wlevelmsg" style="font-size:14px;margin-top:4px"></div></div>
       <div id="wbtrow" hidden><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="wbtmode"> <span>拍を叩いて覚える方式（試験）：1拍目のたびに、下のボタンを押します</span></label></div>
       <div id="wbt" hidden style="position:fixed;inset:0;z-index:45;background:var(--bg,#fff);display:flex;flex-direction:column;gap:6px;padding:max(8px,env(safe-area-inset-top)) 12px max(8px,env(safe-area-inset-bottom)) 12px;box-sizing:border-box">
-        <div id="wbtst" style="font-weight:600;min-height:2.6em;line-height:1.3"></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><div id="wbtst" style="font-weight:600;min-height:2.6em;line-height:1.3;flex:1"></div><button type="button" id="wbtclose" style="flex:none;min-height:44px;padding:0 16px">✕ 閉じる</button></div>
         <label style="display:flex;gap:8px;align-items:center;font-size:15px"><input type="checkbox" id="wbtpick"> <span>最初にアウフタクトがある（最初の小節線の前に、短い部分がある）</span></label>
-        <div id="wbtarea" style="flex:1;min-height:0;display:flex;justify-content:center;align-items:center">
-          <div id="wbtwrap" style="position:relative;line-height:0"><img id="wbtimg" alt="" style="width:100%;height:100%;display:block"><div id="wbtov" style="position:absolute;inset:0;pointer-events:none"></div></div>
-        </div>
+        <div id="wbtarea" style="flex:1;min-height:0;display:flex;justify-content:center;align-items:center;gap:8px"></div>
         <button type="button" id="wbtb" style="width:100%;font-size:30px;height:110px;background:#1d4ed8;color:#fff;border:none;border-radius:16px;font-weight:700">1拍目</button>
         <div class="wrow" style="padding-right:84px"><button type="button" id="wbtback">↩ やり直す（区切りまで戻る）</button><button type="button" id="wbtpause">⏸ 一時停止</button><button type="button" id="wbtfin" hidden>叩き終えた（印の形に直す）</button><button type="button" id="wbtdone" hidden>できた（曲を作る）</button></div>
         <div id="wbtmsg" style="min-height:1.4em;padding-right:84px"></div>
@@ -3415,8 +3418,8 @@
       W.redoId = e.id; $('wtitle').value = p.title || ''; store.getKey('mode:' + (p.title || '') + ':' + (p.nkey || p.order.length), function (mv) { if (W && W.redoId === e.id) $('wtempomode').value = mv === 'wide' ? 'wide' : 'single'; });
       W.imgs = p.images.map(function (d, i) { var r = p.rects && p.rects['p' + (i + 1)]; return { data: d, w: p.sizes[i].w, h: p.sizes[i].h, thumb: d, name: p.names && p.names[i] || ('p.' + (i + 1)), rect: r ? { x0: r.x0, x1: r.x1, y0: r.y0, y1: r.y1 } : null }; });
       $('wapplybox').hidden = $('wapplybox1').hidden = false; W.srcSong = p; W.origReps = (p.rep && p.rep.items) ? JSON.parse(JSON.stringify(p.rep.items)) : [];
-      if (p.rep && p.rep.items) W.reps = p.rep.items.map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, en: r.en, chainFrom: r.chainFrom, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; });
-      else if (p.repMarks && p.repMarks.length) W.reps = p.repMarks.map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, en: r.en, chainFrom: r.chainFrom, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; });      // a song made without a recording keeps the positions of its marks (the times come with the recording)
+      if (p.rep && p.rep.items) W.reps = p.rep.items.map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, en: r.en, chainFrom: r.chainFrom, recOnce: r.recOnce, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; });
+      else if (p.repMarks && p.repMarks.length) W.reps = p.repMarks.map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, en: r.en, chainFrom: r.chainFrom, recOnce: r.recOnce, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; });      // a song made without a recording keeps the positions of its marks (the times come with the recording)
       var ps = $('wpartsel'); ps.innerHTML = '';
       if (p.recPg) { var firstNo = 0; var oall = document.createElement('option'); oall.value = '0'; oall.textContent = _t('全曲を通して覚える'); ps.appendChild(oall); for (var kr = 1; kr <= W.imgs.length; kr++) { var orr = document.createElement('option'); orr.value = '' + kr; var rec = p.recPg.indexOf(kr) >= 0; orr.textContent = _t('{a}ページ目の録音を登録する').replace('{a}', fwNum(kr)) + (rec ? _t('（登録ずみ・やり直し）') : _t('（まだ録音がありません）')); if (!rec && !firstNo) firstNo = kr; ps.appendChild(orr); } ps.value = '' + (preK || firstNo || 1); }
       else { var o0 = document.createElement('option'); o0.value = '0'; o0.textContent = _t('全ページ'); ps.appendChild(o0);
@@ -3442,7 +3445,7 @@
       }
       W.copyUD = {}; ['geo:', 'padj:'].forEach(function (pf) { store.getKey(pf + (p.title || '') + ':' + (p.nkey || p.order.length), function (v) { if (v && W) W.copyUD[pf] = v; }); });      // trimming / tilt and colour tone of the copied pages: given to the new song when it is made
       W.imgs = p.images.map(function (d, i) { var r = p.rects && p.rects['p' + (i + 1)]; return { data: d, w: p.sizes[i].w, h: p.sizes[i].h, thumb: d, name: p.names && p.names[i] || ('p.' + (i + 1)), rect: r ? { x0: r.x0, x1: r.x1, y0: r.y0, y1: r.y1 } : null }; });
-      W.reps = ((p.rep && p.rep.items) || p.repMarks) ? ((p.rep && p.rep.items) || p.repMarks).map(function (r, i) { return { id: 'c' + Date.now().toString(36) + i, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, en: r.en, chainFrom: r.chainFrom, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; }) : []; (function () { var src = (p.rep && p.rep.items) || p.repMarks || []; W.reps.forEach(function (r, i) { if (src[i] && src[i].chainFrom) { var j = -1; src.forEach(function (x, jj) { if (x.id === src[i].chainFrom) j = jj; }); if (j >= 0) r.chainFrom = W.reps[j].id; } }); })(); W.rev = {};
+      W.reps = ((p.rep && p.rep.items) || p.repMarks) ? ((p.rep && p.rep.items) || p.repMarks).map(function (r, i) { return { id: 'c' + Date.now().toString(36) + i, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, en: r.en, chainFrom: r.chainFrom, recOnce: r.recOnce, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; }) : []; (function () { var src = (p.rep && p.rep.items) || p.repMarks || []; W.reps.forEach(function (r, i) { if (src[i] && src[i].chainFrom) { var j = -1; src.forEach(function (x, jj) { if (x.id === src[i].chainFrom) j = jj; }); if (j >= 0) r.chainFrom = W.reps[j].id; } }); })(); W.rev = {};
       if (!$('wtitle').value.trim()) $('wtitle').value = (p.title || '') + _t('（コピー）');
       store.getKey('mode:' + (p.title || '') + ':' + (p.nkey || p.order.length), function (mv) { if (W && !W.redoId) $('wtempomode').value = mv === 'wide' ? 'wide' : 'single'; });
       try { repSort(); } catch (e) {} wthumbs(); wcheck(); wreplist(); $('wcopysel').hidden = true;
@@ -3450,7 +3453,7 @@
     });
   };
   function wclose() { if (W && W.timer) clearInterval(W.timer); if (W && W.stream) { try { W.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} } try { var m = $('wmedia'); m.pause(); m.removeAttribute('src'); m.load(); } catch (e) {} if (W && W.ctx) { try { W.ctx.close(); } catch (e) {} } wBoostClose(); W = null; $('wiz').hidden = true; asBack(); }
-  function wcheck() { $('wnorec').disabled = W.imgs.length < 1; var okN = W.imgs.length >= 2 || !!(W.srcSong && W.srcSong.recPg); $('wnext').disabled = !(okN && W.file); $('wmic').disabled = !okN; $('wreppick').disabled = W.imgs.length < 1; try { wstartUi(); } catch (e) {} }
+  function wcheck() { try { wbtChoiceUi(); } catch (e) {} $('wnorec').disabled = W.imgs.length < 1; var okN = W.imgs.length >= 2 || !!(W.srcSong && W.srcSong.recPg); $('wnext').disabled = !(okN && W.file); $('wmic').disabled = !okN; $('wreppick').disabled = W.imgs.length < 1; try { wstartUi(); } catch (e) {} }
 
   /* ---------- an unfinished song (title, page pictures, repeats) is saved by itself, so that step ③ can be done later ---------- */
   var draftT = null;
@@ -3707,11 +3710,11 @@
         for (ii = 0; ii < Math.max(1, nEnd - 1); ii++) {
           var ej = at(g.ends[ii]), ar = (g.endAt && g.endAt[ii] !== undefined) ? at(g.endAt[ii]) : at(g.ends[ii + 1]);
           if (!ej || !ar) { warn.push('第' + (ii + 1) + '括弧の印が足りません。'); break; }
-          var it0 = { id: id + (ii ? '_' + ii : ''), jf: pg(ej), arrow: pg(ar), flag: pg(rs) || start0, en: ii + 1 }; if (pid) it0.chainFrom = pid; pid = it0.id; items.push(it0);
+          var it0 = { id: id + (ii ? '_' + ii : ''), jf: pg(ej), arrow: pg(ar), flag: pg(rs) || start0, en: ii + 1 }; if (pid) it0.chainFrom = pid; if (g.recOnce && g.recOnce.length) it0.recOnce = true; pid = it0.id; items.push(it0);
         }
       } else {
         var re = at(g.end); if (!re) return;
-        items.push({ id: id, flag: pg(rs) || start0, arrow: pg(re) });
+        var itp = { id: id, flag: pg(rs) || start0, arrow: pg(re) }; if (g.recOnce && g.recOnce.length) itp.recOnce = true; items.push(itp);
       }
     });
     var firstK = function (o) { var k = Object.keys(o).sort(function (x, y) { return o[x] - o[y]; })[0]; return k === undefined ? undefined : +k; };
@@ -3972,7 +3975,7 @@
     if (W.imgs.length === p.images.length) W.imgs.forEach(function (im, i) { if (im.data !== p.images[i]) chg.push(i + 1); });
     var reorder = chg.length > 1 && chg.every(function (pg) { return W.imgs.some(function (im, i) { return i + 1 !== pg && im.data === p.images[pg - 1]; }); });
     if (W.imgs.length !== p.images.length || reorder) { window.__rtReopen = false; msg(_t('ページを足したり、消したり、並べ替えたときは、③で譜めくり位置を付け直してください。')); return; }
-    if (chg.length && !W.reps.length && W.origReps && W.origReps.length) W.reps = W.origReps.map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, en: r.en, chainFrom: r.chainFrom, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; });      // deleting a page in the list empties the repeat marks; a page that is only exchanged keeps them
+    if (chg.length && !W.reps.length && W.origReps && W.origReps.length) W.reps = W.origReps.map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, en: r.en, chainFrom: r.chainFrom, recOnce: r.recOnce, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; });      // deleting a page in the list empties the repeat marks; a page that is only exchanged keeps them
     chg.forEach(function (pg) { var im = W.imgs[pg - 1]; p.images[pg - 1] = im.data; p.sizes[pg - 1] = { w: im.w, h: im.h }; if (!p.rects) p.rects = {}; if (im.rect) p.rects['p' + pg] = { img: pg - 1, x0: im.rect.x0, x1: im.rect.x1, y0: im.rect.y0, y1: im.rect.y1 }; else delete p.rects['p' + pg]; if (!p.names) p.names = []; p.names[pg - 1] = im.name || ''; });
     if (btn) btn.disabled = true;
     if (W.repCur && !repOK(W.repCur)) W.reps = W.reps.filter(function (r) { return r !== W.repCur; }); W.repStep = 0; W.repCur = null; W.reps = W.reps.filter(repOK); repSort();
@@ -3998,7 +4001,7 @@
           if (isDA(r)) { var od = old[r.id], sd = od && od.tdc !== undefined && daSame(r, od); return daTimes(r, daItem(r), function (kk) { return sd && od[kk] !== undefined ? od[kk] : est(r[kk === 'tsg' ? 'sg' : kk === 'tfi' ? 'fine' : kk === 'ttc' ? 'tc' : 'dc']); }); }
           var o = old[r.id], same = o && o.tf !== undefined && !(W.hitIds && W.hitIds[r.id] && !(r.skip && o.gap)) && JSON.stringify(o.flag) === JSON.stringify(r.flag) && JSON.stringify(o.arrow) === JSON.stringify(r.arrow) && JSON.stringify(o.jf) === JSON.stringify(r.jf);
           if (r.skip && o && o.gap && !same) throw new Error(_t('飛ばして演奏した録音の「飛ばす印」は、位置を変えられません。いったん消して、録音から作り直してください。'));
-          var it = { id: r.id, color: r.color, flag: r.flag, arrow: r.arrow, tf: same ? o.tf : est(r.flag), ta: same ? o.ta : est(r.arrow) }; if (r.en) it.en = r.en; if (r.chainFrom) it.chainFrom = r.chainFrom; if (r.skip) { it.skip = true; if (o && o.gap) it.gap = true; } if (r.jf) { it.jf = r.jf; it.tj = same ? o.tj : est(r.jf); } return it;
+          var it = { id: r.id, color: r.color, flag: r.flag, arrow: r.arrow, tf: same ? o.tf : est(r.flag), ta: same ? o.ta : est(r.arrow) }; if (r.en) it.en = r.en; if (r.chainFrom) it.chainFrom = r.chainFrom; if (r.recOnce) it.recOnce = true; if (r.skip) { it.skip = true; if (o && o.gap) it.gap = true; } if (r.jf) { it.jf = r.jf; it.tj = same ? o.tj : est(r.jf); } return it;
         });
         items.forEach(function (r) {
           if (r.tdc === undefined && !r.skip && typeof r.tf === 'number' && typeof r.ta === 'number') {      // positions on the page are only a guess of the time: a mark that is a little out of order is put back in order (flag < jump < arrow)
@@ -4273,7 +4276,6 @@
       store.getKey(last.k, function (o) { if (!o || !o.buf) { toast(_t('保存した録音を読み込めませんでした')); return; } var ext = /mp4|m4a|aac/.test(o.mime || '') ? 'm4a' : /webm/.test(o.mime || '') ? 'webm' : 'audio', f; try { f = new File([o.buf], 'pagic-rec.' + ext, { type: o.mime }); } catch (e) { f = new Blob([o.buf], { type: o.mime }); f.name = 'pagic-rec.' + ext; } wGotFile(f); });
     }); });
     add(_t('ファイルを選択'), function () { $('waud').click(); });
-    add(_t('写真ライブラリ'), function () { $('waudlib').click(); });
   }
   $('wmic').onclick = function () {
     if (wPinsMissing()) return;
@@ -4337,7 +4339,7 @@
     if (wPinsMissing()) return;
     W.mic = false; ['wplay', 'wback', 'wfwd', 'wseekrow'].forEach(function (k) { $(k).hidden = false; });
     if (!W.ready) { $('wsetmsg').textContent = _t('録音の解析が終わるまで、少しお待ちください。'); return; }
-    W.marks = []; W.taps = []; W.capFrames = []; W.preDone = false; W.bt = null; W.btApplied = false; wshow('wtapview');
+    W.marks = []; W.taps = []; W.capFrames = []; W.preDone = false; W.bt = null; W.btApplied = false; try { wbtChoiceUi(); } catch (e) {} W.btOn = !!(W.btP0 && $('wmbt').checked && !$('wmodebox').hidden); W.btP = W.btOn ? W.btP0 : null; W.btPick = undefined; wshow('wtapview');
     try { if (micKeep) micRelease(micKeep); clearTimeout(micTimer); } catch (e) {}   // a mic left open keeps iOS in 'record' mode: playback gets quiet or goes to the receiver
     try { if (navigator.audioSession) { navigator.audioSession.type = 'playback'; asSet = true; } } catch (e) {}   // iOS: play out loud even with the silent switch on / after the mic was used
     try { $('wstartm').pause(); } catch (e) {} var st0 = (!W.capture && wpartK() && W.startT > 0) ? W.startT : 0;      // start from the chosen place of the recording (only for one page)
@@ -4396,6 +4398,7 @@
     function walk(to) { for (var q = seq[seq.length - 1].p + 1; q <= to; q++) seq.push({ p: q }); }
     arr.forEach(function (x) {
       if (ended) return;
+      if (x.recOnce) return;      // the recording did not repeat this one: no jump back in the page sequence
       if (x.skip) { if (wskipB(x)) { walk(x.flag.page); var n0 = seq.length; add(x.arrow.page, 'tf', x.id); if (seq.length > n0) seq[seq.length - 1].sk = x.id; } return; }      // a skip in a recording that leaves the passage out: the page changes by itself at the moment of the skip
       if (!wrec()) return;
       if (isDA(x)) {                                                                    // back to the Segno (or the first page) at the moment of the D.C. / D.S. mark
@@ -4431,10 +4434,10 @@
     return im.lastFn ? im.lastFn(a.fy) : false;
   }
   function wAutoEnd(r) {      // a plain repeat whose arrow is in the last system of a page that is followed by another page: the second time at the arrow is the page turn itself, so the turn press stands for it
-    return !!W && wrec() && wAutoOn() && !r.skip && !isDA(r) && !r.jf && r.arrow && r.arrow.page < W.imgs.length && wIsLast(r.arrow);
+    return !!W && wrec() && !r.recOnce && wAutoOn() && !r.skip && !isDA(r) && !r.jf && r.arrow && r.arrow.page < W.imgs.length && wIsLast(r.arrow);
   }
   function wAutoLast(r) {     // the same on the last page of the song: the piece ends at the arrow, so the second pass is simply everything after the first arrow
-    return !!W && wrec() && wAutoOn() && !r.skip && !isDA(r) && !r.jf && r.arrow && r.arrow.page === W.imgs.length && wIsLast(r.arrow);
+    return !!W && wrec() && !r.recOnce && wAutoOn() && !r.skip && !isDA(r) && !r.jf && r.arrow && r.arrow.page === W.imgs.length && wIsLast(r.arrow);
   }
   function wAutoStart(r) {    // a flag at the very beginning of the song: the playing starts there, nothing to tap
     return !!W && !wpartK() && !(W.zf && W.zf.s) && !!r.flag && !r.skip && !isDA(r) && r.flag.page === 1 && r.flag.fy <= 0.3 && r.flag.fx <= 0.35;
@@ -4490,7 +4493,7 @@
         return { r: r, kind: gr[0].kind, page: gr[0].page, key: gr[0].key, prev: 'tf', group: gr };
       }
       if (e.ta === undefined) return { r: r, kind: 'a', page: r.arrow.page, key: 'ta', prev: 'tf' };
-      if (wrec()) { if (r.jf) { if (e.tj2 === undefined) return { r: r, kind: 'j', page: r.jf.page, key: 'tj2', second: true, prev: 'ta' }; }
+      if (wrec() && !r.recOnce) { if (r.jf) { if (e.tj2 === undefined) return { r: r, kind: 'j', page: r.jf.page, key: 'tj2', second: true, prev: 'ta' }; }
         else if (e.ta2 === undefined && !wAutoEnd(r) && !wAutoLast(r)) return { r: r, kind: 'a', page: r.arrow.page, key: 'ta2', second: true, prev: 'ta' }; }
       return null;
     }
@@ -4597,14 +4600,22 @@
   var WBT_WHY = { start: 'はじめ', repeat: '繰り返し', 'go on': '続き', ending2: '第二括弧', ending3: '第三括弧', ds1: 'D.S. のあと', ds2: 'D.S. のあと', coda1: 'コーダ', coda2: 'コーダ' };
   function wbtPlan() {
     try { if (!W) return null; rtMarks(); if (!W.rt || !W.rt.bars) return null; var b = rtBuild(), st = AutoRoute.route(b.m), pl = rtMakePlan(st, b); if (!pl || !pl.length) return null;
-      var flat = [], R = [], i; pl.forEach(function (sg, si) { sg.list.forEach(function (bi, k) { flat.push({ bi: bi, s: si, k: k, why: sg.why, page: pl.bars[bi].page }); }); });
+      var flat = [], R = [], i; pl.forEach(function (sg, si) { if (sg.dup) return; sg.list.forEach(function (bi, k) { flat.push({ bi: bi, s: si, k: k, why: sg.why, page: pl.bars[bi].page }); }); });
       for (i = 0; i < flat.length; i++) if ((i === 0 || flat[i].k === 0 || flat[i].page !== flat[i - 1].page) && (!R.length || i - R[R.length - 1] >= 3)) R.push(i);      // (points one or two bars apart are one point)
       return { plan: pl, flat: flat, bars: pl.bars, R: R }; } catch (e) { return null; }
   }
+  function wbtPages(P, j) {      // two pages side by side: odd pages on the left, even pages on the right; the other side is turned over in good time
+    var N = W.imgs.length, f = P.flat[Math.min(j, P.flat.length - 1)], c = f.page, u = c, k;
+    for (k = Math.min(j, P.flat.length - 1); k < P.flat.length; k++) if (P.flat[k].page !== c) { u = P.flat[k].page; break; }
+    var pb = P.bars.map(function (b, i) { return b.page === c ? i : -1; }).filter(function (i) { return i >= 0; }), pos = pb.indexOf(f.bi), late = pb.length > 1 && pos >= pb.length / 2;
+    var L, R;
+    if (c % 2 === 1) { L = c; R = (u !== c && u % 2 === 0) ? u : c + 1; }
+    else { R = c; L = late ? ((u !== c && u % 2 === 1) ? u : c + 1) : c - 1; if (L > N) L = c - 1; var pl = W.bt && W.bt.pl; if (!late && pl && pl[1] === c && pl[0] > c) L = pl[0]; }      // (a page that is already turned over is not turned back at once when a repeat goes back inside the same page)
+    if (R > N) R = 0; if (L < 1) L = 0; return [L, R];
+  }
   function wbtFit() {
-    if (!W || !W.btP || $('wbt').hidden) return; var P = W.btP, j = W.bt ? W.bt.times.length : 0, cur = P.flat[Math.min(j, P.flat.length - 1)], im = W.imgs[cur.page - 1], ar = $('wbtarea'); if (!im || !ar) return;
-    var iw = im.w || 1, ih = im.h || 1, sc = Math.min(ar.clientWidth / iw, ar.clientHeight / ih); if (!(sc > 0)) return;
-    $('wbtwrap').style.width = Math.floor(iw * sc) + 'px'; $('wbtwrap').style.height = Math.floor(ih * sc) + 'px';
+    var area = $('wbtarea'); if (!W || !area || $('wbt').hidden) return; var ws = area.querySelectorAll('.wbtpg'), aw = area.clientWidth, ah = area.clientHeight;
+    Array.prototype.forEach.call(ws, function (w) { var im = W.imgs[+w.dataset.pg - 1]; if (!im) return; var iw = im.w || 1, ih = im.h || 1, sc = Math.min((aw - 8) / 2 / iw, ah / ih); if (sc > 0) { w.style.width = Math.floor(iw * sc) + 'px'; w.style.height = Math.floor(ih * sc) + 'px'; } });
   }
   window.addEventListener('resize', function () { try { wbtFit(); } catch (e) {} });
   function wbtOnset() {      // the pick-up bar is not tapped: its time is where the sound begins
@@ -4616,26 +4627,35 @@
   }
   function wbtPickKey() { return 'pagic-pick:' + (($('wtitle').value || '').trim()); }
   $('wbtpick').onchange = function () { if (!W) return; W.btPick = this.checked; try { localStorage.setItem(wbtPickKey(), this.checked ? '1' : '0'); } catch (e) {} wupdate(); };
+  function wbtChoiceUi() {      // the choice of the two ways: shown when the marks of the trial screen give a play order
+    if (!W) return; var key = ($('wtitle').value || '').trim(); if (W.btCK !== key) { W.btCK = key; if (W.rt && !(W.rt.marks || []).length) W.rt = null; W.btP0 = wbtPlan(); W.btSel = undefined; }
+    $('wmodebox').hidden = !W.btP0; if (!W.btP0) return;
+    if (W.btSel === undefined) { W.btSel = W.btP0.plan.some(function (q) { return /^(ds|coda|dc)/.test(q.why); }) ? 'bt' : 'old'; $('wmbt').checked = W.btSel === 'bt'; $('wmold').checked = W.btSel !== 'bt'; }
+  }
+  $('wmold').onchange = $('wmbt').onchange = function () { if (W) W.btSel = $('wmbt').checked ? 'bt' : 'old'; };
   function wbtNew() { return { times: [wbtOnset()] }; }
   function wbtShow() {
-    if (!W) return; var bk = ($('wtitle').value || '').trim(); if (W.btKey !== bk) { W.btKey = bk; W.btP = undefined; if (W.rt && !(W.rt.marks || []).length) W.rt = null; }      // (the marks are kept per title: they are read again when the title is known)
-    if (W.btP === undefined) W.btP = wbtPlan();
-    if (W.btOn === undefined) W.btOn = true;
-    if (W.btPick === undefined && W.btP) { var sv = null; try { sv = localStorage.getItem(wbtPickKey()); } catch (e) {} W.btPick = sv === null ? wbtPickGuess(W.btP) : sv === '1'; }      // (remembered per title; first a guess from the length of the first bar)
-    $('wbtpick').checked = !!W.btPick;      // (the bar-tap way is the one that is shown)
+    if (!W) return; if (!W.btOn || !W.btP) { $('wbt').hidden = true; $('wbtrow').hidden = true; $('wpgwrap').style.display = ''; return; }      // (the old way: nothing of the bar-tap way is shown)
+    if (W.btPick === undefined) { var sv = null; try { sv = localStorage.getItem(wbtPickKey()); } catch (e) {} W.btPick = sv === null ? wbtPickGuess(W.btP) : sv === '1'; }      // (remembered per title; first a guess from the length of the first bar)
+    $('wbtpick').checked = !!W.btPick;
     var can = !!W.btP && !wpartK(), on = can && !!W.btOn; $('wbtrow').hidden = true; $('wbt').hidden = !on; $('wpgwrap').style.display = on ? 'none' : '';
     if (!on) return;
     $('wrepbtns').hidden = true; $('wtap').style.display = 'none';
     var B = W.bt = W.bt || wbtNew(), P = W.btP, N = P.flat.length, j = B.times.length, cur = P.flat[Math.min(j, N - 1)];
-    if ($('wbtimg').dataset.pg !== '' + cur.page + '|' + W.imgs.length) { $('wbtimg').dataset.pg = '' + cur.page + '|' + W.imgs.length; $('wbtimg').src = W.imgs[cur.page - 1].data; }
+    var last = j > 1 ? P.flat[j - 1] : (j === 1 && B.autoOn ? P.flat[0] : null), pr = wbtPages(P, j), area = $('wbtarea'), pl0 = (B.pl = pr), key = pr.join('|') + '|' + W.imgs.length;      /* only the bar that has begun (by the last tap; the first bar: when the sound begins) is coloured */
+    if (area.dataset.key !== key) { area.dataset.key = key; area.innerHTML = ''; pr.forEach(function (pg) { var w = document.createElement('div'); w.className = 'wbtpg'; w.dataset.pg = pg; w.style.cssText = 'position:relative;line-height:0;flex:none'; if (pg) { var im = document.createElement('img'); im.alt = ''; im.style.cssText = 'width:100%;height:100%;display:block'; im.src = W.imgs[pg - 1].data; w.appendChild(im); var ov = document.createElement('div'); ov.className = 'wbtov'; ov.style.cssText = 'position:absolute;inset:0;pointer-events:none'; w.appendChild(ov); } area.appendChild(w); }); }
     wbtFit();
-    var ov = $('wbtov'); ov.innerHTML = '';
-    var last = j > 1 ? P.flat[j - 1] : null;      /* only the bar that has begun with the last tap is coloured */
-    if (last && last.page === cur.page) { var b = P.bars[last.bi], d = document.createElement('div'); d.style.cssText = 'position:absolute;box-sizing:border-box;left:' + (b.x0 * 100) + '%;top:' + (b.y0 * 100) + '%;width:' + ((b.x1 - b.x0) * 100) + '%;height:' + ((b.y1 - b.y0) * 100) + '%;background:rgba(255,150,0,.38);border:3px solid #f08c00'; ov.appendChild(d); }
-    $('wbtst').textContent = j >= N ? _t('最後まで叩きました。「叩き終えた」を押してください。') : j <= 1 ? (W.btPick ? _t('アウフタクト（最初の小節線の前の短い部分）は叩きません。音が鳴り始めた所から、自動で数えます。録音を流して、最初の小節線のあとの小節の頭（1拍目）から、「1拍目」を押してください。') : _t('最初の小節は叩きません。音が鳴り始めた所から、自動で数えます。録音を流して、2小節目の頭（1拍目）から、「1拍目」を押してください。')) : _t('{p}ページ目　{j} / {n} 小節を叩きました（{w}）　次の小節の1拍目で押します').replace('{p}', cur.page).replace('{j}', W.btPick ? j - 1 : j).replace('{n}', W.btPick ? N - 1 : N).replace('{w}', WBT_WHY[last.why] || last.why);
+    Array.prototype.forEach.call(area.querySelectorAll('.wbtov'), function (ov) { ov.innerHTML = ''; var pg = +ov.parentNode.dataset.pg; if (last && last.page === pg) { var b = P.bars[last.bi], d = document.createElement('div'); d.style.cssText = 'position:absolute;box-sizing:border-box;left:' + (b.x0 * 100) + '%;top:' + (b.y0 * 100) + '%;width:' + ((b.x1 - b.x0) * 100) + '%;height:' + ((b.y1 - b.y0) * 100) + '%;background:rgba(255,150,0,.38);border:3px solid #f08c00'; ov.appendChild(d); } });
+    $('wbtst').textContent = j >= N ? _t('最後まで叩きました。「叩き終えた」を押してください。') : j <= 1 ? (W.btPick ? _t('アウフタクト（最初の小節線の前の短い部分）は叩きません。音が鳴り始めた所から、自動で数えます。録音を流して、最初の小節線のあとの小節の頭（1拍目）から、「1拍目」を押してください。') : _t('最初の小節は叩きません。音が鳴り始めた所から、自動で数えます。録音を流して、2小節目の頭（1拍目）から、「1拍目」を押してください。')) : _t('{p}ページ目　{j} / {n} 小節を叩きました（{w}）　次の小節の1拍目で押します').replace('{p}', cur.page).replace('{j}', W.btPick ? j - 1 : j).replace('{n}', W.btPick ? N - 1 : N).replace('{w}', last ? (WBT_WHY[last.why] || last.why) : '');
     $('wbtb').disabled = j >= N; $('wbtfin').hidden = j < N || !!W.btApplied; $('wbtback').hidden = !!W.mic || j <= 1 || !!W.btApplied; $('wbtpause').textContent = $('wplay').textContent;
     $('wbtdone').hidden = !W.btApplied; $('wbtdone').disabled = $('wdone').disabled;
   }
+  $('wbtclose').onclick = function () {      // stop here and go back to the page where the song is made
+    try { $('wmedia').pause(); } catch (e) {} if (W) { W.bt = null; W.btApplied = false; W.taps = []; W.rev = {}; W.log = []; } wshow('wsetup'); try { wcheck(); } catch (e) {}
+  };
+  setInterval(function () {      // the first bar is counted by itself: it is coloured when the sound begins
+    try { if (!W || !W.btOn || !W.bt || $('wbt').hidden || W.bt.autoOn || W.bt.times.length !== 1) return; var m = $('wmedia'); if (m && !m.paused && m.currentTime >= W.bt.times[0]) { W.bt.autoOn = true; wupdate(); } } catch (e) {}
+  }, 100);
   $('wbtpause').onclick = function () { $('wplay').onclick(); $('wbtpause').textContent = $('wplay').textContent; };
   $('wbtdone').onclick = function () { $('wdone').onclick(); };
   $('wbtmode').onchange = function () { if (!W) return; W.btOn = this.checked; if (W.btOn && !W.bt) W.bt = wbtNew(); wupdate(); };
@@ -4952,7 +4972,7 @@
     if (!W || W.imgs.length < 1) return;
     var N = W.imgs.length, L = 10, fs = 1024 / 22050, nf = Math.round(N * L / fs), i, fr = [], rm = [];
     for (i = 0; i < nf; i++) { fr.push(new Float32Array(12)); rm.push(0); }
-    W.keepMarks = (W.reps || []).map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, en: r.en, chainFrom: r.chainFrom, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; }); W.noRecNew = true; W.sr = 22050; W.ex = { hop: 1024, nfft: 4096 }; W.frames = fr; W.rms = rm; W.reps = []; W.rev = {}; W.om = []; W.taps = []; for (i = 1; i < N; i++) W.taps.push(i * L); W.log = W.taps.map(function (x) { return { k: 't', t: x }; });
+    W.keepMarks = (W.reps || []).map(function (r) { return { id: r.id, color: r.color, skip: r.skip, flag: r.flag, arrow: r.arrow, jf: r.jf, en: r.en, chainFrom: r.chainFrom, recOnce: r.recOnce, dc: r.dc, fine: r.fine, da: r.da, sg: r.sg, tc: r.tc, cd: r.cd }; }); W.noRecNew = true; W.sr = 22050; W.ex = { hop: 1024, nfft: 4096 }; W.frames = fr; W.rms = rm; W.reps = []; W.rev = {}; W.om = []; W.taps = []; for (i = 1; i < N; i++) W.taps.push(i * L); W.log = W.taps.map(function (x) { return { k: 't', t: x }; });
     $('wdone').disabled = false; $('wdone').onclick();
   };
   $('wdone').onclick = function () {
@@ -4981,7 +5001,7 @@
         });
         if (!partKd && wseq()) {                                                  // the recording repeats: cut the repeated passage out, so that the reference runs without repeating
           var sq = wpageSeq(), cuts = [], fi = function (t) { return Math.max(0, Math.ceil((t - t00) / fsec)); };
-          W.reps.forEach(function (q) { if (q.skip || !wrec()) return; var e = W.rev[q.id]; if (isDA(q)) { if (!daOrderOK(q, e)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); if (daKind(q).indexOf('coda') < 0) cuts.push({ a: e.tdc, b: 1e9, fa: fi(e.tdc), fb: frames.length + 1 }); else { if (!(e.tc2 > e.tdc + 0.5)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); cuts.push({ a: e.tdc, b: e.tc2, fa: fi(e.tdc), fb: fi(e.tc2) }); } return; } var te = q.jf ? e.tj2 : e.ta2; if (te === undefined && wAutoLast(q)) { if (!(e.tf < e.ta)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); cuts.push({ a: e.ta, b: 1e9, fa: fi(e.ta), fb: frames.length + 1 }); return; } if (!(e.tf < e.ta && e.ta < te && (!q.jf || (e.tf < e.tj && e.tj < e.ta)))) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); cuts.push({ a: e.ta, b: te, fa: fi(e.ta), fb: fi(te) }); });
+          W.reps.forEach(function (q) { if (q.skip || !wrec() || q.recOnce) return; var e = W.rev[q.id]; if (isDA(q)) { if (!daOrderOK(q, e)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); if (daKind(q).indexOf('coda') < 0) cuts.push({ a: e.tdc, b: 1e9, fa: fi(e.tdc), fb: frames.length + 1 }); else { if (!(e.tc2 > e.tdc + 0.5)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); cuts.push({ a: e.tdc, b: e.tc2, fa: fi(e.tdc), fb: fi(e.tc2) }); } return; } var te = q.jf ? e.tj2 : e.ta2; if (te === undefined && wAutoLast(q)) { if (!(e.tf < e.ta)) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); cuts.push({ a: e.ta, b: 1e9, fa: fi(e.ta), fb: frames.length + 1 }); return; } if (!(e.tf < e.ta && e.ta < te && (!q.jf || (e.tf < e.tj && e.tj < e.ta)))) throw new Error(_t('繰り返しの旗と矢印の順番が合いません')); cuts.push({ a: e.ta, b: te, fa: fi(e.ta), fb: fi(te) }); });
           cuts.sort(function (x, y) { return x.a - y.a; }); for (var cq = 1; cq < cuts.length; cq++) if (cuts[cq].a < cuts[cq - 1].b) throw new Error(_t('繰り返しの旗と矢印の順番が合いません'));
           var inCut = function (t) { return cuts.some(function (c) { return t >= c.a && t < c.b; }); }, mapT = function (t) { var d = 0; cuts.forEach(function (c) { if (t >= c.b) d += (c.fb - c.fa) * fsec; }); return t - d; };
           var keep = []; for (var fq = 0; fq < frames.length; fq++) keep.push(!cuts.some(function (c) { return fq >= c.fa && fq < c.fb; }));
