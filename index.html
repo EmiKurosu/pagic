@@ -303,7 +303,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v489</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v490</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2393,7 +2393,7 @@
     if (ed && fr) { view.frame = [ox + (bx + fr[0] * bw - reg.x0) * s, oy + (by + fr[1] * bh - reg.y0) * s, ox + (bx + (1 - fr[2]) * bw - reg.x0) * s, oy + (by + (1 - fr[3]) * bh - reg.y0) * s]; view.bw = bw; view.bh = bh; g.save(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1 * d; g.setLineDash([6 * d, 5 * d]); g.strokeRect(ox + (bx - reg.x0) * s, oy + (by - reg.y0) * s, bw * s, bh * s); g.restore(); geoOverlay(g, view, d); }
   }
   function showPage(p) { try { var mk9 = startPos.mark; if (mk9 && running && p !== mk9.page) mk9.left = true; } catch (e) {}      // while playing, once another page has really been shown, the "start here" pin stays away (also when a repeat comes back to its page)
-    if (pkg && pkg.kind === 'song') setTimeout(function () { var l = 'p' + (p + 1); if (pkg.rects[l] && pvRect[l] === undefined && imgs[pkg.rects[l].img]) previewRect(l); }, 400); if (peel && peel.pg !== undefined && peel.pg !== p) { peel = null; peelHold = null; peelAnim = false; peelKey = ''; peelLast = -1; }       /* a half-turned corner belongs to the page it was made for */ shownPage = p; shows.push([pager && pager.last ? Math.round(pager.last.t * 100) / 100 : -1, p, showWhy]); pgLabel(); $('msg').hidden = true; jumpUI(); paUI(); geoUI(); drawPage(null, 0); setTimeout(function () { try { var r = pageRegion(p + 1); if (r && paOf(p + 1)) paSrc(r.img, p + 1); } catch (e) {} }, 700); warmNear(p); }
+    if (pkg && pkg.kind === 'song') setTimeout(function () { var l = 'p' + (p + 1); if (pkg.rects[l] && pvRect[l] === undefined && imgs[pkg.rects[l].img]) previewRect(l); }, 400); if (peel && peel.pg !== undefined && peel.pg !== p) { peel = null; peelHold = null; peelAnim = false; peelKey = ''; peelLast = -1; }       /* a half-turned corner belongs to the page it was made for */ shownPage = p; shows.push([pager && pager.last ? Math.round(pager.last.t * 100) / 100 : -1, p, showWhy]); pgLabel(); $('msg').hidden = true; jumpUI(); paUI(); geoUI(); drawPage(null, 0); setTimeout(function () { try { var r = pageRegion(p + 1); if (r && paOf(p + 1)) paSrc(r.img, p + 1); } catch (e) {} }, 700); warmNear(p); paPrep(); }
   var warmT = null, touchDown = false; var lastTouchT = 0; ['touchstart'].forEach(function (n) { document.addEventListener(n, function () { touchDown = true; lastTouchT = Date.now(); }, { passive: true, capture: true }); }); ['touchend', 'touchcancel'].forEach(function (n) { document.addEventListener(n, function () { touchDown = false; lastTouchT = Date.now(); }, { passive: true, capture: true }); });
   function warmNear(p, tries) {      // when the screen is quiet, the pages around the shown one are drawn ahead of time (into the picture store and the handwriting pictures), one page at a time, so that a swipe shows them at once
     clearTimeout(warmT); tries = tries || 0;
@@ -5264,7 +5264,7 @@
   var pa = {}, paCache = [], paT = null, PA_PAPER = [250, 249, 245], PA_INK = 24;
   function paKey() { return 'padj:' + (pkg && pkg.title || '') + ':' + (pkg ? nk() : 0); }
   function paSave() { clearTimeout(paT); paT = setTimeout(function () { store.putKey(paKey(), JSON.stringify(pa)); }, 500); }
-  function paLoad() { pa = {}; paCache = []; if (!pkg) return; store.getKey(paKey(), function (t) { try { if (t) pa = JSON.parse(t) || {}; } catch (e) {} paUI(); gateDone(); drawPage(null, 0); }); }
+  function paLoad() { pa = {}; paCache = []; if (!pkg) return; store.getKey(paKey(), function (t) { try { if (t) pa = JSON.parse(t) || {}; } catch (e) {} paUI(); gateDone(); drawPage(null, 0); paPrep(); }); }
   function paOf(p) { var a = pa[p]; return a && (a.b || a.c || a.t || a.A) ? a : null; }
   function paLut(a) {                           // brightness / contrast / tone (the sliders)
     var k = 1 + a.c / 70, off = a.b * 1.6, tn = [a.t * 0.9, a.t * 0.1, -a.t * 0.9], L = [new Uint8ClampedArray(256), new Uint8ClampedArray(256), new Uint8ClampedArray(256)], v, ch, base;
@@ -5303,10 +5303,15 @@
     var ink = pct(h2, aw * ah, 0.01) * PA_PAPER[1] / Math.max(60, glum);        // darkest ink level, as it will be after the paper is whitened
     return { bgCanvas: bc, ink: Math.min(ink, 90) };
   }
-  function paSrc(img, page) {                    // the picture of a page with its adjustment applied (the original when nothing is changed)
-    var a = paOf(page), im = imgs[img]; if (!a || !im || !im.complete) return im;
-    var key = img + '|' + a.b + '|' + a.c + '|' + a.t + '|' + (a.A ? 'A' : ''), i;
-    for (i = 0; i < paCache.length; i++) if (paCache[i].key === key) return paCache[i].cv;
+  var PA_BLK = 1200000, PA_PX = 45e6;      // the adjusted picture is made in blocks of about 0.3 million pixels so that, in the background, the screen can still be touched in between
+  function paPut(key, cv) {      // keep the adjusted pictures of the pages (about 180 MB at most; at least the last five); the one used last stays longest
+    for (var q = paCache.length - 1; q >= 0; q--) if (paCache[q].key === key) paCache.splice(q, 1);
+    paCache.push({ key: key, cv: cv }); var tot = 0, c0; for (c0 = 0; c0 < paCache.length; c0++) tot += paCache[c0].cv.width * paCache[c0].cv.height;
+    while (paCache.length > 16 || (paCache.length > 5 && tot > PA_PX)) { var po = paCache.shift(); tot -= po.cv.width * po.cv.height; po.cv.width = po.cv.height = 1; }
+  }
+  function paCk(img, a) { return img + '|' + a.b + '|' + a.c + '|' + a.t + '|' + (a.A ? 'A' : ''); }
+  function* paGen(im, a, key) {
+    var i;
     var W = im.naturalWidth, H = im.naturalHeight, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     var g = cv.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
     try {
@@ -5314,16 +5319,44 @@
       if (a.A) {
         var F = paFlat(im), bd = F.bgCanvas.getContext('2d').getImageData(0, 0, W, H).data, ik = F.ink, k2 = (PA_PAPER[1] - PA_INK) / Math.max(40, PA_PAPER[1] - ik), rc = [new Float32Array(256), new Float32Array(256), new Float32Array(256)], v;
         for (ch = 0; ch < 3; ch++) for (v = 0; v < 256; v++) rc[ch][v] = Math.min(3, PA_PAPER[ch] / Math.max(40, v));
-        for (i = 0; i < n; i += 4) {
+        for (var i0 = 0; i0 < n; i0 += PA_BLK) { var i1 = Math.min(n, i0 + PA_BLK); if (i0) yield;
+         for (i = i0; i < i1; i += 4) {
           var r = px[i] * rc[0][bd[i]], gg = px[i + 1] * rc[1][bd[i + 1]], bb = px[i + 2] * rc[2][bd[i + 2]];
           r = (r - ik) * k2 + PA_INK; gg = (gg - ik) * k2 + PA_INK; bb = (bb - ik) * k2 + PA_INK;
           px[i] = L[0][r < 0 ? 0 : r > 255 ? 255 : r | 0]; px[i + 1] = L[1][gg < 0 ? 0 : gg > 255 ? 255 : gg | 0]; px[i + 2] = L[2][bb < 0 ? 0 : bb > 255 ? 255 : bb | 0];
+         }
         }
-      } else for (i = 0; i < n; i += 4) { px[i] = L[0][px[i]]; px[i + 1] = L[1][px[i + 1]]; px[i + 2] = L[2][px[i + 2]]; }
+      } else for (var j0 = 0; j0 < n; j0 += PA_BLK) { var j1 = Math.min(n, j0 + PA_BLK); if (j0) yield; for (i = j0; i < j1; i += 4) { px[i] = L[0][px[i]]; px[i + 1] = L[1][px[i + 1]]; px[i + 2] = L[2][px[i + 2]]; } }
       g.putImageData(d, 0, 0);
     } catch (e) { return im; }
-    paCache.push({ key: key, cv: cv }); for (var pc = 0, ppx = 0; pc < paCache.length; pc++) ppx += paCache[pc].cv.width * paCache[pc].cv.height; while (paCache.length > 8 || (paCache.length > 5 && ppx > 24e6)) { var po = paCache.shift(); ppx -= po.cv.width * po.cv.height; po.cv.width = po.cv.height = 1; }      /* the adjusted pictures of the pages are kept as long as they fit (up to 12, about 120 MB): making one takes a second on the iPad, and it was done again whenever a page had dropped out of the five */
+    paPut(key, cv);
     return cv;
+  }
+  function paSrc(img, page) {                    // the picture of a page with its adjustment applied (the original when nothing is changed)
+    var a = paOf(page), im = imgs[img]; if (!a || !im || !im.complete) return im;
+    var key = paCk(img, a), i;
+    for (i = 0; i < paCache.length; i++) if (paCache[i].key === key) { var e = paCache.splice(i, 1)[0]; paCache.push(e); return e.cv; }
+    var it = paGen(im, a, key), r; try { while (!(r = it.next()).done); } catch (e) { return im; }
+    return r.value;
+  }
+  var paPrepT = null, paBusy = false;
+  function paPrep(delay) {      // while nothing is playing and no finger is on the screen, the adjusted pictures of ALL pages are made one after the other, in small blocks (the first swipe to each page was slow)
+    clearTimeout(paPrepT); paPrepT = setTimeout(function step() {
+      try {
+        if (!pkg || running || paBusy) { if (pkg && !paBusy) paPrepT = setTimeout(step, 2000); return; }
+        if (touchDown || Date.now() - lastTouchT < 700) { paPrepT = setTimeout(step, 600); return; }
+        var cur = shownPage || 1, order = []; for (var q = 1; q <= maxPage; q++) order.push(q); order.sort(function (x, y) { return Math.abs(x - cur) - Math.abs(y - cur) || x - y; });
+        var tot = 0, c0; for (c0 = 0; c0 < paCache.length; c0++) tot += paCache[c0].cv.width * paCache[c0].cv.height;
+        for (var k = 0; k < order.length; k++) {
+          var pg = order[k], a = paOf(pg), reg = a ? pageRegion(pg) : null, im = reg ? imgs[reg.img] : null; if (!a || !im || !im.complete) continue;
+          var key = paCk(reg.img, a), have = false; for (c0 = 0; c0 < paCache.length; c0++) if (paCache[c0].key === key) have = true; if (have) continue;
+          if (paCache.length >= 16 || tot + im.naturalWidth * im.naturalHeight > PA_PX) return;      // no more room: the rest is made when needed
+          var it = paGen(im, a, key); paBusy = true;
+          (function run() { try { if (!pkg || running) { paBusy = false; return; } if (touchDown || Date.now() - lastTouchT < 400) { paPrepT = setTimeout(run, 400); return; } var r = it.next(); if (r.done) { paBusy = false; paPrepT = setTimeout(step, 60); return; } paPrepT = setTimeout(run, 25); } catch (e) { paBusy = false; } })();
+          return;
+        }
+      } catch (e) { paBusy = false; }
+    }, delay == null ? 1500 : delay);
   }
   function paColor(c) {                          // "cover" strokes use the paper colour: pass it through the same adjustment
     var a = paOf(shownPage), m = /^rgb\((\d+),(\d+),(\d+)\)$/.exec(c || ''); if (!a || !m) return c;
