@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v495</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v499</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -355,6 +355,8 @@
     <div class="gm" id="gsub" hidden><button type="button" id="gs0" class="on"><span>上下のずれ</span></button><button type="button" id="gs1"><span>縦に伸ばす</span></button><button type="button" id="gs2"><span>横に伸ばす</span></button></div>
     <div id="dial"><canvas id="dialc"></canvas><b id="dialv">0</b></div>
     <small id="geohint" style="color:rgba(255,255,255,.75);line-height:1.4">枠の角や辺を、ページの外側へドラッグすると、紙と同じ色の余白を足せます。</small>
+    <button type="button" id="geowav">五線のうねりを、自動でまっすぐにする</button>
+    <button type="button" id="geowavoff" hidden>うねりの補正を外す</button>
     <button type="button" id="georeset">このページをもとに戻す</button>
     <button type="button" id="georesetall">全ページをもとに戻す</button>
     <button type="button" id="geoapply" class="primary">反映する</button>
@@ -451,6 +453,9 @@
     <p>繰り返しのある曲のお手本は、繰り返し記号までを1つのまとまり、繰り返し記号の後からをもう1つのまとまりとして、覚えさせてください。めくりをするページの最後の小節がある場合は、そこまでが1つのまとまりです。</p>
     <h3>録音で譜めくりを試す</h3>
     <p>弾かなくても、録音や動画を流して試せます。動画を選ぶとプレビュー画面が出ます。右上の青い ✓ を押してください。下の再生ボタン▶︎では譜めくりしません。</p>
+    <h3>楽譜のうねりを直す</h3>
+    <p>写真を撮ったときに、紙が反って、五線がうねっているときは、四角と斜線のマーク（回転・傾き・トリミング）を押して、「五線のうねりを、自動でまっすぐにする」を押します。アプリが五線を探して、段ごとに、線がまっすぐになるように、楽譜の画像を動かします。左右の端の反りは、そのあとで、「左端の補正」「右端の補正」で直してください。</p>
+    <p>書き込みも、楽譜と一緒に動きます。うねりを直すのは、書き込みをする前がおすすめです。写真がぼやけているとき、五線が途中で隠れているときは、うまく直らないことがあります。そのときは、「うねりの補正を外す」を押すと、元に戻ります。</p>
     <h3>書き込み</h3>
     <p>鉛筆ボタンの下のメトロノームボタンで、クリック音を鳴らせます。テンポ、拍子、音量を決めて「スタート」を押します。「弾いている間も音を鳴らす」にチェックを入れると、「弾き始める」を押しても、音は鳴り続けます。チェックがないときは、「弾き始める」を押すと、メトロノームは止まり、ボタンも隠れます。</p>
     <p>右上の鉛筆ボタンで書き込みができます。右の縦の列の、上から順に、色、消しゴム、修正テープ（紙の色で上から隠す）、一つ戻す、閉じる（×）、です。書き込みの鉛筆類を開いている間は、画面の拡大はできません。</p>
@@ -1364,7 +1369,7 @@
     var frames = this.ex.feed(chunk), out = [];
     for (var f = 0; f < frames.length; f++) {
       var t = (this.n * this.ex.hop + this.ex.nfft) / this.sr; this.n++;
-      var silent = this.gate.silent(frames[f].rms), posF = this.al.step(frames[f].chroma, silent);
+      var silent = this.gate.silent(frames[f].rms), posF = this.al.step(frames[f].chroma, silent); if (!silent) window.pagicSoundT = Date.now();
       if (this.perf.length < 60000) { this.perf.push(frames[f].chroma); this.perfRms.push(frames[f].rms); } else this.perfFull = true;      // about 46 minutes: longer playing (a concert) is not measured
       var bars = this.ref.barsAt(posF), rawBars = bars, confU = this.al.conf, jg = this.jg || (this.jg = { anc: null, cand: null, sh: null }), multi = this.al.K !== undefined;
       /* A sudden jump far ahead (> 3 bars) from a place that was followed with confidence is checked before it is believed: in very quiet passages with similar figures the tracker can be fooled.
@@ -2216,16 +2221,39 @@
   function nk() { return pkg.nkey || pkg.order.length; }      // bar count of the song as it was made (stays the same whether repeats are on or off)
   var view = null;                                // how the current page is placed on the canvas
   var adj = {};                                   // per page: zoom / centre chosen with two fingers {z, cx, cy}
+  /* ---- waves of the paper: per staff, the vertical shift that makes its five lines straight (found by "straighten waves"); stored per page as geo.w ---- */
+  var wwMap = typeof WeakMap === 'function' ? new WeakMap() : null;
+  function wwPrepOf(w) {      // the knots of every strip: where the staff lies in the picture (a), and by how much it is moved (d); within a staff the shift is the same, between two staves it changes in a straight line
+    try {
+      if (!w || !w.x || !w.Y || !w.Y.length) return null; var hit = wwMap && wwMap.get(w); if (hit) return hit;
+      var n = w.x.length, ns = w.Y.length, P = { n: n, x0: w.x[0], dx: n > 1 ? (w.x[n - 1] - w.x[0]) / (n - 1) : 1, ka: [], kd: [] }, i, k;
+      for (i = 0; i < n; i++) {
+        var K = [], D = [], pe = -1e18, pd = 0;
+        for (k = 0; k < ns; k++) {
+          var a = w.Y[k][i] - w.h, b = w.Y[k][i] + w.h, d = w.T[k] - w.Y[k][i];
+          if (a <= pe) a = pe + 0.5; if (b <= a) b = a + 0.5;
+          if (k && a + d <= K[K.length - 1] + D[D.length - 1]) d = K[K.length - 1] + D[D.length - 1] - a + 0.5;      // the staves keep their order
+          K.push(a, b); D.push(d, d); pe = b;
+        }
+        P.ka.push(K); P.kd.push(D);
+      }
+      P.m = 5; for (i = 0; i < n; i++) for (k = 0; k < P.kd[i].length; k++) P.m = Math.max(P.m, Math.abs(P.kd[i][k]) + 5);
+      if (wwMap) wwMap.set(w, P); return P;
+    } catch (e) { return null; }
+  }
+  function wwCol(P, i, ry) { var K = P.ka[i], D = P.kd[i], m = K.length, k; if (ry <= K[0]) return D[0]; if (ry >= K[m - 1]) return D[m - 1]; for (k = 1; k < m; k++) if (ry < K[k]) return D[k - 1] + (D[k] - D[k - 1]) * (ry - K[k - 1]) / (K[k] - K[k - 1]); return D[m - 1]; }
+  function wwInv(P, rx, y1) { var lo = y1 - P.m, hi = y1 + P.m; for (var it = 0; it < 40; it++) { var mid = (lo + hi) / 2; if (mid + wwShift(P, rx, mid) < y1) lo = mid; else hi = mid; } return (lo + hi) / 2; }      // the shift of a point is not simple to undo: its place is searched (the map is increasing, so a bisection finds it)
+  function wwShift(P, rx, ry) { var u = (rx - P.x0) / P.dx; if (u <= 0) return wwCol(P, 0, ry); if (u >= P.n - 1) return wwCol(P, P.n - 1, ry); var i = Math.floor(u), t = u - i; return wwCol(P, i, ry) * (1 - t) + wwCol(P, i + 1, ry) * t; }
   function vWp(v, rx) { var q = v.wz, u = rx / (v.cw || 1) + 0.5, l = Math.max(0, 1 - u / 0.4), r = Math.max(0, 1 - (1 - u) / 0.4), kl = l * l, kr = r * r;      /* a page whose left / right edge curls (a thick book): near that edge the lines are moved up or down (s), stretched up / down (e) and stretched sideways (h) by a smooth amount that is 0 at 40 % of the page width */
     return { s: q.c * kl + q.d * kr, e: q.ec * kl + q.ed * kr, h: -q.hc * kl + q.hd * kr }; }
-  function vX(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; if (v.wz) { var wp = vWp(v, rx); ry = ry * (1 + wp.e) + wp.s; rx += wp.h; } return v.ox + (rx / (1 + v.ka * rx + v.kb * ry) + v.pcx - v.reg.x0) * v.s; }          // page picture -> canvas
-  function vY(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; if (v.wz) { var wp = vWp(v, rx); ry = ry * (1 + wp.e) + wp.s; rx += wp.h; } return v.oy + (ry / (1 + v.ka * rx + v.kb * ry) + v.pcy - v.reg.y0) * v.s; }
-  function vInv(v, X, Y) { var xp = (X - v.ox) / v.s + v.reg.x0 - v.pcx, yp = (Y - v.oy) / v.s + v.reg.y0 - v.pcy; var den = 1 - v.ka * xp - v.kb * yp; xp /= den; yp /= den; if (v.wz) { var rx0 = xp; for (var it = 0; it < 8; it++) rx0 = xp - vWp(v, rx0).h; var wp0 = vWp(v, rx0); yp = (yp - wp0.s) / (1 + wp0.e); xp = rx0; } return [v.cs * xp + v.sn * yp + v.pcx, -v.sn * xp + v.cs * yp + v.pcy]; }    // canvas -> page picture
+  function vX(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; if (v.ww) ry += wwShift(v.ww, rx, ry); if (v.wz) { var wp = vWp(v, rx); ry = ry * (1 + wp.e) + wp.s; rx += wp.h; } return v.ox + (rx / (1 + v.ka * rx + v.kb * ry) + v.pcx - v.reg.x0) * v.s; }          // page picture -> canvas
+  function vY(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; if (v.ww) ry += wwShift(v.ww, rx, ry); if (v.wz) { var wp = vWp(v, rx); ry = ry * (1 + wp.e) + wp.s; rx += wp.h; } return v.oy + (ry / (1 + v.ka * rx + v.kb * ry) + v.pcy - v.reg.y0) * v.s; }
+  function vInv(v, X, Y) { var xp = (X - v.ox) / v.s + v.reg.x0 - v.pcx, yp = (Y - v.oy) / v.s + v.reg.y0 - v.pcy; var den = 1 - v.ka * xp - v.kb * yp; xp /= den; yp /= den; if (v.wz) { var rx0 = xp; for (var it = 0; it < 8; it++) rx0 = xp - vWp(v, rx0).h; var wp0 = vWp(v, rx0); yp = (yp - wp0.s) / (1 + wp0.e); xp = rx0; } if (v.ww) yp = wwInv(v.ww, xp, yp); return [v.cs * xp + v.sn * yp + v.pcx, -v.sn * xp + v.cs * yp + v.pcy]; }    // canvas -> page picture
   var geo = {}, geoT = null;                     // per page: q = quarter turns, f = fine tilt in degrees, l/t/r/b = cropped margins (fractions)
   function geoKey() { return 'geo:' + (pkg && pkg.title || '') + ':' + (pkg ? nk() : 0); }
   function geoSave() { clearTimeout(geoT); geoT = setTimeout(function () { store.putKey(geoKey(), JSON.stringify(geo)); }, 500); }
   function geoLoad() { geo = {}; if (!pkg) return; store.getKey(geoKey(), function (t) { try { if (t) geo = JSON.parse(t) || {}; } catch (e) {} geoUI(); gateDone(); drawPage(null, 0); }); }
-  function geoOf(p) { var g = geo[p]; return g && (g.q || g.f || g.l || g.t || g.r || g.b || g.v || g.h || g.c || g.d || g.cs || g.ds || g.cx || g.dx) ? g : null; }
+  function geoOf(p) { var g = geo[p]; return g && (g.q || g.f || g.l || g.t || g.r || g.b || g.v || g.h || g.c || g.d || g.cs || g.ds || g.cx || g.dx || g.w) ? g : null; }
   function geoEdit() { return !$('pgeo').hidden; }
   var GMARG = 0.3, toneCache = {};      // the crop frame may be pulled outwards by up to 30 % of the page on every side: that adds a margin in the colour of the paper
   function pageTone(img, page) {      // the colour of the paper of this page (the brightest third of a small copy of the whole picture)
@@ -2237,9 +2265,7 @@
       return (toneCache[key] = 'rgb(' + Math.round(R) + ',' + Math.round(G) + ',' + Math.round(B) + ')'); } catch (e) { return paperFallback(); }
   }
   var geoDial = false, GZ = { q: 0, f: 0, l: 0, t: 0, r: 0, b: 0, v: 0, h: 0 };
-  function meshDraw(g, src, r, v, N) {                   // draw the picture region r through the (perspective) view as a mesh of little triangles
-    var P = [], i, j; for (j = 0; j <= N; j++) for (i = 0; i <= N; i++) { var x = r.x0 + (r.x1 - r.x0) * i / N, y = r.y0 + (r.y1 - r.y0) * j / N; P.push([x, y, vX(v, x, y), vY(v, x, y)]); }
-    function tri(A, B, C) {
+  function meshTri(g, src, r, A, B, C) {
       var u1x = B[0] - A[0], u1y = B[1] - A[1], u2x = C[0] - A[0], u2y = C[1] - A[1], v1x = B[2] - A[2], v1y = B[3] - A[3], v2x = C[2] - A[2], v2y = C[3] - A[3], det = u1x * u2y - u2x * u1y; if (!det) return;
       var a = (v1x * u2y - v2x * u1y) / det, c = (v2x * u1x - v1x * u2x) / det, b = (v1y * u2y - v2y * u1y) / det, d = (v2y * u1x - v1y * u2x) / det, e = A[2] - a * A[0] - c * A[1], f = A[3] - b * A[0] - d * A[1];
       var cx = (A[2] + B[2] + C[2]) / 3, cy = (A[3] + B[3] + C[3]) / 3; g.save(); g.beginPath();
@@ -2248,6 +2274,19 @@
       var x0 = Math.max(r.x0, Math.min(A[0], B[0], C[0]) - 1), x1 = Math.min(r.x1, Math.max(A[0], B[0], C[0]) + 1), y0 = Math.max(r.y0, Math.min(A[1], B[1], C[1]) - 1), y1 = Math.min(r.y1, Math.max(A[1], B[1], C[1]) + 1);
       g.drawImage(src, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0); g.restore();
     }
+  function meshDrawW(g, src, r, v, N) {      // the wavy page: columns at the strips, rows along the staves (the rows follow the knots, so that every staff line is drawn as a straight line)
+    var P = v.ww, n = P.n, ns = P.ka[0].length, bw = (r.x1 - r.x0), bh = (r.y1 - r.y0), cols = [], i, k, m;
+    var hw = Math.max(bw, bh) * 0.75, hh = hw;      // (generous: the rotated page is always inside)
+    var xl = -hw, xr = hw; cols.push([xl, 0]); for (i = 0; i < n; i++) cols.push([P.x0 + i * P.dx, i]); cols.push([xr, n - 1]);
+    var rowsOf = function (ci) { var K = P.ka[ci], rr = [-hh, K[0]]; for (var q = 1; q < K.length; q++) { var a = K[q - 1], b = K[q]; if (q % 2 === 0) { for (var z = 1; z <= 3; z++) rr.push(a + (b - a) * z / 4); } rr.push(b); } rr.push(hh); return rr; };
+    var cs = v.cs, sn = v.sn, pcx = v.pcx, pcy = v.pcy, grid = [];
+    for (m = 0; m < cols.length; m++) { var rw = rowsOf(cols[m][1]), col = []; for (k = 0; k < rw.length; k++) { var rx = cols[m][0], ry = rw[k], x = pcx + cs * rx + sn * ry, y = pcy - sn * rx + cs * ry; col.push([x, y, vX(v, x, y), vY(v, x, y)]); } grid.push(col); }
+    for (m = 0; m + 1 < grid.length; m++) for (k = 0; k + 1 < grid[m].length; k++) { var A = grid[m][k], B = grid[m + 1][k], C = grid[m][k + 1], D = grid[m + 1][k + 1]; meshTri(g, src, r, A, B, C); meshTri(g, src, r, D, C, B); }
+  }
+  function meshDraw(g, src, r, v, N) {      /* (with waves: meshDrawW) */
+    if (v.ww) return meshDrawW(g, src, r, v, N);                   // draw the picture region r through the (perspective) view as a mesh of little triangles
+    var P = [], i, j; for (j = 0; j <= N; j++) for (i = 0; i <= N; i++) { var x = r.x0 + (r.x1 - r.x0) * i / N, y = r.y0 + (r.y1 - r.y0) * j / N; P.push([x, y, vX(v, x, y), vY(v, x, y)]); }
+    function tri(A, B, C) { meshTri(g, src, r, A, B, C); }
     for (j = 0; j < N; j++) for (i = 0; i < N; i++) { var p00 = P[j * (N + 1) + i], p10 = P[j * (N + 1) + i + 1], p01 = P[(j + 1) * (N + 1) + i], p11 = P[(j + 1) * (N + 1) + i + 1]; tri(p00, p10, p01); tri(p11, p01, p10); }
   }
   function geoOverlay(g, v, d) {                         // crop frame (like the Photos app): dimmed outside, corner handles, grid
@@ -2307,9 +2346,9 @@
       th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wz = (gp.c || gp.d || gp.cs || gp.ds || gp.cx || gp.dx) ? { c: (gp.c || 0) * 0.0012 * bh, d: (gp.d || 0) * 0.0012 * bh, ec: (gp.cs || 0) * 0.005, ed: (gp.ds || 0) * 0.005, hc: (gp.cx || 0) * 0.002 * bw, hd: (gp.dx || 0) * 0.002 * bw } : null; cw = bw;
       reg = { img: r0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh }; }
     var w = reg.x1 - reg.x0, h = reg.y1 - reg.y0, full = document.body.classList.contains('full'), s2 = spreadScale(k, c), ox = x0 + wd / 2 - w * s2 / 2, oy = c.height / 2 - h * s2 / 2;
-    v2 = { page: p2, s: s2, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw }; if (!kOv) view2 = v2;
+    v2 = { page: p2, s: s2, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw, ww: gp && gp.w ? wwPrepOf(gp.w) : null }; if (!kOv) view2 = v2;
     g.save(); g.beginPath(); g.rect(ox, oy, w * s2, h * s2); g.clip(); g.imageSmoothingQuality = 'high'; g.fillStyle = gp ? pageTone(r0.img, p2) : '#fff'; g.fillRect(ox, oy, w * s2, h * s2);
-    if (gp && (ka || kb || wz)) { g.setTransform(1, 0, 0, 1, 0, 0); meshDraw(g, paSrc(r0.img, p2), r0, v2, wz ? 28 : 14); }
+    if (gp && (ka || kb || wz || v2.ww)) { g.setTransform(1, 0, 0, 1, 0, 0); meshDraw(g, paSrc(r0.img, p2), r0, v2, wz ? 28 : 14); }
     else if (gp) { g.translate(ox - reg.x0 * s2, oy - reg.y0 * s2); g.scale(s2, s2); g.translate(pcx, pcy); g.rotate(th); g.translate(-pcx, -pcy); g.drawImage(paSrc(r0.img, p2), r0.x0, r0.y0, r0.x1 - r0.x0, r0.y1 - r0.y0, r0.x0, r0.y0, r0.x1 - r0.x0, r0.y1 - r0.y0); }
     else g.drawImage(paSrc(r0.img, p2), r0.x0, r0.y0, w, h, ox, oy, w * s2, h * s2);
     g.restore();
@@ -2338,7 +2377,7 @@
     var a = (ed || (twoUpOn && document.body.classList.contains('playing'))) ? null : adj[shownPage], s = s0 * (a ? a.z : 1),      // two pages: the pinch zoom (for writing) works, but while the app follows both pages stand at the same size
      cxI = a ? a.cx : reg.x0 + w / 2, cyI = a ? a.cy : reg.y0 + h / 2;
     var ox = px0(c) + viewW(c) / 2 - (cxI - reg.x0) * s, oy = c.height / 2 - (cyI - reg.y0) * s;
-    view = { s: s, s0: s0, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw };
+    view = { s: s, s0: s0, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw, ww: gp && gp.w ? wwPrepOf(gp.w) : null };
     g.imageSmoothingQuality = 'high'; var cmpHit = false, cmpK = null;
     if (gp) {                                    // (rotated / tilted pages are costly to draw: the finished picture is kept and reused while only the writing, flags or the curl change)
       var pa0 = paOf(shownPage), bk = [shownPage, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), JSON.stringify(gp), pa0 ? [pa0.b, pa0.c, pa0.t, pa0.A ? 1 : 0].join(',') : '', ed ? 1 : 0, geoDial ? 1 : 0, reg0.img].join('|');
@@ -2347,7 +2386,7 @@
       if (!baseCv) {
         baseCv = baseNew(bk); baseCv.width = c.width; baseCv.height = c.height; var bg = baseCv.getContext('2d'); bg.imageSmoothingQuality = 'high';
         bg.save(); bg.beginPath(); bg.rect(ox, oy, w * s, h * s); bg.clip(); bg.fillStyle = pageTone(reg0.img, shownPage); bg.fillRect(ox, oy, w * s, h * s);
-        if (ka || kb || wz) { bg.setTransform(1, 0, 0, 1, 0, 0); meshDraw(bg, paSrc(reg0.img, shownPage), reg0, view, wz ? (geoDial ? 14 : 28) : (geoDial ? 8 : 14)); }
+        if (ka || kb || wz || view.ww) { bg.setTransform(1, 0, 0, 1, 0, 0); meshDraw(bg, paSrc(reg0.img, shownPage), reg0, view, wz ? (geoDial ? 14 : 28) : (geoDial ? 8 : 14)); }
         else {
           bg.translate(ox - reg.x0 * s, oy - reg.y0 * s); bg.scale(s, s); bg.translate(pcx, pcy); bg.rotate(th); bg.translate(-pcx, -pcy);
           bg.drawImage(paSrc(reg0.img, shownPage), reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0); }
@@ -2461,10 +2500,10 @@
     var key = [np, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), gp ? JSON.stringify(gp) : '', pa0 ? [pa0.b, pa0.c, pa0.t, pa0.A ? 1 : 0].join(',') : '', il ? il.length : 0, reg0.img, twoUpOn ? 1 : 0].join('|');
     if (npCv && npKey === key && npCv.width === c.width && npCv.height === c.height) return npCv;
     npCv = npCv || document.createElement('canvas'); npCv.width = c.width; npCv.height = c.height; var ng = npCv.getContext('2d'); ng.imageSmoothingQuality = 'high'; ng.fillStyle = '#ffffff'; ng.fillRect(0, 0, c.width, c.height);
-    var v = { s: s, s0: s, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw }, src = paSrc(reg0.img, np);
+    var v = { s: s, s0: s, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw, ww: gp && gp.w ? wwPrepOf(gp.w) : null }, src = paSrc(reg0.img, np);
     if (gp) {
       ng.save(); ng.beginPath(); ng.rect(ox, oy, w * s, h * s); ng.clip(); ng.fillStyle = pageTone(reg0.img, np); ng.fillRect(ox, oy, w * s, h * s);
-      if (ka || kb || wz) { meshDraw(ng, src, reg0, v, wz ? 28 : 14); } else { ng.translate(ox - reg.x0 * s, oy - reg.y0 * s); ng.scale(s, s); ng.translate(pcx, pcy); ng.rotate(th); ng.translate(-pcx, -pcy); ng.drawImage(src, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0); }
+      if (ka || kb || wz || v.ww) { meshDraw(ng, src, reg0, v, wz ? 28 : 14); } else { ng.translate(ox - reg.x0 * s, oy - reg.y0 * s); ng.scale(s, s); ng.translate(pcx, pcy); ng.rotate(th); ng.translate(-pcx, -pcy); ng.drawImage(src, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0); }
       ng.restore(); ng.save(); ng.beginPath(); ng.rect(ox, oy, w * s, h * s); ng.clip(); drawInk(ng, v, np); ng.restore();
     } else { ng.drawImage(src, reg.x0, reg.y0, w, h, ox, oy, w * s, h * s); drawInk(ng, v, np); }
     if (twoUpOn && np % 2 === 1) { try { ng.save(); drawSecond(ng, c, c.width / Math.max(1, c.getBoundingClientRect().width), np); ng.restore(); } catch (e) { ng.restore(); } }      // two pages side by side: the page that will stand beside it is turned in too
@@ -2596,7 +2635,7 @@
     var fail = function (e) { clearTimeout(prepT); starting = false; if (stopped) return; stopped = true; try { myCtx.close(); } catch (x) {} if (ctx === myCtx) ctx = null; running = false; goIdle(); $('go').classList.remove('on'); if (recOnlyOn) recOnlyMsg(true);
       if (e && e.name === 'InvalidStateError' && !startRetried) { startRetried = true; try { if (navigator.audioSession) navigator.audioSession.type = 'play-and-record'; } catch (x) {} setTimeout(function () { start(); }, 600); return; }   // iOS audio session left in the wrong mode: it is put back by the next mic request, so try once more by itself
       showErr(_t('マイクを使えません（') + (e && (e.name || '') + ' ' + (e && e.message || e || '')).trim() + _t('）。ブラウザの設定で、このサイトのマイクを許可し、ページを再読み込みしてからもう一度押してください。（Safari の場合は「ぁあ」→「Webサイトの設定」）')); };
-    var resumed = myCtx.resume ? myCtx.resume().catch(function () {}) : Promise.resolve();
+    var startedAt = Date.now(); var resumed = myCtx.resume ? myCtx.resume().catch(function () {}) : Promise.resolve();
     micGet().then(function (s) { startRetried = false;
       if (stopped) { micRelease(s); return; }
       stream = s; try { recStart(s); } catch (e) {} makePager(); if (myCtx.state !== 'running' && myCtx.resume) resumed = myCtx.resume().catch(function () {});
@@ -2618,7 +2657,7 @@
         (function () {      // interruptions (a system alert, a call, another app): ask the audio to restart, and say so on the screen while no sound arrives
           var lastN = -1, lastT = Date.now(), shown = false, gapT0 = 0, tk = stream && stream.getAudioTracks()[0];
           function kickAll() { if (running && ctx === myCtx && myCtx.state !== 'running') myCtx.resume().catch(function () {}); }
-          if (tk) { tk.onmute = kickAll; tk.onunmute = kickAll; tk.onended = function () { if (running && ctx === myCtx) toast(_t('⚠ マイクが止まりました。いったん「止める」を押して、もう一度「弾き始める」を押してください。')); }; }
+          if (tk) { tk.onmute = kickAll; tk.onunmute = kickAll; tk.onended = function () { if (running && ctx === myCtx && !micFresh && Date.now() - startedAt < 30000) { micFresh = true; window.__micAlt = true; log('mic: track ended early, starting again with a fresh microphone'); var roK = recOnlyRun; stop(); if (window.__micDrop) window.__micDrop(); setTimeout(function () { if (roK) { recOnlyOn = true; recOnlyUI(); goIdle(); } start(); }, 400); return; } if (running && ctx === myCtx) toast(_t('⚠ マイクが止まりました。いったん「止める」を押して、もう一度「弾き始める」を押してください。')); }; }
           var iv = setInterval(function () {
             if (!(running && ctx === myCtx)) { clearInterval(iv); return; }
             var n = diag.calls; if (n !== lastN) { lastN = n; lastT = Date.now(); if (shown) { shown = false; try { if (pager && pager.last) micGaps.push([Math.round(gapT0 * 10) / 10, Math.round(pager.last.t * 10) / 10]); } catch (e) {} log(_t('マイクの音が戻りました')); } else gapT0 = pager && pager.last ? pager.last.t : 0; return; }
@@ -2630,7 +2669,7 @@
         try { if (navigator.getBattery) navigator.getBattery().then(function (bt) { if (running && !bt.charging && bt.level < 0.2) toast(_t('⚠ バッテリーが残り{n}%です。充電しながら使ってください。').replace('{n}', Math.round(bt.level * 100))); }).catch(function () {}); } catch (e) {}      // (iPad Safari does not offer the battery level to web pages; this works where it does, e.g. Android)
         // watchdog: no sound arrives at all -> try the other capture method once, then say so
         setTimeout(function () { if (running && ctx === myCtx && pager && pager.n === 0) { try { useSP(); } catch (x) {} } }, 6000);
-        setTimeout(function () { if (running && ctx === myCtx && pager && pager.n === 0 && !micFresh) { micFresh = true; window.__micAlt = true; log('mic: no sound after 8 s, starting again with a fresh microphone'); var roKeep = recOnlyRun; stop(); if (window.__micDrop) window.__micDrop(); setTimeout(function () { if (roKeep) { recOnlyOn = true; recOnlyUI(); goIdle(); } start(); }, 400); } }, 8000);      // still nothing (e.g. after the iPad slept or another app had the microphone): one automatic fresh start before the error     // nothing arrives after 6 s: try the other capture method
+        setTimeout(function () { if (running && ctx === myCtx && pager && (pager.n === 0 || diag.peak < 1e-6) && !micFresh) { micFresh = true; window.__micAlt = true; log('mic: no sound after 8 s, starting again with a fresh microphone'); var roKeep = recOnlyRun; stop(); if (window.__micDrop) window.__micDrop(); setTimeout(function () { if (roKeep) { recOnlyOn = true; recOnlyUI(); goIdle(); } start(); }, 400); } }, 8000);      // still nothing (e.g. after the iPad slept or another app had the microphone): one automatic fresh start before the error     // nothing arrives after 6 s: try the other capture method
         setTimeout(function () {                                                                                                         // still nothing after 12 s: say so
           if (!(running && ctx === myCtx && pager && pager.n === 0)) return;
           var tk = stream && stream.getAudioTracks()[0];
@@ -5401,7 +5440,74 @@
     g.fillStyle = '#ffd60a'; g.beginPath(); g.moveTo(w / 2 - 5, h - 2); g.lineTo(w / 2 + 5, h - 2); g.lineTo(w / 2, h - 10); g.fill();
     $('dialv').textContent = m.fmt(v);
   }
+  function wavFind(p) {      // finds the staves of the page and, for each strip of the page, where the five lines of every staff lie; returns the shifts that make them straight (or {err})
+    var reg0 = pageRegion(p), im = reg0 && paSrc(reg0.img, p); if (!reg0 || !im) return { err: 'ページが読み込まれていません' };
+    var gp = geo[p] || GZ, w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = (gp.q || 0) % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2, th = ((gp.q || 0) * 90 + (gp.f || 0)) * Math.PI / 180;
+    var sc = Math.min(1, 1500 / bw), W = Math.round(bw * sc), H = Math.round(bh * sc), cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    var g = cv.getContext('2d', { willReadFrequently: true }); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.translate(W / 2, H / 2); g.scale(sc, sc); g.rotate(th); g.translate(-pcx, -pcy);
+    g.drawImage(im, reg0.x0, reg0.y0, w0, h0, reg0.x0, reg0.y0, w0, h0);
+    var d = g.getImageData(0, 0, W, H).data, gray = new Uint8Array(W * H), hist = new Uint32Array(256), i, k, s, y, x;
+    for (i = 0; i < W * H; i++) { var gv = (d[i * 4] * 299 + d[i * 4 + 1] * 587 + d[i * 4 + 2] * 114) / 1000 | 0; gray[i] = gv; hist[gv]++; }
+    var acc = 0, paper = 255; for (i = 0; i < 256; i++) { acc += hist[i]; if (acc >= W * H * 0.9) { paper = i; break; } }
+    var thr = paper * 0.62, NS = 28, sw = Math.floor(W / NS); if (sw < 8) return { err: '画像が小さすぎます' };
+    var peaks = [], diffs = new Uint32Array(100);
+    var dark = new Uint8Array(W * H); for (i = 0; i < W * H; i++) dark[i] = gray[i] < thr ? 1 : 0;
+    var cand = [], Rm = [], ms = [], mi; for (var mm = -0.5; mm <= 0.501; mm += 0.03) ms.push(mm);
+    for (s = 0; s < NS; s++) {      // per strip, for every slope: the sheared projection (a sloping staff line gives one sharp peak)
+      var x0 = s * sw, xc = sw / 2, lim = 0.4 * sw, cs0 = [], rr0 = [];
+      for (mi = 0; mi < ms.length; mi++) {
+        var m = ms[mi], R = new Float32Array(H + 2 * sw), off = sw;
+        for (x = 0; x < sw; x++) { var sh = Math.round(m * (x - xc)); for (y = 0; y < H; y++) if (dark[y * W + x0 + x]) { var yy = y - sh + off; if (yy >= 0 && yy < R.length) R[yy]++; } }
+        var pk = []; y = 0; while (y < R.length) { if (R[y] >= lim) { var y1 = y, sm = 0, wsm = 0; while (y1 < R.length && R[y1] >= lim * 0.7) { sm += R[y1] * y1; wsm += R[y1]; y1++; } if (y1 - y <= 7) pk.push([sm / wsm - off, wsm]); y = y1; } else y++; }
+        cs0.push(pk); rr0.push(R); for (k = 1; k < pk.length; k++) { var df = Math.round(pk[k][0] - pk[k - 1][0]); if (df >= 3 && df < 100) diffs[df]++; }
+      }
+      cand.push(cs0); Rm.push(rr0);
+    }
+    var sp = 0, best = 0; for (i = 3; i < 99; i++) { var sc3 = diffs[i - 1] + diffs[i] * 2 + diffs[i + 1]; if (sc3 > best) { best = sc3; sp = i; } }
+    if (!sp || best < 20) return { err: '五線が見つかりませんでした' };
+    var groups = [], gcount = [];      // five lines in a row, about one space apart = a staff (found at the slope that fits it best): its centre and slope
+    for (s = 0; s < NS; s++) {
+      var found = [];
+      cand[s].forEach(function (pk, mj) { var j = 0; while (j + 4 < pk.length) { var ok = true, st = 0; for (k = 0; k < 4; k++) { var df2 = pk[j + k + 1][0] - pk[j + k][0]; if (df2 < 0.78 * sp || df2 > 1.28 * sp) { ok = false; break; } } if (ok) { for (k = 0; k < 5; k++) st += pk[j + k][1]; found.push([(pk[j][0] + pk[j + 1][0] + pk[j + 2][0] + pk[j + 3][0] + pk[j + 4][0]) / 5, st, ms[mj]]); j += 5; } else j++; } });
+      found.sort(function (a, b) { return b[1] - a[1]; }); var acc2 = [];
+      found.forEach(function (f) { for (var q = 0; q < acc2.length; q++) if (Math.abs(acc2[q][0] - f[0]) < 3 * sp) return; acc2.push([f[0], f[2]]); });
+      acc2.sort(function (a, b) { return a[0] - b[0]; }); groups.push(acc2); gcount.push(acc2.length);
+    }
+    function peakAt(R, y) { var i0 = Math.round(y) + sw; if (i0 < 1 || i0 >= R.length - 1) return 0; return Math.max(R[i0 - 1], R[i0], R[i0 + 1]); }
+    function comb(si, yP, mP, mR, yR) {      // the five-line comb laid over the strip around the expected place: the best place and slope
+      var bs = -1, by = 0, bm = 0; for (var mj = 0; mj < ms.length; mj++) { if (Math.abs(ms[mj] - mP) > mR + 1e-6) continue; var R = Rm[si][mj]; for (var yy = yP - yR; yy <= yP + yR; yy += 1) { var sc = 0; for (var q = -2; q <= 2; q++) sc += peakAt(R, yy + q * sp); sc -= 0.9 * (peakAt(R, yy - 3 * sp) + peakAt(R, yy + 3 * sp)); if (sc > bs) { bs = sc; by = yy; bm = ms[mj]; } } }
+      return bs >= 5 * 0.3 * sw ? { y: by, m: bm } : null;
+    }
+    var tracks = [];
+    function follow(t, s0, stp) { var yc = t.Y[s0], mc = t.M[s0], miss = 0; for (var si = s0 + stp; si >= 0 && si < NS; si += stp) { var pr = yc + mc * sw * stp, r = null; for (var gq = 0; gq < groups[si].length; gq++) { var gg = groups[si][gq]; if (Math.abs(gg[0] - pr) < 1.2 * sp && Math.abs(gg[1] - mc) < 0.2 && (!r || Math.abs(gg[0] - pr) < Math.abs(r.y - pr))) r = { y: gg[0], m: gg[1] }; } if (!r) r = comb(si, pr, mc, 0.15, 1.6 * sp); if (r) { if (t.Y[si] === null) { t.Y[si] = r.y; t.M[si] = r.m; } yc = r.y; mc = r.m; miss = 0; } else { yc = pr; if (++miss > 3) break; } } }
+    var sOrder = []; for (s = 0; s < NS; s++) sOrder.push(s); sOrder.sort(function (a, b) { return gcount[b] - gcount[a] || Math.abs(a - NS / 2) - Math.abs(b - NS / 2); });
+    sOrder.forEach(function (s0) { groups[s0].forEach(function (g) { for (var q = 0; q < tracks.length; q++) { var yv = tracks[q].Y[s0]; if (yv !== null && Math.abs(yv - g[0]) < 2.5 * sp) return; } var t = { Y: new Array(NS).fill(null), M: new Array(NS).fill(0) }; t.Y[s0] = g[0]; t.M[s0] = g[1]; follow(t, s0, 1); follow(t, s0, -1); tracks.push(t); }); });
+    tracks.forEach(function (t) { var ms2 = []; for (var q = 0; q < NS; q++) if (t.Y[q] !== null) ms2.push(t.Y[q]); ms2.sort(function (a, b) { return a - b; }); t.med = ms2.length ? ms2[Math.floor(ms2.length / 2)] : 1e9; });
+    tracks.sort(function (a, b) { return a.med - b.med; });
+    for (var mi2 = tracks.length - 2; mi2 >= 0; mi2--) { var ta = tracks[mi2], tb = tracks[mi2 + 1]; if (Math.abs(ta.med - tb.med) < 2.5 * sp) { var cn = 0, dsum = 0; for (var q2 = 0; q2 < NS; q2++) if (ta.Y[q2] !== null && tb.Y[q2] !== null) { cn++; dsum += Math.abs(ta.Y[q2] - tb.Y[q2]); } if (cn === 0 || dsum / cn < 0.5 * sp) { for (q2 = 0; q2 < NS; q2++) if (ta.Y[q2] === null && tb.Y[q2] !== null) ta.Y[q2] = tb.Y[q2]; tracks.splice(mi2 + 1, 1); } } }      // the same staff found twice
+    var ref = 0, tol = 0;
+    var T = [], keep = [], order = tracks.filter(function (t) { var c = 0; for (var q = 0; q < NS; q++) if (t.Y[q] !== null) c++; return c >= 5; });
+    order.forEach(function (t) { var ms = []; for (var q = 0; q < NS; q++) if (t.Y[q] !== null) ms.push(t.Y[q]); ms.sort(function (a, b) { return a - b; }); t.med = ms[Math.floor(ms.length / 2)]; });
+    order.sort(function (a, b) { return a.med - b.med; });
+    order.forEach(function (t) {
+      var arr = t.Y;
+      for (var rep2 = 0; rep2 < 2; rep2++) for (s = 1; s < NS - 1; s++) if (arr[s] !== null && arr[s - 1] !== null && arr[s + 1] !== null && Math.abs(arr[s] - (arr[s - 1] + arr[s + 1]) / 2) > 0.5 * sp) arr[s] = null;      // a strip that jumps away from its two neighbours (a chord, a text) is not trusted (a steady slope is fine)
+      var first = -1, last = -1; for (s = 0; s < NS; s++) if (arr[s] !== null) { if (first < 0) first = s; last = s; }
+      if (first < 0) return;
+      var fl = new Array(NS); for (s = 0; s < NS; s++) { if (arr[s] !== null) { fl[s] = arr[s]; continue; } if (s < first) { fl[s] = arr[first]; continue; } if (s > last) { fl[s] = arr[last]; continue; } var l = s - 1, r2 = s + 1; while (arr[l] === null) l--; while (arr[r2] === null) r2++; fl[s] = arr[l] + (arr[r2] - arr[l]) * (s - l) / (r2 - l); }
+      var sm2 = fl.slice(); for (s = 1; s < NS - 1; s++) sm2[s] = (fl[s - 1] + 2 * fl[s] + fl[s + 1]) / 4;      // the paper bends slowly: a light smoothing takes the noise out
+      var srt = []; for (s = 0; s < NS; s++) if (arr[s] !== null) srt.push(arr[s]); srt.sort(function (a, b) { return a - b; });
+      keep.push(sm2); T.push(srt[Math.floor(srt.length / 2)]);
+    });
+    if (!keep.length) return { err: '五線が見つかりませんでした' };
+    var maxMove = 0; keep.forEach(function (fl, q) { for (s = 0; s < NS; s++) maxMove = Math.max(maxMove, Math.abs(fl[s] - T[q])); });
+    var xs = [], rnd = function (v) { return Math.round(v * 10) / 10; };
+    for (s = 0; s < NS; s++) xs.push(rnd(((s + 0.5) * sw - W / 2) / sc));
+    var out = { x: xs, Y: keep.map(function (fl) { return fl.map(function (v) { return rnd((v - H / 2) / sc); }); }), T: T.map(function (v) { return rnd((v - H / 2) / sc); }), h: rnd(2.6 * sp / sc) };
+    return { w: out, staves: keep.length, move: maxMove / sp, sp: sp / sc };
+  }
   function geoUI() {
+    try { geoWavUI(); } catch (e) {}
     var g = geo[shownPage] || GZ; if (!$('dial')) return;
     for (var k = 0; k < 5; k++) $('gm' + k).classList.toggle('on', k === gmode); $('gsub').hidden = gmode < 3; for (var k2 = 0; k2 < 3; k2++) $('gs' + k2).classList.toggle('on', k2 === gsub);
     editNavUI(); var on = geoEdit(); $('geoov').hidden = !on; $('geot').classList.toggle('sel', on); dialDraw();
@@ -5461,6 +5567,19 @@
     o.addEventListener('pointerup', up); o.addEventListener('pointercancel', up);
     ['touchstart', 'touchmove', 'touchend', 'click', 'dblclick'].forEach(function (n) { o.addEventListener(n, function (e) { e.stopPropagation(); }, { passive: false }); });
   })();
+  function geoWavUI() { try { var gg = geo[shownPage]; $('geowavoff').hidden = !(gg && gg.w); } catch (e) {} }
+  $('geowav').onclick = function () {
+    var b = $('geowav'); b.disabled = true; var t0 = b.textContent; b.textContent = '五線を探しています…';
+    setTimeout(function () {
+      try {
+        var r = wavFind(shownPage);
+        if (!r || r.err) { toast(_t((r && r.err) || '五線が見つかりませんでした')); }
+        else { var gg = geo[shownPage] || (geo[shownPage] = { q: 0, f: 0, l: 0, t: 0, r: 0, b: 0, v: 0, h: 0 }); gg.w = r.w; geoSave(); toast(_t('五線を{n}段、まっすぐにしました').replace('{n}', r.staves)); }
+      } catch (e) { toast(_t('うねりを直せませんでした')); }
+      b.disabled = false; b.textContent = t0; geoWavUI(); geoUI(); drawPage(null, 0);
+    }, 30);
+  };
+  $('geowavoff').onclick = function () { var gg = geo[shownPage]; if (gg) { delete gg.w; geoSave(); } geoWavUI(); geoUI(); drawPage(null, 0); };
   $('georeset').onclick = function () { geoGhostClear(); delete geo[shownPage]; delete adj[shownPage]; viewSave(); geoUI(); geoSave(); drawPage(null, 0); };
   $('georesetall').onclick = function () { geoGhostClear(); geo = {}; adj = {}; viewSave(); geoUI(); geoSave(); drawPage(null, 0); toast(_t('全ページをもとに戻しました')); };
   $('geoapply').onclick = function () { $('pgeo').hidden = true; geoUI(); paUI(); drawPage(null, 0); };       // the trimming is already in effect: this just puts the controls away
@@ -6143,7 +6262,7 @@
   $('langsel').value = (function () { try { return localStorage.getItem('lang') || 'auto'; } catch (e) { return 'auto'; } })(); $('langsel').onchange = function () { try { localStorage.setItem('lang', this.value); } catch (e) {} location.reload(); };
   /* ---------- keep the screen on: the iPad must not lock (and stop the microphone) while a piece is played or a song is made ---------- */
   var wlk = null, wlTouch = Date.now(), wlFail = false, nsV = null, wlCritT = 0;      // wlFail: the iPad refuses the screen lock request (older iPadOS in a home-screen app): then a muted, looping 1-pixel video keeps the screen on instead
-  function wlWant() { return !document.hidden && (!!running || !!W || Date.now() - wlTouch < 15 * 60000); }      // playing or making a song: always;  otherwise for 15 minutes after the last touch (then the iPad may lock again, so that it is not left on for hours)
+  function wlWant() { if (document.hidden) return false; if (document.body.classList.contains('honban') && (running || W)) return true; return Date.now() - Math.max(wlTouch, window.pagicSoundT || 0) < 15 * 60000; }      // concert mode: after "start" the screen stays on without limit;      // for 15 minutes after the last touch or the last sound that was played (also while playing or making a song); then the iPad may lock again, so that it is not left on for hours
   function wlOK() { return !!((wlk && wlk !== true) || (nsV && !nsV.paused)); }
   function nsSync(on) {
     try {
