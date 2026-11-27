@@ -303,7 +303,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v484</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v488</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2368,8 +2368,10 @@
     if (twoUpOn) drawSecond(g, c, d);
     try { var fnL = $('fspgL'), fnR = $('fspgR'); if (twoUpOn && view2) { var pr = playedRight(), pl = pr ? view2.page : shownPage, pq = pr ? shownPage : view2.page; fnL.textContent = _t('{n}ページ').replace('{n}', pl); fnR.textContent = _t('{n}ページ').replace('{n}', pq); fnL.classList.add('on'); fnR.classList.add('on'); } else { fnL.classList.remove('on'); fnR.classList.remove('on'); } } catch (e) {}      // full screen has no header: each page's number stands at the top in the middle of that page
     var b = playBar != null ? pkg.rects[playBar] : null;
-    if (!cmpHit) { if (gp) { g.save(); g.beginPath(); g.rect(ox, oy, w * s, h * s); g.clip(); drawInk(g, view); g.restore(); } else drawInk(g, view);
-      if (cmpK) { try { var cvN = cmpPut(cmpK, c.width, c.height); cvN.getContext('2d').drawImage(c, 0, 0); } catch (e) { cmpL = []; } } }      /* (the finished picture is kept for the next time) */
+    var inkLate = false;
+    if (!cmpHit) { var lz = showWhy === 'swipe' && !ink.cur; if (gp) { g.save(); g.beginPath(); g.rect(ox, oy, w * s, h * s); g.clip(); inkLate = drawInk(g, view, undefined, lz); g.restore(); } else inkLate = drawInk(g, view, undefined, lz);
+      if (inkLate) { var pgL = shownPage; setTimeout(function () { if (shownPage === pgL) drawPage(null, 0); }, 60); }      /* the notes first, the writing a moment later */
+      if (cmpK && !inkLate) { try { var cvN = cmpPut(cmpK, c.width, c.height); cvN.getContext('2d').drawImage(c, 0, 0); } catch (e) { cmpL = []; } } }      /* (the finished picture is kept for the next time) */
     if (!ed) drawReps(g, view, d);
     if (!ed) drawPeel(g, view, d);
     if (!ed) drawProb(g, view, d);
@@ -2400,6 +2402,7 @@
         if (!pkg || shownPage !== p) return;
         if (touchDown || peelAnim || (typeof pz !== 'undefined' && pz)) { if (tries < 12) warmNear(p, tries + 1); return; }      /* a finger is down or the page is zoomed: try again a little later (it used to give up for good) */
         var list = twoUpOn ? [p - 2, p + 2] : [p - 1, p + 1], k = 0;
+        if (!running) { var more = []; for (var qq = 1; qq <= maxPage; qq++) if (list.indexOf(qq) < 0 && qq !== p) more.push(qq); more.sort(function (a, b) { return Math.abs(a - p) - Math.abs(b - p) || a - b; }); list = list.concat(more.slice(0, 6)); }      /* while nothing is playing, the nearer pages are also made ready, one by one */
         (function one() {
           try {
             if (!pkg || shownPage !== p || touchDown || peelAnim || (typeof pz !== 'undefined' && pz)) { if (shownPage === p && tries < 12) warmNear(p, tries + 1); return; }
@@ -3236,7 +3239,13 @@
   function hasStylus(e) { for (var i = 0; i < e.touches.length; i++) if (e.touches[i].touchType === 'stylus') return true; return false; }
   (function () {
     var m = document.querySelector('main'), sx = null, sy = null, st = 0;
-    m.addEventListener('touchstart', function (e) { pdrag = false; if (e.touches.length !== 1 || e.touches[0].touchType === 'stylus' || penNear() || (ink.on && palmLike(e.touches[0]))) { sx = null; return; } palmSeen = false; sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); pdrag = peelHit(e.touches[0]); }, { passive: true });
+    m.addEventListener('touchstart', function (e) { pdrag = false; if (e.touches.length !== 1 || e.touches[0].touchType === 'stylus' || penNear() || (ink.on && palmLike(e.touches[0]))) { sx = null; return; } palmSeen = false; stT = e.timeStamp || 0; if (performance.now() < swBlock) { sx = null; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); pdrag = peelHit(e.touches[0]); }, { passive: true });
+    var stT = 0, swDone = 0, swBlock = 0;      /* stT: when the finger touched down; swDone: when the last swipe had its page on the screen */
+    function swipeGo(d) {      // a swipe that began BEFORE the previous swipe's page was on the screen (the app was slow, so the finger swiped again) must not turn one more page: that is how pages were skipped
+      if (stT && stT < swDone) return;
+      var t0 = performance.now(); manual(d); var t1 = performance.now(); swDone = t1 + 60;
+      if (t1 - t0 > 120) swBlock = t1 + 400;      /* the app was stuck while turning: the swipes the finger made meanwhile arrive all at once right after it; those must not turn more pages (works without trusting the event time stamps) */
+    }
     var pdrag = false, palmSeen = false;      /* palmSeen: during this touch the contact area was once big (the side of the hand) */
     function peelHit(t) {                        // is the finger on the turned-up corner (the triangle at the top left)?
       try { if (!peel || !(peel.sc > 0) || peelAnim || !view || !pkg) return false; var gm = peelGeo(view, $('page'), peel); if (!gm) return false; var cp = cpt(t), A = gm.a * peel.sc, B = gm.b * peel.sc, mg = 30 * cp[2]; var inTri = (cp[0] - gm.x0 + mg) / (A + 2 * mg) + (cp[1] - gm.y0 + mg) / (B + 2 * mg) <= 1 && cp[0] >= gm.x0 - mg && cp[1] >= gm.y0 - mg;
@@ -3248,7 +3257,7 @@
       if (sx !== null && ink.on && (palmSeen || penNear() || e.touches.length > 1 || (e.touches.length && palmLike(e.touches[0])))) { sx = null; return; }      /* with the pencil open: once the pencil or a second finger / a palm shows up, this touch can no longer turn the page */
       if (sx === null || pz || pdrag || penNear() || peelAnim || !e.touches.length || e.touches.length > 1 || !view) return;
       var t = e.touches[0], dx = t.clientX - sx, dy = t.clientY - sy;
-      if (Date.now() - st < 900 && Math.abs(dx) > 48 && Math.abs(dx) > 2 * Math.abs(dy)) { sx = null; manual(dx < 0 ? 1 : -1); }
+      if (Date.now() - st < 900 && Math.abs(dx) > 48 && Math.abs(dx) > 2 * Math.abs(dy)) { sx = null; swipeGo(dx < 0 ? 1 : -1); }
     }, { passive: true });
     m.addEventListener('touchend', function (e) {
       if (sx === null || pz || penNear() || (ink.on && (palmSeen || palmLike(e.changedTouches[0])))) { sx = null; return; } var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; sx = null;
@@ -3264,7 +3273,7 @@
         if (lastTap && now - lastTap.t < 420 && Math.hypot(cp[0] - lastTap.x, cp[1] - lastTap.y) < 60 * cp[2]) { lastTap = null; var ip = vInv(view, cp[0], cp[1]); setStart(ip[0], ip[1]); return; }
         lastTap = { t: now, x: cp[0], y: cp[1] }; return;
       }
-      if (Date.now() - st < 900 && Math.abs(dx) > 60 && Math.abs(dx) > 1.6 * Math.abs(dy)) { if (peelAnim) return; manual(dx < 0 ? 1 : -1); }       /* swipes may follow each other without any pause */
+      if (Date.now() - st < 900 && Math.abs(dx) > 60 && Math.abs(dx) > 1.6 * Math.abs(dy)) { if (peelAnim) return; swipeGo(dx < 0 ? 1 : -1); }       /* swipes may follow each other without any pause */
     }, { passive: true });
     var pz = null, lastTap = null, lastTouchT = 0, swT = 0, pzRaf = 0, pzSnap = null, pzV = null;
     m.addEventListener('click', function (e) { if (ink.on || !view) return; var cp = cpt(e); if (inOther(cp[0], $('page'))) return; if (Date.now() - lastTouchT > 700 && hereArm) { hereArm = false; var hp = vInv(view, cp[0], cp[1]); setStart(hp[0], hp[1]); return; } if (Date.now() - lastTouchT > 700) { var rh = repHit(cp[0], cp[1], cp[2]); if (rh) { repBtnTap(rh); return; } } if (hitFlagX(cp[0], cp[1], cp[2])) clearFlag(); });
@@ -5313,7 +5322,7 @@
       } else for (i = 0; i < n; i += 4) { px[i] = L[0][px[i]]; px[i + 1] = L[1][px[i + 1]]; px[i + 2] = L[2][px[i + 2]]; }
       g.putImageData(d, 0, 0);
     } catch (e) { return im; }
-    paCache.push({ key: key, cv: cv }); if (paCache.length > 5) paCache.shift();
+    paCache.push({ key: key, cv: cv }); for (var pc = 0, ppx = 0; pc < paCache.length; pc++) ppx += paCache[pc].cv.width * paCache[pc].cv.height; while (paCache.length > 12 || (paCache.length > 5 && ppx > 30e6)) { var po = paCache.shift(); ppx -= po.cv.width * po.cv.height; po.cv.width = po.cv.height = 1; }      /* the adjusted pictures of the pages are kept as long as they fit (up to 12, about 120 MB): making one takes a second on the iPad, and it was done again whenever a page had dropped out of the five */
     return cv;
   }
   function paColor(c) {                          // "cover" strokes use the paper colour: pass it through the same adjustment
@@ -5456,13 +5465,14 @@
   function inkSeen(st, v, W, H) { try { var b = inkBB(st), pad = (st.w || 1) * v.s + 4, xs = [vX(v, b.x0, b.y0), vX(v, b.x1, b.y0), vX(v, b.x0, b.y1), vX(v, b.x1, b.y1)], ys = [vY(v, b.x0, b.y0), vY(v, b.x1, b.y0), vY(v, b.x0, b.y1), vY(v, b.x1, b.y1)]; if (!(isFinite(xs[0]) && isFinite(ys[0]))) return true; return !(Math.max.apply(null, xs) + pad < 0 || Math.min.apply(null, xs) - pad > W || Math.max.apply(null, ys) + pad < 0 || Math.min.apply(null, ys) - pad > H); } catch (e) { return true; } }      // strokes that lie wholly outside the picture (zoomed in) are not drawn at all
   function drawInkRaw(g, v, pg, only) { var list = ink.strokes[pg === undefined ? shownPage : pg]; if (!v || !list) return; var cW = g.canvas.width, cH = g.canvas.height; for (var i = 0; i < list.length; i++) { try { if (only === 'pen' && list[i].h) continue; if (only === 'hi' && !list[i].h) continue; if (inkOk(list[i]) && (list[i] === ink.cur || inkSeen(list[i], v, cW, cH))) drawOne(g, list[i], v); } catch (e) { try { g.restore(); } catch (e2) {} } } }      // one broken stroke is skipped, the page and the other strokes stay
   var inkCache = [];      // a page with many strokes is drawn into a picture once and that picture is laid on the page (turning to a page with 600 strokes took more than half a second); at most 5 pictures are kept
-  function drawInk(g, v, pg) {
+  function drawInk(g, v, pg, lazy) {      // lazy (right after a swipe): a page with much writing whose picture is not ready is drawn WITHOUT the writing first; the caller draws again a moment later (returns true then)
     var p = pg === undefined ? shownPage : pg, list = ink.strokes[p]; if (!v || !list) return;
     if (!ink.cur && list.length > 40) {
       try {
         var cW = g.canvas.width, cH = g.canvas.height, vk = ''; for (var kk in v) if (typeof v[kk] === 'number') vk += kk + ':' + v[kk] + ',';
         var key = p + '|' + cW + 'x' + cH + '|' + vk + '|' + list.length + '|' + list[list.length - 1].p.length + '|' + JSON.stringify(pa[p] || 0), ce = null, ci;
         for (ci = 0; ci < inkCache.length; ci++) if (inkCache[ci].page === p && inkCache[ci].cv.width === cW && inkCache[ci].cv.height === cH) { ce = inkCache[ci]; inkCache.splice(ci, 1); break; }
+        if (lazy && (!ce || ce.list !== list || ce.key !== key)) { if (ce) inkCache.push(ce); return true; }
         if (!ce || ce.list !== list || ce.key !== key) { if (!ce) { ce = { page: p, cv: document.createElement('canvas') }; ce.cv.width = cW; ce.cv.height = cH; } var q = ce.cv.getContext('2d'); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, cW, cH); drawInkRaw(q, v, p, 'pen'); ce.list = list; ce.key = key; }
         inkCache.push(ce); while (inkCache.length > 5) { var old = inkCache.shift(); old.cv.width = old.cv.height = 1; }
         g.drawImage(ce.cv, 0, 0); drawInkRaw(g, v, p, 'hi'); return;      // (the highlighter multiplies with the page, so it is drawn on the page itself, after the pen)
