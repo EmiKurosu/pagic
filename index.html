@@ -75,8 +75,6 @@
   .settings #closesettings { position: sticky; top: auto; right: auto; bottom: 0; justify-self: end; flex: none; box-shadow: 0 2px 10px rgba(0,0,0,.3); }
   .closebtn { position: absolute; top: 14px; right: 14px; width: 50px; min-height: 50px; padding: 0; border-radius: 25px; font-size: 32px; line-height: 1; display: grid; place-items: center; }
   .settings label { display: grid; gap: 4px; font-size: 14px; }
-  .settings #relocbtn.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
-  .settings.pn #relocbtn.on { border-color: var(--line); box-shadow: none; }
   .settings #recbtn.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
   .settings.pn #recbtn.on { border-color: var(--line); box-shadow: none; }
   .settings button.pnon { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
@@ -303,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v490</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v495</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -389,7 +387,6 @@
       <label class="sl sl2"><span>ページのめくり始め<b id="prevv"></b></span><input type="range" id="prevbars" min="0" max="4" step="1" value="2"></label>
       <div id="tempoblock" hidden><small id="tempoinfo" style="white-space:pre-line"></small>
       <button type="button" id="learnreset">覚えた時間配分を消す</button></div>
-      <button type="button" id="relocbtn" aria-pressed="false">止まったあと、別の場所から弾き直しても、自動で見つける（テスト中）</button><input type="checkbox" id="relocon" hidden>
       <button type="button" id="recbtn" aria-pressed="false">演奏を録音する</button><input type="checkbox" id="recon" hidden>
       <div id="recblock" style="display:grid;gap:14px"><button type="button" id="recplay">録音を聞く</button><button type="button" id="recdel" style="display:grid;gap:2px;justify-items:center"><span id="recdeltx">録音を消す</span><small id="recsaved" hidden></small></button><button type="button" id="recexp">録音を書き出す</button></div>
       <button type="button" id="diagbtn">動作の記録を書き出す</button>
@@ -434,12 +431,14 @@
     <h2>使い方</h2>
     <h3>基本</h3>
     <ol>
-      <li>本のアイコンをタップして楽譜を選び、「弾き始める」を押します。マイクの許可が出たら「許可」を押します。</li>
+      <li>本のアイコンをタップして楽譜を選びます。弾き始める場所に、「ここから弾く」のピンを立てて（下の「弾き始める場所」を見てください）、「弾き始める」を押します。マイクの許可が出たら「許可」を押します。</li>
       <li>ピアノを弾くと、あなたの演奏を聞いて、ページを自動でめくります。</li>
       <li>終わったら「止める」を押します。</li>
     </ol>
-    <h3>途中から弾き始める</h3>
-    <p>楽譜を指で2回タップすると、緑の「ここ」マーク（地図のピン）が立ちます。そこから弾き始められます。マークの ✕ を押すと、マークを消せます。</p>
+    <h3>弾き始める場所（「ここから弾く」のピン）</h3>
+    <p>基本は、「ここから弾く」のピンを立てて、弾き始めます。楽譜を指で2回タップすると、緑の「ここ」マーク（地図のピン）が立ちます。そこから弾き始められます。マークの ✕ を押すと、マークを消せます。曲の冒頭から弾くときも、他のページの途中から弾くときも、確実についてきてほしいときは、ピンを立ててください。</p>
+    <p>ピンを立て忘れて、弾き始めても大丈夫です。ピンがないときは、いま開いているページの中から、アプリが弾いている場所を探して、ついていきます。止まったあと、別の場所から弾き直したときも、探します。ただし、見つけるまでに、数秒かかることがあります。</p>
+    <p>繰り返しのある曲では、ピンを立てないと、1回目か2回目かが分からず、アプリが混乱することがあります。ピンを立てると、1回目か2回目かをアプリが聞いてくれます。繰り返しのある曲では、ピンを立てて弾き始めてください。</p>
     <h3>録音なしで曲を作り、ページごとに録音を登録する</h3>
     <p>曲を作るとき、通し演奏の録音がなくても、楽譜の写真を選ぶだけで、曲の一覧に曲ができます（曲の一覧で押すと開いて、すぐ練習できます）。弾けるページから、1ページずつ、自分の演奏を登録していきます。順番は自由です。</p>
     <p>登録するときは、曲の一覧で鉛筆と四角のマーク（覚え直す）を押し、「◯ページ目の録音を登録する」を選びます。先に、楽譜に緑の「ここから弾く」のピンと、赤い「ここまで」のピンを置いてください（置けるのは、前のページの後半から次のページの前半までです。そのページの最初の音から最後の音までを弾くときも、置きます）。そのあと録音を流すか、マイクで弾いて、めくりたい場所で「ここで…めくりたい」を押します。最後のページも、同じ方法で登録します。</p>
@@ -3337,8 +3336,14 @@
   $('go').onclick = function () {
     if (!running) { micFresh = false; window.__micAlt = false;
       try { if (startPos && startPos.mark) { startPos.mark.left = false; startPos.mark.seen = false; } } catch (e) {}
+      try {      // test setting "find the place by itself": without a flag, playing starts on the page that is shown (not at the beginning of the piece); the follower looks for the place
+        if (!document.body.classList.contains('honban') && pkg && pkg.kind === 'song' && pkg.order && pkg.bar_page && startPos && !startPos.mark && (startPos.pos < 0.01 || startPos.auto)) {
+          var p0f = pkg.bar_page[pkg.order[0]], ia = -1; if (shownPage) for (var qa = 0; qa < pkg.order.length; qa++) if (pkg.bar_page[pkg.order[qa]] === shownPage) { ia = qa; break; }
+          startPos = ia >= 0 ? { page: shownPage, pos: ia, mark: null, auto: true } : { page: p0f, pos: 0, mark: null };      /* (also on the first page: the player may start anywhere on it, so the follower searches the page, and the question "first or second time?" is not asked) */
+        }
+      } catch (e) {}
       try {      // no flag: playing from the very beginning - when the beginning is played twice (a repeat back to the start), ask: first or second time?
-        if (!(startPos && startPos.mark) && pkg && pkg.kind === 'song' && pkg.eff && pkg.pcs && pkg.pcs.length > 1 && startPos && startPos.pos < 0.01) {
+        if (!(startPos && startPos.mark) && pkg && pkg.kind === 'song' && pkg.eff && pkg.pcs && pkg.pcs.length > 1 && startPos && startPos.pos < 0.01 && !startPos.auto) {
           var p00 = pkg.bar_page[pkg.order[0]], cd0 = [0]; for (var q0 = 1; q0 < pkg.pcs.length; q0++) if (pkg.bar_page[pkg.order[q0]] === p00 && Math.abs(pkg.pcs[q0][0] - pkg.pcs[q0 - 1][1]) > 0.02) cd0.push(q0);      // the music jumps back onto the first page: that is the second time (the flag "back here" is rarely exactly on the first bar)
           if (cd0.length > 1) { askPass(function (ps) { if (ps) { startPos = { page: startPos.page, pos: ps === 1 ? cd0[0] : cd0[cd0.length - 1], mark: null }; start(); } }); return; }
         }
@@ -5646,11 +5651,8 @@
   /* ---------- recording of the playing (practice only; one saved recording, overwritten only when the player says so) ---------- */
   var recOn = true; try { if (localStorage.getItem('rec-on-once') !== '1') { localStorage.setItem('rec-on-once', '1'); localStorage.setItem('rec', '1'); } recOn = localStorage.getItem('rec') !== '0'; } catch (e) {}      // once, when this version is first opened: the recording is switched on, also for those who had it off (later the player's own choice stays)      // a fresh install records the playing (on); it is off only if the player switched it off
   var rec = null, recPend = null;
-  var relocOn = false; try { relocOn = localStorage.getItem('reloc') === '1'; } catch (e) {}
-  function relocApply() { try { AutoPage.setReloc(relocOn && !document.body.classList.contains('honban')); } catch (e) {} }      /* never in concert mode */
-  function relocShow() { $('relocbtn').classList.toggle('on', relocOn); $('relocbtn').setAttribute('aria-pressed', relocOn ? 'true' : 'false'); }
-  $('relocon').checked = relocOn; relocShow(); relocApply();
-  $('relocbtn').onclick = function () { relocOn = !relocOn; try { localStorage.setItem('reloc', relocOn ? '1' : '0'); } catch (e) {} relocShow(); relocApply(); };
+  function relocApply() { try { AutoPage.setReloc(!document.body.classList.contains('honban')); } catch (e) {} }      /* finding the place again after a stop or a new start: always in practice and lesson, never in concert mode */
+  relocApply();
   function recBtnShow() { $('recbtn').classList.toggle('on', recOn); $('recbtn').setAttribute('aria-pressed', recOn ? 'true' : 'false'); }
   $('recon').checked = recOn; recBtnShow(); $('recon').onchange = function () { recOn = this.checked; try { localStorage.setItem('rec', recOn ? '1' : '0'); } catch (e) {} recBtnShow(); };
   $('recbtn').onclick = function () { if (!$('recon').checked && recFull()) { recFullShow(); return; } $('recon').checked = !$('recon').checked; $('recon').onchange(); };
