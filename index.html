@@ -75,6 +75,8 @@
   .settings #closesettings { position: sticky; top: auto; right: auto; bottom: 0; justify-self: end; flex: none; box-shadow: 0 2px 10px rgba(0,0,0,.3); }
   .closebtn { position: absolute; top: 14px; right: 14px; width: 50px; min-height: 50px; padding: 0; border-radius: 25px; font-size: 32px; line-height: 1; display: grid; place-items: center; }
   .settings label { display: grid; gap: 4px; font-size: 14px; }
+  .settings #relocbtn.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+  .settings.pn #relocbtn.on { border-color: var(--line); box-shadow: none; }
   .settings #recbtn.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
   .settings.pn #recbtn.on { border-color: var(--line); box-shadow: none; }
   .settings button.pnon { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
@@ -301,7 +303,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v472</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v482</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -351,7 +353,8 @@
   </div>
   <div id="pgeo" hidden>
     <div class="rot"><button type="button" id="geoL" aria-label="左に90度回す"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/></svg></button><button type="button" id="geoR" aria-label="右に90度回す"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></button></div>
-    <div class="gm"><button type="button" id="gm0" class="on"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l16-5"/><path d="M5 20h14" stroke-dasharray="2 3"/><path d="M12 4v3"/></svg><span>傾き</span></button><button type="button" id="gm1"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10l4 14H3z"/></svg><span>上下</span></button><button type="button" id="gm2"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7v10l14 4V3z"/></svg><span>左右</span></button><button type="button" id="gm3"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9c4 0 7 1 18 1"/><path d="M3 14c4 0 7 1 18 1"/><path d="M3 19c4 0 7 1 18 1" stroke-dasharray="2 3"/></svg><span>左端の反り</span></button><button type="button" id="gm4"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10c11 0 14 1 18 1"/><path d="M3 15c11 0 14 1 18 1"/><path d="M3 20c11 0 14 1 18 1" stroke-dasharray="2 3"/></svg><span>右端の反り</span></button></div>
+    <div class="gm"><button type="button" id="gm0" class="on"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l16-5"/><path d="M5 20h14" stroke-dasharray="2 3"/><path d="M12 4v3"/></svg><span>傾き</span></button><button type="button" id="gm1"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5h10l4 14H3z"/></svg><span>上下</span></button><button type="button" id="gm2"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7v10l14 4V3z"/></svg><span>左右</span></button><button type="button" id="gm3"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9c4 0 7 1 18 1"/><path d="M3 14c4 0 7 1 18 1"/><path d="M3 19c4 0 7 1 18 1" stroke-dasharray="2 3"/></svg><span>左端の補正</span></button><button type="button" id="gm4"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10c11 0 14 1 18 1"/><path d="M3 15c11 0 14 1 18 1"/><path d="M3 20c11 0 14 1 18 1" stroke-dasharray="2 3"/></svg><span>右端の補正</span></button></div>
+    <div class="gm" id="gsub" hidden><button type="button" id="gs0" class="on"><span>上下のずれ</span></button><button type="button" id="gs1"><span>縦に伸ばす</span></button><button type="button" id="gs2"><span>横に伸ばす</span></button></div>
     <div id="dial"><canvas id="dialc"></canvas><b id="dialv">0</b></div>
     <small id="geohint" style="color:rgba(255,255,255,.75);line-height:1.4">枠の角や辺を、ページの外側へドラッグすると、紙と同じ色の余白を足せます。</small>
     <button type="button" id="georeset">このページをもとに戻す</button>
@@ -386,6 +389,7 @@
       <label class="sl sl2"><span>ページのめくり始め<b id="prevv"></b></span><input type="range" id="prevbars" min="0" max="4" step="1" value="2"></label>
       <div id="tempoblock" hidden><small id="tempoinfo" style="white-space:pre-line"></small>
       <button type="button" id="learnreset">覚えた時間配分を消す</button></div>
+      <button type="button" id="relocbtn" aria-pressed="false">止まったあと、別の場所から弾き直しても、自動で見つける（テスト中）</button><input type="checkbox" id="relocon" hidden>
       <button type="button" id="recbtn" aria-pressed="false">演奏を録音する</button><input type="checkbox" id="recon" hidden>
       <div id="recblock" style="display:grid;gap:14px"><button type="button" id="recplay">録音を聞く</button><button type="button" id="recdel" style="display:grid;gap:2px;justify-items:center"><span id="recdeltx">録音を消す</span><small id="recsaved" hidden></small></button><button type="button" id="recexp">録音を書き出す</button></div>
       <button type="button" id="diagbtn">動作の記録を書き出す</button>
@@ -451,8 +455,11 @@
     <h3>書き込み</h3>
     <p>鉛筆ボタンの下のメトロノームボタンで、クリック音を鳴らせます。テンポ、拍子、音量を決めて「スタート」を押します。「弾いている間も音を鳴らす」にチェックを入れると、「弾き始める」を押しても、音は鳴り続けます。チェックがないときは、「弾き始める」を押すと、メトロノームは止まり、ボタンも隠れます。</p>
     <p>右上の鉛筆ボタンで書き込みができます。右の縦の列の、上から順に、色、消しゴム、修正テープ（紙の色で上から隠す）、一つ戻す、閉じる（×）、です。書き込みの鉛筆類を開いている間は、画面の拡大はできません。</p>
+    <p>ペーパーライクのような、書き心地を変えるフィルムを貼ると、指でのスワイプ（ページをめくる動き）がしにくくなることがあります。鉛筆を閉じると、スワイプできます。</p>
     <h2>うまくいかないときは</h2>
     <p>上から順に、試してください。それでも直らないときは、いちばん下の「なぜめくれなかったかを調べる」を使ってください。</p>
+    <h3>Wi-Fiの中継機（リピーター）やVPNを使っているとき</h3>
+    <p>Wi-Fiの中継機（リピーター）を使っている場所では、譜めくりが遅くなることがあります。また、VPNを使っていると、譜めくりができないという報告がありました。演奏するときは、VPNを切ってください。「弾き始める」の前の確認で案内するとおり、機内モードにしてWi-Fiを切ると、安定します。</p>
     <h2>その場で直す</h2>
     <h3>演奏中に、アプリが追えていないとき</h3>
     <p>演奏中にアプリが楽譜を追えていないと感じた時は、今いる場所をダブルタップしてください。</p>
@@ -620,6 +627,7 @@
       <div id="wpartbox" hidden style="gap:6px;border:1px solid var(--line);border-radius:12px;padding:12px">
         <b>覚える範囲</b>
         <select id="wpartsel"><option value="0">全ページ</option></select>
+        <small style="line-height:1.5;color:#8a5a00;font-weight:700">ダル・セーニョやTo Codaなど、演奏の順番が前後に飛ぶ楽譜では、ページ単位ではなく、通し演奏で覚えることをお勧めします。</small>
         <small id="wpartnote" hidden style="color:#b00020;font-weight:700;line-height:1.5"></small>
         <div id="wzfl" hidden style="display:grid;gap:6px"><div class="wrow"><button type="button" id="wzfs"></button><button type="button" id="wzfe"></button></div><small id="wzfsum" style="line-height:1.5"></small></div>
         <div id="wpinv" style="display:none;gap:8px;justify-content:center;align-items:flex-start;flex-wrap:wrap"></div>
@@ -645,6 +653,7 @@
         </div>
         <div id="wmodebox" hidden style="display:grid;gap:6px;margin:8px 0;padding:10px;border:1px solid var(--line,#ccc);border-radius:12px">
           <b>お手本の取り込み方</b>
+          <small style="line-height:1.5;color:#8a5a00;font-weight:700">ダル・セーニョやTo Codaなど、演奏の順番が前後に飛ぶ楽譜では、ページ単位ではなく、通し演奏で覚えることをお勧めします。</small>
           <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="wmode2" id="wmold" checked> <span>音楽を聞かせながら、「ここでめくりたい」を押す（これまでの方式。繰り返しだけの曲、第一・第二括弧だけの曲向け）</span></label>
           <label style="display:flex;gap:8px;align-items:flex-start"><input type="radio" name="wmode2" id="wmbt"> <span>小節の1拍目をタップする（どの曲でも使えます。ダ・カーポ、ダル・セーニョ、コーダのある曲、同じ音形が続く曲向け）</span></label>
         </div>
@@ -761,6 +770,7 @@
 (function (root) {
   'use strict';
 
+  var RELOC = false;      /* (a setting, off at first: after a stop the follower looks for the player everywhere, also far back; never in concert mode) */
   var REF_SR = 22050, REF_NFFT = 4096, REF_HOP = 1024;     // the reference chroma was made with these
 
   /* ------------------------------------------------------------ FFT (radix 2, real input) */
@@ -982,6 +992,9 @@
   }
   Aligner.prototype.step = function (chroma, silent) {
     var T = this.T, b = this.b, R = this.ref.R;
+    if (silent) this.silN = (this.silN || 0) + 1;
+    else { if (RELOC && (this.silN || 0) >= 22) { var lam0 = Math.min(0.8, 0.2 * this.silN * REF_HOP / REF_SR), u0 = lam0 / T; for (var iq = 0; iq < T; iq++) b[iq] = (1 - lam0) * b[iq] + u0; }      /* stopped for 3 s or more and now playing again (perhaps somewhere else): only a part of the belief stays at the old place, the rest is spread over the whole piece, so that the first notes decide where the player is */
+      this.silN = 0; }
     if (!silent) {
       var kw = new Float64Array(7), ks = 0;
       for (var k = 0; k < 7; k++) { kw[k] = Math.exp(-0.5 * Math.pow((k - this.r) / 0.45, 2)); ks += kw[k]; }
@@ -1058,6 +1071,10 @@
   MultiAligner.prototype.step = function (chroma, silent) {
     var T = this.T, K = this.K, R = this.ref.R, B = this.B, N = this.N, i, j, k, p;
     var adv = false;
+    if (silent) this.silN = (this.silN || 0) + 1;
+    else { if (RELOC && (this.silN || 0) >= 22) {      /* the player stopped for 1 s or more and starts again (perhaps somewhere else: a restart, a repeated passage): the place is held with only a part of the belief; the rest is spread over the whole piece, so that the first notes decide where the player is, also far back */
+        var ps0 = 0, lam = Math.min(0.8, 0.2 * this.silN * REF_HOP / REF_SR); for (i = 0; i < K; i++) ps0 += this.prior[i]; for (i = 0; i < K; i++) { var pu = lam * this.prior[i] / (ps0 * T), bb = i * T; for (j = 0; j < T; j++) B[bb + j] = (1 - lam) * B[bb + j] + pu; } this.relocFlag = true; }
+      this.silN = 0; }
     if (!silent) {
       N.fill(0);
       for (i = 0; i < K; i++) {                                    // 1) every tempo hypothesis moves forward by its own speed
@@ -1132,12 +1149,14 @@
     return est - a0 >= 0.8 * (tg - a0);
   };
   PageTurner.prototype.displayedPage = function () { return this.runs[this.disp][2]; };
-  PageTurner.prototype._turn = function (t, kind, to, pos) { if (kind === 'resync' && Math.abs(to - this.disp) > 1 && this._noRepeat()) return null;      // no repeats in this piece: a jump over several pages cannot be real, it is the tracker being fooled by similar music, so the page stays
+  PageTurner.prototype._turn = function (t, kind, to, pos) { if (kind === 'resync' && Math.abs(to - this.disp) > 1 && this._noRepeat() && !(RELOC && t < (this.relocUntil || -1))) return null;      // no repeats in this piece: a jump over several pages cannot be real, it is the tracker being fooled by similar music, so the page stays
   this.dr = null; this.pH = []; this.st = 0; this.dwell = 0; this.silS = 0; this.aheadS = 0; this.endS = 0; this.nearT = -99; this.nearF = -1; this.crossS = 0; this.inLastS = 0; /* the time counted in the last bars of the page just left must not count for the next page */ this.anchorPos = kind === 'turn' ? this.runs[to][0] : pos; this.events.push({ t: t, kind: kind, from: this.disp, to: to, pos: pos }); this.disp = to; return kind; };
   PageTurner.prototype._noRepeat = function () { if (this._nr === undefined) { var seen = {}, ok = true; this.runs.forEach(function (r) { if (seen[r[2]]) ok = false; seen[r[2]] = 1; }); this._nr = ok; } return this._nr; };
   PageTurner.prototype.update = function (t, pos, bps, conf, silent, match, rms) {
     if (this.unrec && this.unrec[this.disp]) return null;
-    if (this.disp === this.runs.length - 1 && this._noRepeat()) return null;      // on the last page of a piece without repeats there is nowhere left to turn to: stay here, whatever the tracker believes
+    if (silent) this.silTot = (this.silTot || 0) + this.dt; else { if ((this.silTot || 0) >= 1) this.relocUntil = t + 25; this.silTot = 0; }      /* after a stop of 1 s or more the player may start again from another place: for 25 s such a jump (also back, also over several pages) needs only 4 s of clear evidence */
+    var reloc = RELOC && t < (this.relocUntil || -1);
+    if (this.disp === this.runs.length - 1 && this._noRepeat() && !reloc) return null;      // on the last page of a piece without repeats there is nowhere left to turn to: stay here, whatever the tracker believes
     if (this.slow && !silent) {      // is the tracker moving steadily (no jumps, confident) for a while?  then its place is believed even if the fixed-speed clock disagrees (the player is faster than the fixed speed)
       if (this.lp === undefined || Math.abs(pos - this.lp) > 0.7 || conf < 0.7) { this.sm0 = t; this.sp0 = pos; } this.lp = pos; this.smoothOk = t - this.sm0 >= 5 && pos - this.sp0 >= 0.8;
     }
@@ -1225,10 +1244,10 @@
       if ((pos + bps * this.leadS >= last + this.frac || tl <= this.endLeadS) && pos < last + 1 && (!this.slow || this._drOk())) return this._turn(t, 'turn', this.disp + 1, pos);
       return null;
     }
-    if (cur === this.disp - 1 && pos < this.runs[cur][1] + 1) return null;
+    if (cur === this.disp - 1 && pos < this.runs[cur][1] + 1 && !reloc) return null;
     if (this.slow && cur === this.disp + 1 && this.disp < this.runs.length - 1 && this._drOk()) return this._turn(t, 'turn', this.disp + 1, pos);      // slowly: the place already passed the end of the page (it skipped the turning zone) and the clock agrees that the page is nearly played
     if (cur > this.disp && this.slow && !this._drOk()) return null;      // slowly: a later page reported by the tracker (wrong notes, look-alike music) turns the page only once the clock agrees that the page is nearly played (a player who started from a flag was turned over to the next page after 4 s)
-    if (cur !== this.disp) { if (cur !== this.disp + 1 && this.strict < (cur < this.disp - 1 ? 40.0 : Math.abs(cur - this.disp) > 1 ? 6.0 : 3.0)) return null; return this._turn(t, 'resync', cur, pos); }     // a jump to another page needs 3 s (more than one page away: 6 s) of clear evidence
+    if (cur !== this.disp) { if (cur !== this.disp + 1 && this.strict < (reloc ? 4.0 : cur < this.disp - 1 ? 40.0 : Math.abs(cur - this.disp) > 1 ? 6.0 : 3.0)) return null; return this._turn(t, 'resync', cur, pos); }     // a jump to another page needs 3 s (more than one page away: 6 s) of clear evidence
     return null;
   };
 
@@ -1561,7 +1580,7 @@
     return { analyze: analyze, truthFromAudio: truthFromAudio, findOffset: findOffset };
   })();
 
-  var API = { Diag: Diag, findTrouble: findTrouble, alignFrames: alignFrames, ChromaExtractor: ChromaExtractor, SilenceGate: SilenceGate, Reference: Reference, Aligner: Aligner, MultiAligner: MultiAligner, learnTempo: learnTempo, PageTurner: PageTurner, AutoPager: AutoPager };
+  var API = { setReloc: function (b) { RELOC = !!b; }, Diag: Diag, findTrouble: findTrouble, alignFrames: alignFrames, ChromaExtractor: ChromaExtractor, SilenceGate: SilenceGate, Reference: Reference, Aligner: Aligner, MultiAligner: MultiAligner, learnTempo: learnTempo, PageTurner: PageTurner, AutoPager: AutoPager };
   if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.AutoPage = API;
 })(typeof window !== 'undefined' ? window : this);
 
@@ -2198,15 +2217,16 @@
   function nk() { return pkg.nkey || pkg.order.length; }      // bar count of the song as it was made (stays the same whether repeats are on or off)
   var view = null;                                // how the current page is placed on the canvas
   var adj = {};                                   // per page: zoom / centre chosen with two fingers {z, cx, cy}
-  function vWarp(v, rx) { var u = rx / (v.cw || 1) + 0.5, l = Math.max(0, 1 - u / 0.4), r = Math.max(0, 1 - (1 - u) / 0.4); return (v.wc || 0) * l * l + (v.wd || 0) * r * r; }      /* a page whose left / right edge curls up or down (a thick book): near that edge every line is moved up or down by a smooth amount */
-  function vX(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; ry += (v.wc || v.wd) ? vWarp(v, rx) : 0; return v.ox + (rx / (1 + v.ka * rx + v.kb * ry) + v.pcx - v.reg.x0) * v.s; }          // page picture -> canvas
-  function vY(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; ry += (v.wc || v.wd) ? vWarp(v, rx) : 0; return v.oy + (ry / (1 + v.ka * rx + v.kb * ry) + v.pcy - v.reg.y0) * v.s; }
-  function vInv(v, X, Y) { var xp = (X - v.ox) / v.s + v.reg.x0 - v.pcx, yp = (Y - v.oy) / v.s + v.reg.y0 - v.pcy; var den = 1 - v.ka * xp - v.kb * yp; xp /= den; yp /= den; if (v.wc || v.wd) yp -= vWarp(v, xp); return [v.cs * xp + v.sn * yp + v.pcx, -v.sn * xp + v.cs * yp + v.pcy]; }    // canvas -> page picture
+  function vWp(v, rx) { var q = v.wz, u = rx / (v.cw || 1) + 0.5, l = Math.max(0, 1 - u / 0.4), r = Math.max(0, 1 - (1 - u) / 0.4), kl = l * l, kr = r * r;      /* a page whose left / right edge curls (a thick book): near that edge the lines are moved up or down (s), stretched up / down (e) and stretched sideways (h) by a smooth amount that is 0 at 40 % of the page width */
+    return { s: q.c * kl + q.d * kr, e: q.ec * kl + q.ed * kr, h: -q.hc * kl + q.hd * kr }; }
+  function vX(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; if (v.wz) { var wp = vWp(v, rx); ry = ry * (1 + wp.e) + wp.s; rx += wp.h; } return v.ox + (rx / (1 + v.ka * rx + v.kb * ry) + v.pcx - v.reg.x0) * v.s; }          // page picture -> canvas
+  function vY(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; if (v.wz) { var wp = vWp(v, rx); ry = ry * (1 + wp.e) + wp.s; rx += wp.h; } return v.oy + (ry / (1 + v.ka * rx + v.kb * ry) + v.pcy - v.reg.y0) * v.s; }
+  function vInv(v, X, Y) { var xp = (X - v.ox) / v.s + v.reg.x0 - v.pcx, yp = (Y - v.oy) / v.s + v.reg.y0 - v.pcy; var den = 1 - v.ka * xp - v.kb * yp; xp /= den; yp /= den; if (v.wz) { var rx0 = xp; for (var it = 0; it < 8; it++) rx0 = xp - vWp(v, rx0).h; var wp0 = vWp(v, rx0); yp = (yp - wp0.s) / (1 + wp0.e); xp = rx0; } return [v.cs * xp + v.sn * yp + v.pcx, -v.sn * xp + v.cs * yp + v.pcy]; }    // canvas -> page picture
   var geo = {}, geoT = null;                     // per page: q = quarter turns, f = fine tilt in degrees, l/t/r/b = cropped margins (fractions)
   function geoKey() { return 'geo:' + (pkg && pkg.title || '') + ':' + (pkg ? nk() : 0); }
   function geoSave() { clearTimeout(geoT); geoT = setTimeout(function () { store.putKey(geoKey(), JSON.stringify(geo)); }, 500); }
   function geoLoad() { geo = {}; if (!pkg) return; store.getKey(geoKey(), function (t) { try { if (t) geo = JSON.parse(t) || {}; } catch (e) {} geoUI(); gateDone(); drawPage(null, 0); }); }
-  function geoOf(p) { var g = geo[p]; return g && (g.q || g.f || g.l || g.t || g.r || g.b || g.v || g.h || g.c || g.d) ? g : null; }
+  function geoOf(p) { var g = geo[p]; return g && (g.q || g.f || g.l || g.t || g.r || g.b || g.v || g.h || g.c || g.d || g.cs || g.ds || g.cx || g.dx) ? g : null; }
   function geoEdit() { return !$('pgeo').hidden; }
   var GMARG = 0.3, toneCache = {};      // the crop frame may be pulled outwards by up to 30 % of the page on every side: that adds a margin in the colour of the paper
   function pageTone(img, page) {      // the colour of the paper of this page (the brightest third of a small copy of the whole picture)
@@ -2283,14 +2303,14 @@
   function drawSecond(g, c, d, kOv) {      // the other page of the spread (the partner: the next page when the played page is on the left, the one before when it is on the right; nothing after the last odd page), plain, in its half (no writing, no flag); it is cut and turned like the left one, and as large
     var k = kOv || shownPage || 0, pr = kOv ? k % 2 === 0 : playedRight(), p2 = k % 2 === 1 ? (k + 1 <= maxPage ? k + 1 : 0) : k - 1, vw = viewW(c), x0 = pr ? 0 : vw, wd = c.width - vw, v2; if (!kOv) view2 = null; var tp = (p2 >= 1 && p2 <= maxPage) ? p2 : k, rt = tp >= 1 && tp <= maxPage ? pageRegion(tp) : null; g.fillStyle = (rt && imgs[rt.img] && imgs[rt.img].complete) ? pageTone(rt.img, tp) : '#fff'; g.fillRect(x0, 0, wd, c.height);      // the space around the page is the colour of its own paper
     if (p2 < 1 || p2 > maxPage) return; var r0 = pageRegion(p2); if (!r0 || !imgs[r0.img] || !imgs[r0.img].complete) return;
-    var gp = geoOf(p2), reg = r0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, pcx = (r0.x0 + r0.x1) / 2, pcy = (r0.y0 + r0.y1) / 2;
+    var gp = geoOf(p2), reg = r0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, wz = null, pcx = (r0.x0 + r0.x1) / 2, pcy = (r0.y0 + r0.y1) / 2;
     if (gp) { var w0 = r0.x1 - r0.x0, h0 = r0.y1 - r0.y0, odd = gp.q % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, bx = pcx - bw / 2, by = pcy - bh / 2;
-      th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wc = (gp.c || 0) * 0.0012 * bh; wd = (gp.d || 0) * 0.0012 * bh; cw = bw;
+      th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wz = (gp.c || gp.d || gp.cs || gp.ds || gp.cx || gp.dx) ? { c: (gp.c || 0) * 0.0012 * bh, d: (gp.d || 0) * 0.0012 * bh, ec: (gp.cs || 0) * 0.005, ed: (gp.ds || 0) * 0.005, hc: (gp.cx || 0) * 0.002 * bw, hd: (gp.dx || 0) * 0.002 * bw } : null; cw = bw;
       reg = { img: r0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh }; }
     var w = reg.x1 - reg.x0, h = reg.y1 - reg.y0, full = document.body.classList.contains('full'), s2 = spreadScale(k, c), ox = x0 + wd / 2 - w * s2 / 2, oy = c.height / 2 - h * s2 / 2;
-    v2 = { page: p2, s: s2, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wc: wc, wd: wd, cw: cw }; if (!kOv) view2 = v2;
+    v2 = { page: p2, s: s2, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw }; if (!kOv) view2 = v2;
     g.save(); g.beginPath(); g.rect(ox, oy, w * s2, h * s2); g.clip(); g.imageSmoothingQuality = 'high'; g.fillStyle = gp ? pageTone(r0.img, p2) : '#fff'; g.fillRect(ox, oy, w * s2, h * s2);
-    if (gp && (ka || kb || wc || wd)) { g.setTransform(1, 0, 0, 1, 0, 0); meshDraw(g, paSrc(r0.img, p2), r0, v2, (wc || wd) ? 28 : 14); }
+    if (gp && (ka || kb || wz)) { g.setTransform(1, 0, 0, 1, 0, 0); meshDraw(g, paSrc(r0.img, p2), r0, v2, wz ? 28 : 14); }
     else if (gp) { g.translate(ox - reg.x0 * s2, oy - reg.y0 * s2); g.scale(s2, s2); g.translate(pcx, pcy); g.rotate(th); g.translate(-pcx, -pcy); g.drawImage(paSrc(r0.img, p2), r0.x0, r0.y0, r0.x1 - r0.x0, r0.y1 - r0.y0, r0.x0, r0.y0, r0.x1 - r0.x0, r0.y1 - r0.y0); }
     else g.drawImage(paSrc(r0.img, p2), r0.x0, r0.y0, w, h, ox, oy, w * s2, h * s2);
     g.restore();
@@ -2306,11 +2326,11 @@
     g.fillStyle = '#ffffff'; g.fillRect(0, 0, c.width, c.height);
     var reg0 = shownPage != null ? pageRegion(shownPage) : null;
     if (!reg0 || !imgs[reg0.img] || !imgs[reg0.img].complete) { view = null; return; }
-    var ed = geoEdit(), gp = ed ? (geo[shownPage] || GZ) : geoOf(shownPage), reg = reg0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, fr = null, bx, by, bw, bh, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2;
+    var ed = geoEdit(), gp = ed ? (geo[shownPage] || GZ) : geoOf(shownPage), reg = reg0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, wz = null, fr = null, bx, by, bw, bh, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2;
     if (gp) {                                    // rotated and/or cropped page: the "page space" is the picture turned about its centre; the crop is a rectangle in that space
       var w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = gp.q % 2 !== 0; bw = odd ? h0 : w0; bh = odd ? w0 : h0; bx = pcx - bw / 2; by = pcy - bh / 2;
       th = (gp.q * 90 + gp.f) * Math.PI / 180;
-      ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wc = (gp.c || 0) * 0.0012 * bh; wd = (gp.d || 0) * 0.0012 * bh; cw = bw;
+      ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wz = (gp.c || gp.d || gp.cs || gp.ds || gp.cx || gp.dx) ? { c: (gp.c || 0) * 0.0012 * bh, d: (gp.d || 0) * 0.0012 * bh, ec: (gp.cs || 0) * 0.005, ed: (gp.ds || 0) * 0.005, hc: (gp.cx || 0) * 0.002 * bw, hd: (gp.dx || 0) * 0.002 * bw } : null; cw = bw;
       if (ed) { fr = [gp.l, gp.t, gp.r, gp.b]; reg = { img: reg0.img, x0: bx - GMARG * bw, x1: bx + bw + GMARG * bw, y0: by - GMARG * bh, y1: by + bh + GMARG * bh }; } else
       reg = { img: reg0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh };
     }
@@ -2319,7 +2339,7 @@
     var a = (ed || (twoUpOn && document.body.classList.contains('playing'))) ? null : adj[shownPage], s = s0 * (a ? a.z : 1),      // two pages: the pinch zoom (for writing) works, but while the app follows both pages stand at the same size
      cxI = a ? a.cx : reg.x0 + w / 2, cyI = a ? a.cy : reg.y0 + h / 2;
     var ox = px0(c) + viewW(c) / 2 - (cxI - reg.x0) * s, oy = c.height / 2 - (cyI - reg.y0) * s;
-    view = { s: s, s0: s0, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wc: wc, wd: wd, cw: cw };
+    view = { s: s, s0: s0, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw };
     g.imageSmoothingQuality = 'high'; var cmpHit = false, cmpK = null;
     if (gp) {                                    // (rotated / tilted pages are costly to draw: the finished picture is kept and reused while only the writing, flags or the curl change)
       var pa0 = paOf(shownPage), bk = [shownPage, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), JSON.stringify(gp), pa0 ? [pa0.b, pa0.c, pa0.t, pa0.A ? 1 : 0].join(',') : '', ed ? 1 : 0, geoDial ? 1 : 0, reg0.img].join('|');
@@ -2328,7 +2348,7 @@
       if (!baseCv) {
         baseCv = baseNew(bk); baseCv.width = c.width; baseCv.height = c.height; var bg = baseCv.getContext('2d'); bg.imageSmoothingQuality = 'high';
         bg.save(); bg.beginPath(); bg.rect(ox, oy, w * s, h * s); bg.clip(); bg.fillStyle = pageTone(reg0.img, shownPage); bg.fillRect(ox, oy, w * s, h * s);
-        if (ka || kb || wc || wd) { bg.setTransform(1, 0, 0, 1, 0, 0); meshDraw(bg, paSrc(reg0.img, shownPage), reg0, view, (wc || wd) ? (geoDial ? 14 : 28) : (geoDial ? 8 : 14)); }
+        if (ka || kb || wz) { bg.setTransform(1, 0, 0, 1, 0, 0); meshDraw(bg, paSrc(reg0.img, shownPage), reg0, view, wz ? (geoDial ? 14 : 28) : (geoDial ? 8 : 14)); }
         else {
           bg.translate(ox - reg.x0 * s, oy - reg.y0 * s); bg.scale(s, s); bg.translate(pcx, pcy); bg.rotate(th); bg.translate(-pcx, -pcy);
           bg.drawImage(paSrc(reg0.img, shownPage), reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0); }
@@ -2432,17 +2452,17 @@
   var npCv = null, npKey = '';
   function nextPageCv(c, np) {      // the next page exactly as it will stand after the turn (rotation, crop, tilt, tone, writing): the curl uncovers this, so nothing changes when the page turns
     var reg0 = pageRegion(np); if (!reg0 || !imgs[reg0.img] || !imgs[reg0.img].complete) return null;
-    var gp = geoOf(np), reg = reg0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2;
-    if (gp) { var w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = gp.q % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, bx = pcx - bw / 2, by = pcy - bh / 2; th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wc = (gp.c || 0) * 0.0012 * bh; wd = (gp.d || 0) * 0.0012 * bh; cw = bw; reg = { img: reg0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh }; }
+    var gp = geoOf(np), reg = reg0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, wz = null, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2;
+    if (gp) { var w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = gp.q % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, bx = pcx - bw / 2, by = pcy - bh / 2; th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wz = (gp.c || gp.d || gp.cs || gp.ds || gp.cx || gp.dx) ? { c: (gp.c || 0) * 0.0012 * bh, d: (gp.d || 0) * 0.0012 * bh, ec: (gp.cs || 0) * 0.005, ed: (gp.ds || 0) * 0.005, hc: (gp.cx || 0) * 0.002 * bw, hd: (gp.dx || 0) * 0.002 * bw } : null; cw = bw; reg = { img: reg0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh }; }
     var w = reg.x1 - reg.x0, h = reg.y1 - reg.y0, full = document.body.classList.contains('full'), a = twoUpOn ? null : adj[np], s = (twoUpOn ? spreadScale(np, c) : Math.min(viewW(c) / w, c.height / h) * (full ? 1 : 0.98)) * (a ? a.z : 1);
     var cxI = a ? a.cx : reg.x0 + w / 2, cyI = a ? a.cy : reg.y0 + h / 2, ox = viewW(c) / 2 - (cxI - reg.x0) * s, oy = c.height / 2 - (cyI - reg.y0) * s, pa0 = paOf(np), il = ink.strokes[np];
     var key = [np, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), gp ? JSON.stringify(gp) : '', pa0 ? [pa0.b, pa0.c, pa0.t, pa0.A ? 1 : 0].join(',') : '', il ? il.length : 0, reg0.img, twoUpOn ? 1 : 0].join('|');
     if (npCv && npKey === key && npCv.width === c.width && npCv.height === c.height) return npCv;
     npCv = npCv || document.createElement('canvas'); npCv.width = c.width; npCv.height = c.height; var ng = npCv.getContext('2d'); ng.imageSmoothingQuality = 'high'; ng.fillStyle = '#ffffff'; ng.fillRect(0, 0, c.width, c.height);
-    var v = { s: s, s0: s, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wc: wc, wd: wd, cw: cw }, src = paSrc(reg0.img, np);
+    var v = { s: s, s0: s, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw }, src = paSrc(reg0.img, np);
     if (gp) {
       ng.save(); ng.beginPath(); ng.rect(ox, oy, w * s, h * s); ng.clip(); ng.fillStyle = pageTone(reg0.img, np); ng.fillRect(ox, oy, w * s, h * s);
-      if (ka || kb || wc || wd) { meshDraw(ng, src, reg0, v, (wc || wd) ? 28 : 14); } else { ng.translate(ox - reg.x0 * s, oy - reg.y0 * s); ng.scale(s, s); ng.translate(pcx, pcy); ng.rotate(th); ng.translate(-pcx, -pcy); ng.drawImage(src, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0); }
+      if (ka || kb || wz) { meshDraw(ng, src, reg0, v, wz ? 28 : 14); } else { ng.translate(ox - reg.x0 * s, oy - reg.y0 * s); ng.scale(s, s); ng.translate(pcx, pcy); ng.rotate(th); ng.translate(-pcx, -pcy); ng.drawImage(src, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0, reg0.x0, reg0.y0, reg0.x1 - reg0.x0, reg0.y1 - reg0.y0); }
       ng.restore(); ng.save(); ng.beginPath(); ng.rect(ox, oy, w * s, h * s); ng.clip(); drawInk(ng, v, np); ng.restore();
     } else { ng.drawImage(src, reg.x0, reg.y0, w, h, ox, oy, w * s, h * s); drawInk(ng, v, np); }
     if (twoUpOn && np % 2 === 1) { try { ng.save(); drawSecond(ng, c, c.width / Math.max(1, c.getBoundingClientRect().width), np); ng.restore(); } catch (e) { ng.restore(); } }      // two pages side by side: the page that will stand beside it is turned in too
@@ -2536,7 +2556,7 @@
   /* ---------- audio ---------- */
   var workletCode = 'class P extends AudioWorkletProcessor{process(i){var c=i[0]&&i[0][0];if(c)this.port.postMessage(c.slice(0));return true;}}registerProcessor("tap",P);';
   function makePager() {
-    var sb = startPos.pos; if (pager && running) archiveRun('restart');
+    relocApply(); var sb = startPos.pos; if (pager && running) archiveRun('restart');
     pager = new AutoPage.AutoPager(pkg, { noiseFloor: (function () { try { return +localStorage.getItem('nf') || undefined; } catch (e) { return undefined; } })(), sampleRate: ctx.sampleRate, startPos: sb, frac: turnPar().frac, leadS: turnPar().leadS, endLeadS: turnPar().endLeadS, late: turnPar().late, dwK: turnPar().dwK, previewBars: +$('prevbars').value, barSec: tempo ? tempo.barSec : null, singleTempo: !slowOn, slowPace: slowPace(), pagePace: slowOn && slowMem ? slowMem.pages : undefined, alignerOpts: slowOn ? { rates: [0.28, 0.378, 0.51, 0.69, 0.93, 1.26, 1.7], winBars: 2.5 } : undefined, onEvent: recOnlyRun ? function () {} : onEvent });      // recording only: the follower still listens (the microphone checks need it) but nothing it finds turns a page
     showPage(startPos.page); hidePreview(); startZonePreview();
     if (!recOnlyRun) { try { silentStartWarn(sb); } catch (e) {} }
@@ -3207,26 +3227,29 @@
   var drawRaf = 0; function drawSoon() { if (drawRaf) return; drawRaf = requestAnimationFrame(function () { drawRaf = 0; drawPage(null, 0); }); }      // at most one full redraw per frame
   var penT = 0;                                      // the last moment the Apple Pencil touched the screen: a resting palm or finger at the same time must not zoom or turn the page
   document.addEventListener('pointerdown', function (e) { if (e.pointerType === 'pen') penT = Date.now(); }, true); document.addEventListener('pointermove', function (e) { if (e.pointerType === 'pen') penT = Date.now(); }, true);
-  function penNear() { return Date.now() - penT < (ink.on ? 1500 : 400); }      /* with the pencil open, a hand that rests on the screen is ignored for longer after the last touch of the pencil */
-  function palmLike(t) { try { var r = Math.max(t.radiusX || t.webkitRadiusX || 0, t.radiusY || t.webkitRadiusY || 0); return r > 24; } catch (e) { return false; } }      /* a big contact area: a palm or the side of the hand, not a fingertip */
+  function penNear() { return Date.now() - penT < (ink.on ? 500 : 400); }      /* with the pencil open: a touch right after the pencil (palm) is ignored for half a second only, so that the page can be turned at once after writing */
+  var PALM_R = 45, rBox = null;      /* the contact radius (in CSS px) above which a touch counts as a palm; tune with the numbers shown while the pencil is open */
+  function rShow(r) { try { if (!ink.on) return; if (!rBox) { rBox = document.createElement('div'); rBox.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:99999;font:12px sans-serif;color:#fff;background:rgba(0,0,0,.55);padding:3px 7px;border-radius:6px;pointer-events:none'; document.body.appendChild(rBox); } rBox.textContent = '触れた半径(テスト) ' + Math.round(r) + ' / 基準 ' + PALM_R; rBox.style.display = ''; clearTimeout(rBox._t); rBox._t = setTimeout(function () { rBox.style.display = 'none'; }, 4000); } catch (e) {} }
+  function palmLike(t) { try { var r = Math.max(t.radiusX || t.webkitRadiusX || 0, t.radiusY || t.webkitRadiusY || 0); rShow(r); return r > PALM_R; } catch (e) { return false; } }      /* a big contact area: a palm or the side of the hand, not a fingertip */
   function hasStylus(e) { for (var i = 0; i < e.touches.length; i++) if (e.touches[i].touchType === 'stylus') return true; return false; }
   (function () {
     var m = document.querySelector('main'), sx = null, sy = null, st = 0;
-    m.addEventListener('touchstart', function (e) { pdrag = false; if (e.touches.length !== 1 || e.touches[0].touchType === 'stylus' || penNear() || (ink.on && palmLike(e.touches[0]))) { sx = null; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); pdrag = peelHit(e.touches[0]); }, { passive: true });
-    var pdrag = false;
+    m.addEventListener('touchstart', function (e) { pdrag = false; if (e.touches.length !== 1 || e.touches[0].touchType === 'stylus' || penNear() || (ink.on && palmLike(e.touches[0]))) { sx = null; return; } palmSeen = false; sx = e.touches[0].clientX; sy = e.touches[0].clientY; st = Date.now(); pdrag = peelHit(e.touches[0]); }, { passive: true });
+    var pdrag = false, palmSeen = false;      /* palmSeen: during this touch the contact area was once big (the side of the hand) */
     function peelHit(t) {                        // is the finger on the turned-up corner (the triangle at the top left)?
       try { if (!peel || !(peel.sc > 0) || peelAnim || !view || !pkg) return false; var gm = peelGeo(view, $('page'), peel); if (!gm) return false; var cp = cpt(t), A = gm.a * peel.sc, B = gm.b * peel.sc, mg = 30 * cp[2]; var inTri = (cp[0] - gm.x0 + mg) / (A + 2 * mg) + (cp[1] - gm.y0 + mg) / (B + 2 * mg) <= 1 && cp[0] >= gm.x0 - mg && cp[1] >= gm.y0 - mg;
         var L = Math.hypot(A, B) || 1, ux = A / L, uy = -B / L, nx = B / L, ny = A / L, rx = cp[0] - gm.x0, ry = cp[1] - (gm.y0 + B), sAl = (rx * ux + ry * uy) / L, dist = rx * nx + ry * ny;       // along the fold / away from the corner: the turned-over paper lies beyond the fold
         return inTri || (sAl >= -0.12 && sAl <= 1.12 && dist > -mg && dist <= 0.38 * L + mg); } catch (er) { return false; }
     }
     m.addEventListener('touchmove', function (e) {      // the page turns as soon as the finger has clearly moved sideways - not only when it is lifted
-      if (sx !== null && ink.on && (penNear() || e.touches.length > 1 || (e.touches.length && palmLike(e.touches[0])))) { sx = null; return; }      /* with the pencil open: once the pencil or a second finger / a palm shows up, this touch can no longer turn the page */
+      if (sx !== null && ink.on && e.touches.length && palmLike(e.touches[0])) palmSeen = true;
+      if (sx !== null && ink.on && (palmSeen || penNear() || e.touches.length > 1 || (e.touches.length && palmLike(e.touches[0])))) { sx = null; return; }      /* with the pencil open: once the pencil or a second finger / a palm shows up, this touch can no longer turn the page */
       if (sx === null || pz || pdrag || penNear() || peelAnim || !e.touches.length || e.touches.length > 1 || !view) return;
       var t = e.touches[0], dx = t.clientX - sx, dy = t.clientY - sy;
-      if (Date.now() - st < (ink.on ? 600 : 900) && Math.abs(dx) > (ink.on ? 110 : 48) && Math.abs(dx) > (ink.on ? 2.5 : 2) * Math.abs(dy)) { sx = null; manual(dx < 0 ? 1 : -1); }
+      if (Date.now() - st < 900 && Math.abs(dx) > 48 && Math.abs(dx) > 2 * Math.abs(dy)) { sx = null; manual(dx < 0 ? 1 : -1); }
     }, { passive: true });
     m.addEventListener('touchend', function (e) {
-      if (sx === null || pz || penNear()) { sx = null; return; } var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; sx = null;
+      if (sx === null || pz || penNear() || (ink.on && (palmSeen || palmLike(e.changedTouches[0])))) { sx = null; return; } var t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy; sx = null;
       if (pdrag) { pdrag = false; if (dy < -35 && Math.abs(dx) < 1.3 * Math.abs(dy) && peel && !peelAnim) { peelSnooze(); return; } if (dx > -25 && dy > -25 && dx + dy > 70 && peel && !peelAnim) { var nxt = Math.min(maxPage, (shownPage || 1) + 1); peelHold = null; peelFlip(function () { manual(1); }); return; } }
       if (Math.abs(dx) < 14 && Math.abs(dy) < 14 && Date.now() - st < 350 && view) {                       // a tap; two taps close together = "start here"
         if (ink.on) { try { var cq = cpt(t), nw0 = Date.now(); if (hitFlagX(cq[0], cq[1], cq[2])) { lastTap = null; clearFlag(); return; } if (!inOther(cq[0], $('page'))) { if (lastTap && nw0 - lastTap.t < 420 && Math.hypot(cq[0] - lastTap.x, cq[1] - lastTap.y) < 60 * cq[2]) { lastTap = null; var ip0 = vInv(view, cq[0], cq[1]); setStart(ip0[0], ip0[1]); } else lastTap = { t: nw0, x: cq[0], y: cq[1] }; } } catch (e9) {} return; }      // writing tools open: two finger taps still set the flag (the pencil writes, so a finger tap is never a stroke)      // while the writing tools are open, taps on the page never set the "start here" flag (but the x button of the flag still works)
@@ -3239,7 +3262,7 @@
         if (lastTap && now - lastTap.t < 420 && Math.hypot(cp[0] - lastTap.x, cp[1] - lastTap.y) < 60 * cp[2]) { lastTap = null; var ip = vInv(view, cp[0], cp[1]); setStart(ip[0], ip[1]); return; }
         lastTap = { t: now, x: cp[0], y: cp[1] }; return;
       }
-      if (Date.now() - st < (ink.on ? 600 : 900) && Math.abs(dx) > (ink.on ? 110 : 60) && Math.abs(dx) > (ink.on ? 2.5 : 1.6) * Math.abs(dy)) { if (peelAnim) return; manual(dx < 0 ? 1 : -1); }       /* swipes may follow each other without any pause */
+      if (Date.now() - st < 900 && Math.abs(dx) > 60 && Math.abs(dx) > 1.6 * Math.abs(dy)) { if (peelAnim) return; manual(dx < 0 ? 1 : -1); }       /* swipes may follow each other without any pause */
     }, { passive: true });
     var pz = null, lastTap = null, lastTouchT = 0, swT = 0, pzRaf = 0, pzSnap = null, pzV = null;
     m.addEventListener('click', function (e) { if (ink.on || !view) return; var cp = cpt(e); if (inOther(cp[0], $('page'))) return; if (Date.now() - lastTouchT > 700 && hereArm) { hereArm = false; var hp = vInv(view, cp[0], cp[1]); setStart(hp[0], hp[1]); return; } if (Date.now() - lastTouchT > 700) { var rh = repHit(cp[0], cp[1], cp[2]); if (rh) { repBtnTap(rh); return; } } if (hitFlagX(cp[0], cp[1], cp[2])) clearFlag(); });
@@ -4382,6 +4405,7 @@
   $('wstart0').onclick = function () { var m = $('wstartm'); try { m.pause(); m.currentTime = 0; } catch (e) {} $('wstartr').value = 0; wstartTxt(); };
   $('wnext').onclick = function () {
     if (wPinsMissing()) return;
+    if (wpartK()) { try { wbtChoiceUi(); } catch (e0) {} if (W.btP0 && !$('wmodebox').hidden && $('wmbt').checked) { $('wsetmsg').textContent = _t('「小節の1拍目をタップする」は、曲の全体を通した録音で使います。1ページずつ登録するときは使えません。「覚える範囲」を「全曲を通して覚える」にして、全体の録音を選んでください。'); return; } }      /* (the bar-tap way needs the whole piece in one recording; it used to fall back to the old way without a word) */
     W.mic = false; ['wplay', 'wback', 'wfwd', 'wseekrow'].forEach(function (k) { $(k).hidden = false; });
     if (!W.ready) { $('wsetmsg').textContent = _t('録音の解析が終わるまで、少しお待ちください。'); return; }
     W.marks = []; W.taps = []; W.capFrames = []; W.preDone = false; W.bt = null; W.btApplied = false; try { wbtChoiceUi(); } catch (e) {} W.btOn = !!(W.btP0 && $('wmbt').checked && !$('wmodebox').hidden); W.btP = W.btOn ? W.btP0 : null; W.btPick = undefined; wshow('wtapview');
@@ -5309,16 +5333,17 @@
   }
   function editStep(d) { if (!pkg) return; var p = Math.min(maxPage, Math.max(1, (shownPage || 1) + d)); if (p === shownPage) return; pendingTurn = null; hidePreview(); showWhy = 'swipe'; showPage(p); showWhy = 'auto'; }
   $('enprev').onclick = function () { editStep(-1); }; $('ennext').onclick = function () { editStep(1); };
-  var gmode = 0;                                   // 0 = straighten, 1 = vertical perspective, 2 = horizontal perspective
+  var gmode = 0, gsub = 0;                                   // 0 = straighten, 1 = vertical perspective, 2 = horizontal perspective
   var GM = [{ k: 'f', min: -15, max: 15, ppu: 14, fmt: function (v) { return (v > 0 ? '+' : '') + v.toFixed(1) + '°'; } },
             { k: 'v', min: -100, max: 100, ppu: 2.2, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } },
             { k: 'h', min: -100, max: 100, ppu: 2.2, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } },
             { k: 'c', min: -40, max: 40, ppu: 5, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } },
             { k: 'd', min: -40, max: 40, ppu: 5, fmt: function (v) { return (v > 0 ? '+' : '') + Math.round(v); } }];
+  function gmCur() { var m = GM[gmode]; if (gmode < 3) return m; var ks = gmode === 3 ? ['c', 'cs', 'cx'] : ['d', 'ds', 'dx']; return { k: ks[gsub], min: -40, max: 40, ppu: 5, fmt: m.fmt }; }
   function dialDraw() {
     var c = $('dialc'), d = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight; if (!w) return;
     if (c.width !== Math.round(w * d)) { c.width = Math.round(w * d); c.height = Math.round(h * d); }
-    var g = c.getContext('2d'), m = GM[gmode], gg = geo[shownPage] || GZ, v = +gg[m.k] || 0; g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, h);
+    var g = c.getContext('2d'), m = gmCur(), gg = geo[shownPage] || GZ, v = +gg[m.k] || 0; g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, h);
     var step = gmode === 0 ? 1 : 10, sub = gmode === 0 ? 5 : 5;                       // a long tick every `step` units
     for (var u = Math.ceil((v - w / 2 / m.ppu) / (step / sub)) * (step / sub); u <= v + w / 2 / m.ppu; u += step / sub) {
       var x = w / 2 + (u - v) * m.ppu, major = Math.abs(Math.round(u / step) * step - u) < 1e-6 * step; if (u < m.min - 1e-9 || u > m.max + 1e-9) continue;
@@ -5329,18 +5354,18 @@
   }
   function geoUI() {
     var g = geo[shownPage] || GZ; if (!$('dial')) return;
-    for (var k = 0; k < 5; k++) $('gm' + k).classList.toggle('on', k === gmode);
+    for (var k = 0; k < 5; k++) $('gm' + k).classList.toggle('on', k === gmode); $('gsub').hidden = gmode < 3; for (var k2 = 0; k2 < 3; k2++) $('gs' + k2).classList.toggle('on', k2 === gsub);
     editNavUI(); var on = geoEdit(); $('geoov').hidden = !on; $('geot').classList.toggle('sel', on); dialDraw();
   }
   function geoSet(fn) { var g = geo[shownPage] = geo[shownPage] || { q: 0, f: 0, l: 0, t: 0, r: 0, b: 0, v: 0, h: 0 }; fn(g); delete adj[shownPage]; viewSave(); geoUI(); geoSave(); drawPage(null, 0); }
   $('geoL').onclick = function () { geoSet(function (g) { g.q = (g.q + 3) % 4; g.l = g.t = g.r = g.b = 0; }); };
   $('geoR').onclick = function () { geoSet(function (g) { g.q = (g.q + 1) % 4; g.l = g.t = g.r = g.b = 0; }); };
-  [0, 1, 2, 3, 4].forEach(function (k) { $('gm' + k).onclick = function () { gmode = k; geoUI(); }; });
+  [0, 1, 2, 3, 4].forEach(function (k) { $('gm' + k).onclick = function () { gmode = k; geoUI(); }; }); [0, 1, 2].forEach(function (k) { $('gs' + k).onclick = function () { gsub = k; geoUI(); }; });
   (function () {                                    // ruler: drag sideways to change the value
     var d = $('dial'), st = null, raf = 0;
-    d.addEventListener('pointerdown', function (e) { var g = geo[shownPage] || GZ; st = { x: e.clientX, v: +g[GM[gmode].k] || 0 }; geoDial = true; try { d.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
+    d.addEventListener('pointerdown', function (e) { var g = geo[shownPage] || GZ; st = { x: e.clientX, v: +g[gmCur().k] || 0 }; geoDial = true; try { d.setPointerCapture(e.pointerId); } catch (x) {} e.preventDefault(); });
     d.addEventListener('pointermove', function (e) {
-      if (!st) return; var m = GM[gmode], v = Math.max(m.min, Math.min(m.max, st.v - (e.clientX - st.x) / m.ppu)); v = gmode === 0 ? Math.round(v * 10) / 10 : Math.round(v);
+      if (!st) return; var m = gmCur(), v = Math.max(m.min, Math.min(m.max, st.v - (e.clientX - st.x) / m.ppu)); v = gmode === 0 ? Math.round(v * 10) / 10 : Math.round(v);
       var g = geo[shownPage] = geo[shownPage] || { q: 0, f: 0, l: 0, t: 0, r: 0, b: 0, v: 0, h: 0 }; g[m.k] = v; delete adj[shownPage]; dialDraw();
       if (!raf) raf = requestAnimationFrame(function () { raf = 0; drawPage(null, 0); });
     });
@@ -5576,6 +5601,11 @@
   /* ---------- recording of the playing (practice only; one saved recording, overwritten only when the player says so) ---------- */
   var recOn = true; try { if (localStorage.getItem('rec-on-once') !== '1') { localStorage.setItem('rec-on-once', '1'); localStorage.setItem('rec', '1'); } recOn = localStorage.getItem('rec') !== '0'; } catch (e) {}      // once, when this version is first opened: the recording is switched on, also for those who had it off (later the player's own choice stays)      // a fresh install records the playing (on); it is off only if the player switched it off
   var rec = null, recPend = null;
+  var relocOn = false; try { relocOn = localStorage.getItem('reloc') === '1'; } catch (e) {}
+  function relocApply() { try { AutoPage.setReloc(relocOn && !document.body.classList.contains('honban')); } catch (e) {} }      /* never in concert mode */
+  function relocShow() { $('relocbtn').classList.toggle('on', relocOn); $('relocbtn').setAttribute('aria-pressed', relocOn ? 'true' : 'false'); }
+  $('relocon').checked = relocOn; relocShow(); relocApply();
+  $('relocbtn').onclick = function () { relocOn = !relocOn; try { localStorage.setItem('reloc', relocOn ? '1' : '0'); } catch (e) {} relocShow(); relocApply(); };
   function recBtnShow() { $('recbtn').classList.toggle('on', recOn); $('recbtn').setAttribute('aria-pressed', recOn ? 'true' : 'false'); }
   $('recon').checked = recOn; recBtnShow(); $('recon').onchange = function () { recOn = this.checked; try { localStorage.setItem('rec', recOn ? '1' : '0'); } catch (e) {} recBtnShow(); };
   $('recbtn').onclick = function () { if (!$('recon').checked && recFull()) { recFullShow(); return; } $('recon').checked = !$('recon').checked; $('recon').onchange(); };
