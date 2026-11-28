@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v511</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v512</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2223,7 +2223,7 @@
     if (r) { r.x0 -= 8; r.y0 -= 8; r.x1 += 8; r.y1 += 8; }
     pages[p] = r; return r;
   }
-  var dprCap = 0; try { dprCap = parseFloat(localStorage.getItem('pagic-dprcap') || '0') || 0; } catch (e) {}      // 'light display': the screen picture is made with fewer pixels (1.5 per point instead of 2), so the iPad has less to draw and keep
+  var dprCap = 1.5; try { var dcS = localStorage.getItem('pagic-dprcap'); if (dcS !== null) dprCap = parseFloat(dcS) || 0; } catch (e) {}      // 'light display': the screen picture is made with fewer pixels (1.5 per point instead of 2), so the iPad has less to draw and keep
   function fit(canvas) {
     var d = window.devicePixelRatio || 1; if (dprCap) d = Math.min(d, dprCap); var w = canvas.clientWidth, h = canvas.clientHeight;
     if (canvas.width !== Math.round(w * d) || canvas.height !== Math.round(h * d)) { canvas.width = Math.round(w * d); canvas.height = Math.round(h * d); }
@@ -5664,11 +5664,11 @@
     var ce = { page: p, cv: document.createElement('canvas') }; ce.cv.width = cW; ce.cv.height = cH; var q = ce.cv.getContext('2d'), job = { key: key, p: p, i: 0 }; inkBld = job;
     (function step() {
       if (inkBld !== job) { ce.cv.width = ce.cv.height = 1; return; }
-      if (touchDown || Date.now() - lastTouchT < 250) { setTimeout(step, 200); return; }
+      if (touchDown || Date.now() - lastTouchT < 120) { setTimeout(step, 100); return; }
       var t0 = performance.now(); try { phNote('ink-step', 0); } catch (e0) {}
-      while (job.i < list.length && performance.now() - t0 < 14) { var st = list[job.i++]; try { if (st.h) continue; if (inkOk(st) && inkSeen(st, v, cW, cH)) drawOne(q, st, v); } catch (e) { try { q.restore(); } catch (e2) {} } }
+      while (job.i < list.length && performance.now() - t0 < 24) { var st = list[job.i++]; try { if (st.h) continue; if (inkOk(st) && inkSeen(st, v, cW, cH)) drawOne(q, st, v); } catch (e) { try { q.restore(); } catch (e2) {} } }
       phNote('ink-step', performance.now() - t0);
-      if (job.i < list.length) { setTimeout(step, 30); return; }
+      if (job.i < list.length) { setTimeout(step, 12); return; }
       ce.list = list; ce.key = key; inkCache.push(ce); while (inkCache.length > 5) { var old = inkCache.shift(); old.cv.width = old.cv.height = 1; }
       inkBld = null; if (shownPage === p) { try { drawPage(null, 0); } catch (e3) {} }
     })();
