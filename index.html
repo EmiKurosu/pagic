@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v505</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v506</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3211,7 +3211,7 @@
     if (!pkg) return;
     pendingTurn = null;
     var cur = shownPage || 1; if (twoUpOn && Math.abs(delta) === 1 && $('padj').hidden && !geoEdit()) { var L = cur % 2 === 1 ? cur : cur - 1; delta = delta * 2; cur = L; if (delta > 0 && L + 2 > maxPage) return; }      // two pages side by side: ONE swipe moves a whole spread (1|2 -> 3|4), it lands on the left page
-    var p = Math.min(maxPage, Math.max(1, cur + delta)); if (running && p !== shownPage) manHold = { until: performance.now() + 20000, from: shownPage }; hidePreview(); showWhy = 'swipe'; var swT0 = performance.now(); showPage(p); showWhy = 'auto'; var swE = [p, Math.round(performance.now() - swT0), 'b' + lastDraw.bh + 'c' + lastDraw.ch + 'i' + lastDraw.il + (paBusy ? 'P' : ''), 0]; swipeLog.push(swE); if (swipeLog.length > 40) swipeLog.shift();
+    var p = Math.min(maxPage, Math.max(1, cur + delta)); if (running && p !== shownPage) manHold = { until: performance.now() + 20000, from: shownPage }; hidePreview(); showWhy = 'swipe'; var swT0 = performance.now(); showPage(p); showWhy = 'auto'; var swE = [p, Math.round(performance.now() - swT0), 'b' + lastDraw.bh + 'c' + lastDraw.ch + 'i' + lastDraw.il + (paBusy ? 'P' : ''), 0, cur]; swipeLog.push(swE); if (swipeLog.length > 200) swipeLog.shift();
       (function (e) { var t0 = performance.now(), last = t0, mx = 0; function fr() { var n = performance.now(); mx = Math.max(mx, n - last); last = n; if (n - t0 < 1600) requestAnimationFrame(fr); else e[3] = Math.round(mx); } try { requestAnimationFrame(fr); } catch (x) {} })(swE);      /* the longest wait between two screen frames in the 1.6 s after the swipe (the time the app was stuck): it goes into the operation record */      /* how long a swipe took to draw the page (goes into the log) */
     if (pager) { var rs = pager.turner.runs, cr = pager.turner.runOf[Math.min(Math.max(Math.floor(pager.last.pos || 0), 0), pkg.order.length - 1)], bk = -1; for (var k = 0; k < rs.length; k++) if (rs[k][2] === p && (bk < 0 || Math.abs(k - cr) < Math.abs(bk - cr))) bk = k; if (bk >= 0) { pager.turner.disp = bk; pager.turner.previewed = -1; } }   // the follower continues from the page you chose
   }
@@ -6065,8 +6065,10 @@
     var list = (diagRuns || []).slice(); if (lastRun && !silentShort(lastRun) && !list.some(function (r) { return r.at === lastRun.at; })) list.push(lastRun);
     var SHOW_LAUNCH_LOG = false;      // the start-up screen-size record is still kept in the background; set true to offer it again in this list
     var lch = []; if (SHOW_LAUNCH_LOG) try { lch = JSON.parse(localStorage.getItem('pagic-launch') || '[]') || []; } catch (e) { lch = []; }
-    if (!list.length && !lch.length) { toast(_t('まだ記録がありません。一度弾いてから押してください')); return; }
+    if (!list.length && !lch.length && !swipeLog.length) { toast(_t('まだ記録がありません。一度弾いてから押してください')); return; }
     var box = document.createElement('div'); box.id = 'lgpick'; box.style.cssText = 'display:grid;gap:6px;margin-top:6px';
+    if (swipeLog.length) { var bs = document.createElement('button'); bs.type = 'button'; bs.style.cssText = 'text-align:left;white-space:pre-line;line-height:1.4'; bs.textContent = _t('ページをめくった記録（弾かなくても残ります）') + '\n' + _t('直近{n}回').replace('{n}', swipeLog.length);
+      bs.onclick = function () { exportText('pagic-swipes', JSON.stringify({ app: (($('ver') && $('ver').textContent) || '').trim(), title: pkg ? pkg.title : '', at: new Date().toISOString(), note: 'swipeMs = [to page, ms for the swipe, b/c/i flags (b: base picture 1 stored 0 made -1 n/a; c: finished picture; i: writing left for later; P: preparation running), longest frame gap in the next 1.6 s (ms), from page]', swipeMs: swipeLog.slice() }), function () { box.remove(); }); }; box.appendChild(bs); }
     if (lch.length) { var bl = document.createElement('button'); bl.type = 'button'; bl.style.cssText = 'text-align:left;white-space:pre-line;line-height:1.4'; bl.textContent = _t('起動時の画面サイズの記録（直近{n}回）').replace('{n}', lch.length); bl.onclick = function () { exportText('pagic-launch', JSON.stringify(lch, null, 1), function () { box.remove(); }); }; box.appendChild(bl); }      // the screen sizes the iPad reported in the first seconds of the last launches
     list.slice().reverse().slice(0, 5).forEach(function (r) {
       var b = document.createElement('button'), d = new Date(r.at), tr = r.trace && r.trace.length ? r.trace[r.trace.length - 1][0] : 0, sm = runStartMs(r), tm = isNaN(sm) ? '' : recDate(sm);
