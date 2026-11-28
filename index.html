@@ -313,7 +313,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v532</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v534</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -372,7 +372,6 @@
     <button type="button" id="geowavoff" hidden>うねりの補正を外す</button>
     <button type="button" id="georeset">このページをもとに戻す</button>
     <button type="button" id="georesetall">全ページをもとに戻す</button>
-    <button type="button" id="geoapply" class="primary">反映する</button>
     <button type="button" class="pclose" id="pgeox" aria-label="閉じる">×</button>
   </div>
   <div id="inkadj" hidden>
@@ -5682,6 +5681,18 @@
           var sm5 = md.slice(); for (s = 0; s < NS; s++) { var a5 = 0, n5 = 0; for (kk = Math.max(0, s - 2); kk <= Math.min(NS - 1, s + 2); kk++) { a5 += md[kk]; n5++; } sm5[s] = a5 / n5; }
           for (s = 0; s < NS; s++) keep[q][s] = T[q] + mod[q][s] + Math.max(-0.6 * sp, Math.min(0.6 * sp, sm5[s]));
         }
+        if (typeof Rr !== 'undefined' && Rr) for (q = 0; q < nq; q++) {      /* then every staff is looked at once more, close around where the sheet says it is: where its lines show clearly, what is seen counts (a local bump the smooth sheet cannot have); where they do not (clef, chords), the sheet counts */
+          var yi = new Float32Array(W), xx, u2, s1, f1, fl1 = keep[q];
+          for (xx = 0; xx < W; xx++) { u2 = (xx - sw / 2) / sw; s1 = Math.max(0, Math.min(NS - 2, Math.floor(u2))); f1 = Math.max(0, Math.min(1, u2 - s1)); yi[xx] = fl1[s1] * (1 - f1) + fl1[s1 + 1] * f1; }
+          var c3 = wavCentre(Rr, W, H, yi, sp, 0.4), cen3 = wavSlow(c3.c, W, sp), sup3 = c3.sup, sm3 = new Float32Array(W), run3 = 0, xi3;
+          for (xi3 = 0; xi3 < W; xi3++) { run3 += sup3[xi3]; if (xi3 >= 41) run3 -= sup3[xi3 - 41]; sm3[xi3] = run3 / Math.min(xi3 + 1, 41); }
+          var srt3 = Array.prototype.slice.call(sm3).sort(function (a2, b2) { return a2 - b2; }), p80 = srt3[Math.floor(W * 0.8)] || 1, nf = new Array(NS);
+          for (s = 0; s < NS; s++) {
+            var xc3 = Math.round((s + 0.5) * sw), ss3 = 0, cn3 = 0; for (xi3 = Math.max(0, xc3 - 2); xi3 <= Math.min(W - 1, xc3 + 2); xi3++) { ss3 += cen3[xi3]; cn3++; }
+            var wg = Math.max(0, Math.min(1, (sm3[Math.min(W - 1, xc3)] - 0.3 * p80) / (0.4 * p80))); nf[s] = fl1[s] * (1 - wg) + (ss3 / cn3) * wg;
+          }
+          for (s = 0; s < NS; s++) { var sa = nf[Math.max(0, s - 1)], sb = nf[Math.min(NS - 1, s + 1)]; keep[q][s] = (sa + 2 * nf[s] + sb) / 4; }
+        }
       }
     } catch (eMod) {}
     var maxMove = 0; keep.forEach(function (fl, q) { for (s = 0; s < NS; s++) maxMove = Math.max(maxMove, Math.abs(fl[s] - T[q])); });
@@ -5767,7 +5778,7 @@
   $('geowavoff').onclick = function () { var gg = geo[shownPage]; if (gg) { delete gg.w; geoSave(); } geoWavUI(); geoUI(); drawPage(null, 0); };
   $('georeset').onclick = function () { geoGhostClear(); delete geo[shownPage]; delete adj[shownPage]; viewSave(); geoUI(); geoSave(); drawPage(null, 0); };
   $('georesetall').onclick = function () { geoGhostClear(); geo = {}; adj = {}; viewSave(); geoUI(); geoSave(); drawPage(null, 0); toast(_t('全ページをもとに戻しました')); };
-  $('geoapply').onclick = function () { $('pgeo').hidden = true; geoUI(); paUI(); drawPage(null, 0); };       // the trimming is already in effect: this just puts the controls away
+  /* (the 'apply' button is gone: the trimming is in effect at once; the panel is closed with its × button) */       // the trimming is already in effect: this just puts the controls away
   $('geot').onclick = function () { var gq = geo[shownPage]; if (gq && (gq.l + (1 - gq.l - gq.r) / 2 < 0 || gq.l + (1 - gq.l - gq.r) / 2 > 1 || gq.t + (1 - gq.t - gq.b) / 2 < 0 || gq.t + (1 - gq.t - gq.b) / 2 > 1)) { gq.l = gq.r = gq.t = gq.b = 0; geoSave(); }      /* a frame that was lost outside the page is put back */
   $('pgeo').hidden = !$('pgeo').hidden; $('padj').hidden = true; geoUI(); paUI(); drawPage(null, 0); };
   var paRaf = 0;
