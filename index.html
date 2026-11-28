@@ -94,7 +94,7 @@
   #pgstrip { position: absolute; left: 0; right: 0; bottom: 6px; z-index: 3; display: flex; justify-content: center; pointer-events: none; touch-action: pan-x; }
   #pgstrip[hidden] { display: none; }
   footer > #pgstrip { position: static; flex: 100 1 0; min-width: 0; }      /* the row of page numbers takes all the room that is left in the bottom row; the numbers grow to fill it and, when the room is too small, stay at their size and the row is swiped sideways */
-  #pgstrip .in { gap: 2px; padding: 3px 4px; width: 100%; max-width: 100%; justify-content: flex-start; touch-action: pan-x; } #pgstrip button { flex: 1 0 34px; min-width: 0; max-width: 58px; height: 38px; min-height: 38px; padding: 0 4px; font-size: 16px; } #pgstrip.many button { flex-basis: 29px; min-width: 0; padding: 0 2px; font-size: 15px; }
+  #pgstrip .in { gap: 2px; padding: 3px 4px; width: 100%; max-width: 100%; justify-content: flex-start; touch-action: pan-x; } #pgstrip .in button { flex: 1 0 34px; min-width: 0; max-width: 58px; height: 38px; min-height: 38px; padding: 0 4px; font-size: 16px; } #pgstrip.many .in button { flex-basis: 29px; min-width: 0; padding: 0 2px; font-size: 15px; }
   body.full #pgstrip { bottom: 10px; left: 10px; right: 10px; } body.full #pgstrip .in { height: 44px; align-items: center; }      /* full screen: the row sits between the buttons on the left and the tracking bar on the right (stripFit measures them) */ footer .cfw .meter { width: 72px; }
   footer #pgstrip .in { max-width: 100%; }
   #nextx { position: fixed; z-index: 23; width: 34px; height: 34px; min-height: 34px; padding: 0; border-radius: 17px; background: #fff; color: #1a1c20; border: 2px solid #1a1c20; font-size: 20px; line-height: 1; font-weight: 700; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.35); } #nextx[hidden] { display: none; }
@@ -312,7 +312,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v520</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v521</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3222,7 +3222,7 @@
   function stripFit() {      // in full screen the row of page numbers uses the room between the button group at the left and the tracking bar at the right
     try {
       var el = $('pgstrip'), box = $('pgstripin'); if (!el || !box || el.hidden) return;
-      box.style.maxWidth = (maxPage * 60 + 12) + 'px';
+      box.style.maxWidth = (maxPage * 60 + 8) + 'px';
       if (document.body.classList.contains('full')) {
         var fb = $('fsbar'), cw = $('cfwrap2'), L = 10, R = 10, vw = document.documentElement.clientWidth;
         if (fb && !fb.hidden) { var a = fb.getBoundingClientRect(); if (a.width > 0) L = Math.round(a.right + 10); }
