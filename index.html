@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v507</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v508</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -5391,6 +5391,12 @@
     paPut(key, cv);
     return cv;
   }
+  function imgWarm(list, k) {      // the photos are decoded one after the other in the background, long before they are shown (the first drawing of a photo that was not decoded took a quarter of a second; this also works while playing, since the decoding is not done on the main thread)
+    if (imgs !== list || !list[k]) return;
+    if (touchDown || Date.now() - lastTouchT < 400) { setTimeout(function () { imgWarm(list, k); }, 400); return; }
+    var pr = null; try { pr = list[k].decode ? list[k].decode() : null; } catch (e) { pr = null; }
+    (pr || Promise.resolve()).catch(function () {}).then(function () { setTimeout(function () { imgWarm(list, k + 1); }, 80); });
+  }
   var paRawSeen = {}, paUrgent = false;
   function paOk(img, page) { var a = paOf(page), im = imgs[img]; if (!a || !im || !im.complete) return true; var key = paCk(img, a); for (var i = 0; i < paCache.length; i++) if (paCache[i].key === key) return true; return false; }
   function paWant(page) { paRawSeen[page] = 1; paUrgent = true; if (!paBusy) paPrep(0); }      // a page was needed whose adjusted picture is not made yet: it is made in small blocks in the background, and the page is shown with the original picture meanwhile
@@ -5784,7 +5790,7 @@
     maxPage = Math.max.apply(null, Object.keys(p.bar_page).map(function (k) { return p.bar_page[k]; }));
     startPos = { page: p.bar_page[p.order[0]], pos: 0, mark: null }; refCache = null; mapCache = {}; pvRect = {}; baseKey = ''; baseL = [];
     $('msg').hidden = false; $('msg').textContent = _t('楽譜を読み込んでいます…'); $('bar').textContent = '–'; hidePreview();
-    var n = 0; imgs = p.images.map(function (f) { var im = new Image(); im.onload = function () { if (++n === p.images.length) { showPage(p.bar_page[p.order[0]]); $('go').disabled = false; } }; im.src = f; return im; });
+    var n = 0; imgs = p.images.map(function (f) { var im = new Image(); im.onload = function () { if (++n === p.images.length) { showPage(p.bar_page[p.order[0]]); $('go').disabled = false; var mine = imgs; setTimeout(function () { imgWarm(mine, 0); }, 300); } }; im.src = f; return im; });
     if (save) libAdd(src);
     tempo = null; slowMem = null; slowMemLoad(); $('learnbtn').disabled = false; showTempoInfo(); loadGate = 4; clearTimeout(loadGateT); loadGateT = setTimeout(function () { loadGate = 0; try { drawPage(null, 0); } catch (e) {} }, 1500); inkLoad(); viewLoad(); paLoad(); geoLoad();
     if (ud && save) { var ks = Object.keys(ud), lf = ks.length, nn = p.nkey || p.order.length; ks.forEach(function (pf) { store.putKey(pf + p.title + ':' + nn, ud[pf], function () { if (--lf === 0) { inkLoad(); viewLoad(); paLoad(); geoLoad(); } }); }); }       // handwriting etc. that came with a backup file
