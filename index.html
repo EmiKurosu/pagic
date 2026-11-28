@@ -93,7 +93,10 @@
   #inkbar button.wide { width: auto; min-width: 40px; padding: 0 12px; font-size: 14px; font-weight: 600; white-space: nowrap; }
   #pgstrip { position: absolute; left: 0; right: 0; bottom: 6px; z-index: 3; display: flex; justify-content: center; pointer-events: none; touch-action: pan-x; }
   #pgstrip[hidden] { display: none; }
-  #pgstrip .in { pointer-events: auto; display: flex; gap: 4px; max-width: calc(100% - 140px); overflow-x: auto; padding: 4px 6px; border-radius: 22px; background: rgba(31,35,43,.72); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  footer #pgstrip { position: static; flex: 1 1 0; min-width: 0; }
+  footer #pgstrip .in { max-width: 100%; }
+  #nextx { position: fixed; z-index: 23; width: 34px; height: 34px; min-height: 34px; padding: 0; border-radius: 17px; background: #fff; color: #1a1c20; border: 2px solid #1a1c20; font-size: 20px; line-height: 1; font-weight: 700; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.35); } #nextx[hidden] { display: none; }
+  #pgstrip .in { position: relative; pointer-events: auto; display: flex; gap: 4px; max-width: calc(100% - 140px); overflow-x: auto; padding: 4px 6px; border-radius: 22px; background: rgba(31,35,43,.72); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
   #pgstrip .in::-webkit-scrollbar { display: none; }
   #pgstrip button { flex: none; min-width: 40px; min-height: 40px; height: 40px; padding: 0 6px; border-radius: 20px; background: transparent; color: #fff; border: 2px solid transparent; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
   #pgstrip button.on { background: var(--accent); border-color: rgba(255,255,255,.7); }
@@ -307,7 +310,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v514</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v515</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -413,7 +416,7 @@
   <button type="button" id="helpbtn" class="ib" aria-label="Help" title="Help"><svg viewBox="0.9 0.9 22.2 22.2" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4.2"/><circle cx="12" cy="17.6" r=".6" fill="currentColor"/></svg></button>
 </footer>
 
-<button type="button" id="nextmv" hidden></button>
+<button type="button" id="nextmv" hidden></button><button type="button" id="nextx" hidden aria-label="閉じる" title="閉じる">×</button>
 <div id="metbar"><span id="metbd"></span><button type="button" id="metbx" aria-label="メトロノームを止める" title="止める">×</button></div>
 <div id="nxt" hidden>
   <div class="box">
@@ -3217,7 +3220,9 @@
   function stripUI() {      // the row of page numbers at the bottom of the score: tap a number = straight to that page
     try {
       var el = $('pgstrip'), box = $('pgstripin'); if (!el || !box) return;
-      var on = !!pkg && maxPage > 1 && !!shownPage; el.hidden = !on; if (!on) return;
+      var full = document.body.classList.contains('full'), host = full ? document.querySelector('main') : document.querySelector('footer'), sp0 = host && host.querySelector(full ? null : '.spacer');
+      if (host && el.parentNode !== host) { if (!full && sp0) host.insertBefore(el, sp0); else host.appendChild(el); }
+      var nv = $('nextmv'), on = !!pkg && maxPage > 1 && !!shownPage && !(nv && !nv.hidden); el.hidden = !on; if (!on) return;
       if (stripN !== maxPage) { stripN = maxPage; box.innerHTML = ''; for (var i = 1; i <= maxPage; i++) { var b = document.createElement('button'); b.type = 'button'; b.textContent = i; b.setAttribute('data-p', i); b.setAttribute('aria-label', 'p.' + i); box.appendChild(b); } }
       var L = shownPage, R = shownPage; if (twoUpWanted()) { L = shownPage % 2 === 1 ? shownPage : shownPage - 1; R = L + 1; }
       var cur = null; Array.prototype.forEach.call(box.children, function (b) { var n = +b.getAttribute('data-p'), o = n >= L && n <= R; b.classList.toggle('on', o); if (o && !cur) cur = b; });
@@ -3229,6 +3234,7 @@
     ['touchstart', 'pointerdown', 'mousedown'].forEach(function (n) { box.addEventListener(n, function (e) { e.stopPropagation(); }, { passive: true }); });
     box.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('button'); if (!b) return; e.stopPropagation(); var n = +b.getAttribute('data-p'); if (!n || n === shownPage) return; manual(n - (shownPage || 1)); stripUI(); });
   })();
+  try { new MutationObserver(function () { stripUI(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
   function pgLabel() {      stripUI();      // the page number at the top left: one page, or the two pages of the spread (1、2 / 3、4 ...)
     var p = shownPage; if (!p) return; var t = 'p.' + p;
     if (twoUpWanted()) { var L = p % 2 === 1 ? p : p - 1, R = L + 1; t = 'p.' + L + (R <= maxPage ? '、' + R : ''); }
@@ -6224,8 +6230,13 @@
     var id = nextId(), on = false;
     if (id && pkg && shownPage != null && shownPage === maxPage && $('lib').hidden && $('wiz').hidden) on = !running || !!(pager && pager.last && (pager.last.pos || 0) >= pkg.order.length - 2.2);
     if (on) { var le = lib.filter(function (x) { return x.id === id; })[0]; $('nextmv').textContent = _t('次 ▶  ') + (le ? le.title : ''); }
-    $('nextmv').hidden = !on; nextPlace();
+    if (on) { var nk = id + ':' + shownPage; if (nextDis === nk) on = false; }
+    var wasOn = !$('nextmv').hidden; $('nextmv').hidden = !on; nextPlace();
+    var nx = $('nextx'); nx.hidden = !on; if (on) { var rr = $('nextmv').getBoundingClientRect(); nx.style.left = Math.round(rr.right - 22) + 'px'; nx.style.top = Math.round(rr.top - 12) + 'px'; }
+    if (wasOn !== on || stripNx !== on) { stripNx = on; stripUI(); }
   }
+  var nextDis = null, stripNx = false;
+  $('nextx').onclick = function () { var id = nextId(); nextDis = id + ':' + shownPage; nextUI(); };
   function nextPlace() {      // the button sits at the height of the "slow" button (not over the score), between that button and the "following" meter; if there is no room it stays where it was
     var n = $('nextmv'), b = $('slowbtn');
     try {
