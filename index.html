@@ -163,6 +163,7 @@
   .slv { min-height: 44px; padding: 0 10px; font-size: 13px; font-weight: 700; border-radius: 10px; border: 2px solid var(--dim); background: transparent; color: inherit; } .slv.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
   #fsbar .slv { background: rgba(31,35,43,.88); color: #fff; border-color: rgba(255,255,255,.4); } #fsbar .slv.sel { border-color: var(--accent); }
   .jump { position: absolute; bottom: 10px; z-index: 4; width: 48px; height: 48px; min-height: 0; padding: 0; display: grid; place-items: center; border-radius: 12px; background: rgba(31,35,43,.72); color: #fff; border: 2px solid rgba(255,255,255,.4); }
+  #pgfirst, #pglast { display: none !important; }      /* the row of page numbers replaces the two jump buttons */
   #pgfirst { left: 10px; } #pglast { right: 10px; } body.full .jump { bottom: 66px; } .jump:disabled { opacity: .3; } .jump[hidden] { display: none; }
   #fsbar button { background: rgba(31,35,43,.88); color: #fff; border: 2px solid rgba(255,255,255,.4); min-height: 44px; }
   #fsbar button.on { background: var(--warn); }
@@ -312,7 +313,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v521</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v523</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -5462,14 +5463,14 @@
     var pr = null; try { pr = list[k].decode ? list[k].decode() : null; } catch (e) { pr = null; }
     (pr || Promise.resolve()).catch(function () {}).then(function () { setTimeout(function () { imgWarm(list, k + 1); }, 80); });
   }
-  var paRawSeen = {}, paUrgent = false;
+  var paRawSeen = {}, paUrgent = false, paSync = false;
   function paOk(img, page) { var a = paOf(page), im = imgs[img]; if (!a || !im || !im.complete) return true; var key = paCk(img, a); for (var i = 0; i < paCache.length; i++) if (paCache[i].key === key) return true; return false; }
   function paWant(page) { paRawSeen[page] = 1; paUrgent = true; if (!paBusy) paPrep(0); }      // a page was needed whose adjusted picture is not made yet: it is made in small blocks in the background, and the page is shown with the original picture meanwhile
   function paSrc(img, page, sync) {                    // the picture of a page with its adjustment applied (the original when nothing is changed, or while the adjusted one is still being made)
     var a = paOf(page), im = imgs[img]; if (!a || !im || !im.complete) return im;
     var key = paCk(img, a), i;
     for (i = 0; i < paCache.length; i++) if (paCache[i].key === key) { var e = paCache.splice(i, 1)[0]; paCache.push(e); return e.cv; }
-    if (!sync) { paWant(page); return im; }
+    if (!sync && !paSync) { paWant(page); return im; }
     var it = paGen(im, a, key), r; try { while (!(r = it.next()).done); } catch (e) { return im; }
     return r.value;
   }
@@ -5484,7 +5485,7 @@
         for (var k = 0; k < order.length; k++) {
           var pg = order[k], a = paOf(pg), reg = a ? pageRegion(pg) : null, im = reg ? imgs[reg.img] : null; if (!a || !im || !im.complete) continue;
           var key = paCk(reg.img, a), have = false; for (c0 = 0; c0 < paCache.length; c0++) if (paCache[c0].key === key) have = true; if (have) continue;
-          if (paCache.length >= 16 || tot + im.naturalWidth * im.naturalHeight > PA_PX) return;      // no more room: the rest is made when needed
+          if (!paUrgent && (paCache.length >= 16 || tot + im.naturalWidth * im.naturalHeight > PA_PX)) return;      // no more room: the rest is made when needed
           var it = paGen(im, a, key); paBusy = true;
           (function run() { try { if (!pkg || (running && !paUrgent)) { paBusy = false; return; } if (touchDown || Date.now() - lastTouchT < (paUrgent ? 150 : 400)) { paPrepT = setTimeout(run, paUrgent ? 120 : 400); return; } var t9 = performance.now(), r = it.next(); phNote('paGen-step', performance.now() - t9); if (r.done) { paBusy = false; var was = paRawSeen[pg]; delete paRawSeen[pg]; if (!Object.keys(paRawSeen).length) paUrgent = false; if (was && shownPage === pg) { try { drawPage(null, 0); } catch (e2) {} } try { if (was) warmNear(shownPage); } catch (e3) {} paPrepT = setTimeout(step, 60); return; } paPrepT = setTimeout(run, 25); } catch (e) { paBusy = false; } })();
           return;
@@ -5504,7 +5505,7 @@
   }
   function paAuto() {                            // every page gets the change it needs (worked out when the page is shown), so that all pages look alike
     if (!pkg) return; for (var p = 1; p <= maxPage; p++) { var a = pa[p] = pa[p] || { b: 0, c: 0, t: 0 }; a.A = 1; }
-    paUI(); paSave(); drawPage(null, 0); toast(_t('全ページを揃えました'));
+    paUI(); paSave(); paSync = true; try { drawPage(null, 0); } finally { paSync = false; } paPrep(300); toast(_t('全ページを揃えました'));
   }
   function editNavUI() {      // the page being adjusted (tone / crop): shown at the top of the score while one of the two screens is open, with the buttons to move to the other page
     var on = !$('padj').hidden || geoEdit(), p = shownPage || 1; $('editnav').hidden = !on; $('enpg').textContent = 'p.' + p + ' / ' + maxPage; $('enprev').disabled = p <= 1; $('ennext').disabled = p >= maxPage;
@@ -5739,7 +5740,7 @@
   ['b', 'c', 't'].forEach(function (k) {
     $('padj' + k).oninput = function () {
       var a = pa[shownPage] = pa[shownPage] || { b: 0, c: 0, t: 0 }; a[k] = +this.value; paUI(); paSave();
-      if (!paRaf) paRaf = requestAnimationFrame(function () { paRaf = 0; drawPage(null, 0); });
+      if (!paRaf) paRaf = requestAnimationFrame(function () { paRaf = 0; paSync = true; try { drawPage(null, 0); } finally { paSync = false; } });
     };
   });
   $('padjx').onclick = function () { $('padj').hidden = true; paUI(); drawPage(null, 0); }; $('pgeox').onclick = function () { $('pgeo').hidden = true; geoUI(); paUI(); drawPage(null, 0); };
