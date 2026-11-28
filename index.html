@@ -310,7 +310,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v515</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v516</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3257,10 +3257,15 @@
     window.addEventListener('scroll', fix, { passive: true }); if (window.visualViewport) { visualViewport.addEventListener('scroll', fix); visualViewport.addEventListener('resize', fix); }
   })();
   (function () {                                    // the app is exactly as tall as the visible screen (the home-screen app on iPad sometimes keeps an old, taller size after turning the iPad, waking it or changing the stand)
+    var fitTry = 0, fitTm = null;
+    function fitRetry() { if (fitTry > 14) return; fitTry++; clearTimeout(fitTm); fitTm = setTimeout(fitH, 150 + fitTry * 60); }
     function fitH() {
-      try { var vv = window.visualViewport, H = Math.round(vv && vv.height ? vv.height : window.innerHeight); if (H > 200) { document.body.style.height = H + 'px'; document.body.style.bottom = 'auto'; } var W0 = Math.round(vv && vv.width ? vv.width : window.innerWidth); if (W0 > 200 && Math.abs(document.body.getBoundingClientRect().width - W0) > 2) { document.body.style.width = W0 + 'px'; document.body.style.right = 'auto'; } window.scrollTo(0, 0); if (typeof drawPage === 'function' && typeof shownPage !== 'undefined' && shownPage != null) drawPage(null, 0); } catch (e) {}
+      try { var vv = window.visualViewport, H = Math.round(vv && vv.height ? vv.height : window.innerHeight);
+        var so0 = window.screen && screen.orientation && screen.orientation.type, port0 = so0 ? so0.indexOf('portrait') === 0 : (typeof window.orientation === 'number' ? (window.orientation === 0 || window.orientation === 180) : null), W1 = Math.round(vv && vv.width ? vv.width : window.innerWidth);
+        if (port0 !== null && (port0 !== (W1 < H) || port0 !== (window.innerWidth < window.innerHeight))) { document.body.style.height = ''; document.body.style.width = ''; document.body.style.bottom = ''; document.body.style.right = ''; fitRetry(); return; }      /* turned the iPad, but the page still has the size of the OTHER orientation: do not copy that size (the score would fill only the top two thirds); look again a moment later */
+        if (H > 200) { document.body.style.height = H + 'px'; document.body.style.bottom = 'auto'; } var W0 = Math.round(vv && vv.width ? vv.width : window.innerWidth); if (W0 > 200 && Math.abs(document.body.getBoundingClientRect().width - W0) > 2) { document.body.style.width = W0 + 'px'; document.body.style.right = 'auto'; } window.scrollTo(0, 0); if (typeof drawPage === 'function' && typeof shownPage !== 'undefined' && shownPage != null) drawPage(null, 0); } catch (e) {}
     }
-    ['resize', 'orientationchange', 'pageshow', 'focus'].forEach(function (n) { window.addEventListener(n, function () { fitH(); setTimeout(fitH, 300); }); });
+    ['resize', 'orientationchange', 'pageshow', 'focus'].forEach(function (n) { window.addEventListener(n, function () { fitTry = 0; fitH(); setTimeout(fitH, 300); setTimeout(fitH, 800); setTimeout(fitH, 1800); }); });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) { fitH(); setTimeout(fitH, 300); } });
     document.addEventListener('visibilitychange', function () { try { if (!running && window.__micDrop) window.__micDrop(); } catch (e) {} });      // after lock/sleep a kept microphone can be dead: let it go, ask fresh next time
     if (window.visualViewport) visualViewport.addEventListener('resize', fitH);
