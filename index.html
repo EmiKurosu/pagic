@@ -313,7 +313,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v529</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v531</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2275,7 +2275,7 @@
   function wwInv(P, rx, y1) { var lo = y1 - P.m, hi = y1 + P.m; for (var it = 0; it < 40; it++) { var mid = (lo + hi) / 2; if (mid + wwShift(P, rx, mid) < y1) lo = mid; else hi = mid; } return (lo + hi) / 2; }      // the shift of a point is not simple to undo: its place is searched (the map is increasing, so a bisection finds it)
   function wwShift(P, rx, ry) { var u = (rx - P.x0) / P.dx; if (u <= 0) return wwCol(P, 0, ry); if (u >= P.n - 1) return wwCol(P, P.n - 1, ry); var i = Math.floor(u), t = u - i; return wwCol(P, i, ry) * (1 - t) + wwCol(P, i + 1, ry) * t; }
   function vWp(v, rx) { var q = v.wz, u = rx / (v.cw || 1) + 0.5, l = Math.max(0, 1 - u / 0.4), r = Math.max(0, 1 - (1 - u) / 0.4), kl = l * l, kr = r * r;      /* a page whose left / right edge curls (a thick book): near that edge the lines are moved up or down (s), stretched up / down (e) and stretched sideways (h) by a smooth amount that is 0 at 40 % of the page width */
-    return { s: q.c * kl + q.d * kr, e: q.ec * kl + q.ed * kr, h: -q.hc * kl + q.hd * kr }; }
+    return { s: q.c * kl + q.d * kr, e: q.ec * kl + q.ed * kr, h: -q.hc * l * l * (0.5 + 0.5 * l) + q.hd * r * r * (0.5 + 0.5 * r) }; }      /* (sideways: the stretch grows faster the nearer the edge: the page is pressed together most there) */
   function vX(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; if (v.ww) ry += wwShift(v.ww, rx, ry); if (v.wz) { var wp = vWp(v, rx); ry = ry * (1 + wp.e) + wp.s; rx += wp.h; } return v.ox + (rx / (1 + v.ka * rx + v.kb * ry) + v.pcx - v.reg.x0) * v.s; }          // page picture -> canvas
   function vY(v, x, y) { var dx = x - v.pcx, dy = y - v.pcy, rx = v.cs * dx - v.sn * dy, ry = v.sn * dx + v.cs * dy; if (v.ww) ry += wwShift(v.ww, rx, ry); if (v.wz) { var wp = vWp(v, rx); ry = ry * (1 + wp.e) + wp.s; rx += wp.h; } return v.oy + (ry / (1 + v.ka * rx + v.kb * ry) + v.pcy - v.reg.y0) * v.s; }
   function vInv(v, X, Y) { var xp = (X - v.ox) / v.s + v.reg.x0 - v.pcx, yp = (Y - v.oy) / v.s + v.reg.y0 - v.pcy; var den = 1 - v.ka * xp - v.kb * yp; xp /= den; yp /= den; if (v.wz) { var rx0 = xp; for (var it = 0; it < 8; it++) rx0 = xp - vWp(v, rx0).h; var wp0 = vWp(v, rx0); yp = (yp - wp0.s) / (1 + wp0.e); xp = rx0; } if (v.ww) yp = wwInv(v.ww, xp, yp); return [v.cs * xp + v.sn * yp + v.pcx, -v.sn * xp + v.cs * yp + v.pcy]; }    // canvas -> page picture
@@ -2373,7 +2373,7 @@
     if (p2 < 1 || p2 > maxPage) return; var r0 = pageRegion(p2); if (!r0 || !imgs[r0.img] || !imgs[r0.img].complete) return;
     var gp = geoOf(p2), reg = r0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, wz = null, pcx = (r0.x0 + r0.x1) / 2, pcy = (r0.y0 + r0.y1) / 2;
     if (gp) { var w0 = r0.x1 - r0.x0, h0 = r0.y1 - r0.y0, odd = gp.q % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, bx = pcx - bw / 2, by = pcy - bh / 2;
-      th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wz = (gp.c || gp.d || gp.cs || gp.ds || gp.cx || gp.dx) ? { c: (gp.c || 0) * 0.0012 * bh, d: (gp.d || 0) * 0.0012 * bh, ec: (gp.cs || 0) * 0.005, ed: (gp.ds || 0) * 0.005, hc: (gp.cx || 0) * 0.002 * bw, hd: (gp.dx || 0) * 0.002 * bw } : null; cw = bw;
+      th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wz = (gp.c || gp.d || gp.cs || gp.ds || gp.cx || gp.dx) ? { c: (gp.c || 0) * 0.0012 * bh, d: (gp.d || 0) * 0.0012 * bh, ec: (gp.cs || 0) * 0.005, ed: (gp.ds || 0) * 0.005, hc: (gp.cx || 0) * 0.003 * bw, hd: (gp.dx || 0) * 0.003 * bw } : null; cw = bw;
       reg = { img: r0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh }; }
     var w = reg.x1 - reg.x0, h = reg.y1 - reg.y0, full = document.body.classList.contains('full'), s2 = spreadScale(k, c), ox = x0 + wd / 2 - w * s2 / 2, oy = c.height / 2 - h * s2 / 2;
     v2 = { page: p2, s: s2, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw, ww: gp && gp.w ? wwPrepOf(gp.w) : null }; if (!kOv) view2 = v2;
@@ -2403,7 +2403,7 @@
     if (gp) {                                    // rotated and/or cropped page: the "page space" is the picture turned about its centre; the crop is a rectangle in that space
       var w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = gp.q % 2 !== 0; bw = odd ? h0 : w0; bh = odd ? w0 : h0; bx = pcx - bw / 2; by = pcy - bh / 2;
       th = (gp.q * 90 + gp.f) * Math.PI / 180;
-      ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wz = (gp.c || gp.d || gp.cs || gp.ds || gp.cx || gp.dx) ? { c: (gp.c || 0) * 0.0012 * bh, d: (gp.d || 0) * 0.0012 * bh, ec: (gp.cs || 0) * 0.005, ed: (gp.ds || 0) * 0.005, hc: (gp.cx || 0) * 0.002 * bw, hd: (gp.dx || 0) * 0.002 * bw } : null; cw = bw;
+      ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wz = (gp.c || gp.d || gp.cs || gp.ds || gp.cx || gp.dx) ? { c: (gp.c || 0) * 0.0012 * bh, d: (gp.d || 0) * 0.0012 * bh, ec: (gp.cs || 0) * 0.005, ed: (gp.ds || 0) * 0.005, hc: (gp.cx || 0) * 0.003 * bw, hd: (gp.dx || 0) * 0.003 * bw } : null; cw = bw;
       if (ed) { fr = [gp.l, gp.t, gp.r, gp.b]; reg = { img: reg0.img, x0: bx - GMARG * bw, x1: bx + bw + GMARG * bw, y0: by - GMARG * bh, y1: by + bh + GMARG * bh }; } else
       reg = { img: reg0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh };
     }
@@ -2530,7 +2530,7 @@
   function nextPageCv(c, np) {      // the next page exactly as it will stand after the turn (rotation, crop, tilt, tone, writing): the curl uncovers this, so nothing changes when the page turns
     var reg0 = pageRegion(np); if (!reg0 || !imgs[reg0.img] || !imgs[reg0.img].complete) return null;
     var gp = geoOf(np), reg = reg0, th = 0, ka = 0, kb = 0, wc = 0, wd = 0, cw = 1, wz = null, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2;
-    if (gp) { var w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = gp.q % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, bx = pcx - bw / 2, by = pcy - bh / 2; th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wz = (gp.c || gp.d || gp.cs || gp.ds || gp.cx || gp.dx) ? { c: (gp.c || 0) * 0.0012 * bh, d: (gp.d || 0) * 0.0012 * bh, ec: (gp.cs || 0) * 0.005, ed: (gp.ds || 0) * 0.005, hc: (gp.cx || 0) * 0.002 * bw, hd: (gp.dx || 0) * 0.002 * bw } : null; cw = bw; reg = { img: reg0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh }; }
+    if (gp) { var w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = gp.q % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, bx = pcx - bw / 2, by = pcy - bh / 2; th = (gp.q * 90 + gp.f) * Math.PI / 180; ka = (gp.h || 0) / 100 * 0.35 / (bw / 2); kb = (gp.v || 0) / 100 * 0.35 / (bh / 2); wz = (gp.c || gp.d || gp.cs || gp.ds || gp.cx || gp.dx) ? { c: (gp.c || 0) * 0.0012 * bh, d: (gp.d || 0) * 0.0012 * bh, ec: (gp.cs || 0) * 0.005, ed: (gp.ds || 0) * 0.005, hc: (gp.cx || 0) * 0.003 * bw, hd: (gp.dx || 0) * 0.003 * bw } : null; cw = bw; reg = { img: reg0.img, x0: bx + gp.l * bw, x1: bx + bw - gp.r * bw, y0: by + gp.t * bh, y1: by + bh - gp.b * bh }; }
     var w = reg.x1 - reg.x0, h = reg.y1 - reg.y0, full = document.body.classList.contains('full'), a = twoUpOn ? null : adj[np], s = (twoUpOn ? spreadScale(np, c) : Math.min(viewW(c) / w, c.height / h) * (full ? 1 : 0.98)) * (a ? a.z : 1);
     var cxI = a ? a.cx : reg.x0 + w / 2, cyI = a ? a.cy : reg.y0 + h / 2, ox = viewW(c) / 2 - (cxI - reg.x0) * s, oy = c.height / 2 - (cyI - reg.y0) * s, pa0 = paOf(np), il = ink.strokes[np];
     var key = [np, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), gp ? JSON.stringify(gp) : '', pa0 ? [pa0.b, pa0.c, pa0.t, pa0.A ? 1 : 0].join(',') : '', il ? il.length : 0, reg0.img, twoUpOn ? 1 : 0].join('|');
@@ -5657,6 +5657,33 @@
       var kept = []; idx.forEach(function (q) { var l = kept[kept.length - 1]; if (l !== undefined && Math.abs(TB[q] - TB[l]) < 3 * sp) { if (supB[q] > supB[l]) kept[kept.length - 1] = q; } else kept.push(q); });      // the same staff found twice: the one that fits better stays
       keep = kept.map(function (q) { return keepB[q]; }); T = kept.map(function (q) { return TB[q]; });
     } catch (eDP) {}
+    try {      /* the paper is one smooth sheet: how far a staff is moved is a smooth function of where it stands (up and down the page) at every place across. Every strip gets a robust cubic of that; the staves that disagree (a trace that followed the notes instead of the lines) are pulled to it, and what stays of a staff of its own is smoothed and kept small. */
+      var nq = keep.length;
+      if (nq >= 5) {
+        var dd = keep.map(function (fl, q) { return fl.map(function (v) { return v - T[q]; }); }), tmn = 0, tsc = 1, q, ii, jj, kk;
+        for (q = 0; q < nq; q++) tmn += T[q] / nq; for (q = 0; q < nq; q++) tsc = Math.max(tsc, Math.abs(T[q] - tmn));
+        var xq = T.map(function (v) { return (v - tmn) / tsc; }), deg = nq >= 8 ? 3 : 2, mod = [], res = [];
+        for (q = 0; q < nq; q++) { mod.push(new Array(NS).fill(0)); res.push(new Array(NS).fill(0)); }
+        for (s = 0; s < NS; s++) {
+          var wq = new Array(nq).fill(1), co = new Array(deg + 1).fill(0);
+          for (var it = 0; it < 8; it++) {
+            var A = [], B = []; for (ii = 0; ii <= deg; ii++) { A.push(new Array(deg + 1).fill(0)); B.push(0); }
+            for (q = 0; q < nq; q++) for (ii = 0; ii <= deg; ii++) { B[ii] += wq[q] * Math.pow(xq[q], ii) * dd[q][s]; for (jj = 0; jj <= deg; jj++) A[ii][jj] += wq[q] * Math.pow(xq[q], ii + jj); }
+            for (ii = 0; ii <= deg; ii++) A[ii][ii] += 1e-6 + (ii >= 2 ? 0.02 : 0);
+            for (ii = 0; ii <= deg; ii++) { var pv = ii; for (kk = ii + 1; kk <= deg; kk++) if (Math.abs(A[kk][ii]) > Math.abs(A[pv][ii])) pv = kk; var tA = A[ii]; A[ii] = A[pv]; A[pv] = tA; var tB = B[ii]; B[ii] = B[pv]; B[pv] = tB; for (kk = ii + 1; kk <= deg; kk++) { var fct = A[kk][ii] / A[ii][ii]; for (jj = ii; jj <= deg; jj++) A[kk][jj] -= fct * A[ii][jj]; B[kk] -= fct * B[ii]; } }
+            for (ii = deg; ii >= 0; ii--) { var sv = B[ii]; for (jj = ii + 1; jj <= deg; jj++) sv -= A[ii][jj] * co[jj]; co[ii] = sv / A[ii][ii]; }
+            for (q = 0; q < nq; q++) { var pm = 0; for (ii = 0; ii <= deg; ii++) pm += co[ii] * Math.pow(xq[q], ii); var rr = (dd[q][s] - pm) / (0.35 * sp); wq[q] = 1 / (1 + rr * rr * rr * rr); }
+          }
+          for (q = 0; q < nq; q++) { var pm2 = 0; for (ii = 0; ii <= deg; ii++) pm2 += co[ii] * Math.pow(xq[q], ii); mod[q][s] = pm2; res[q][s] = dd[q][s] - pm2; }
+        }
+        for (q = 0; q < nq; q++) {
+          var rs = res[q].map(function (v) { return Math.max(-1.2 * sp, Math.min(1.2 * sp, v)); }), md = rs.slice();
+          for (s = 0; s < NS; s++) { var win = []; for (kk = Math.max(0, s - 2); kk <= Math.min(NS - 1, s + 2); kk++) win.push(rs[kk]); win.sort(function (a2, b2) { return a2 - b2; }); md[s] = win[win.length >> 1]; }
+          var sm5 = md.slice(); for (s = 0; s < NS; s++) { var a5 = 0, n5 = 0; for (kk = Math.max(0, s - 2); kk <= Math.min(NS - 1, s + 2); kk++) { a5 += md[kk]; n5++; } sm5[s] = a5 / n5; }
+          for (s = 0; s < NS; s++) keep[q][s] = T[q] + mod[q][s] + Math.max(-0.6 * sp, Math.min(0.6 * sp, sm5[s]));
+        }
+      }
+    } catch (eMod) {}
     var maxMove = 0; keep.forEach(function (fl, q) { for (s = 0; s < NS; s++) maxMove = Math.max(maxMove, Math.abs(fl[s] - T[q])); });
     var xs = [], rnd = function (v) { return Math.round(v * 10) / 10; };
     for (s = 0; s < NS; s++) xs.push(rnd(((s + 0.5) * sw - W / 2) / sc));
