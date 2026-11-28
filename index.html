@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v508</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v510</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -1844,7 +1844,7 @@
   }
   // where the music starts on a page photo: {x, y} (picture pixels) = left end and top of the first system, or null
   function firstInk(img) {
-    var gr = toGray(img, 900), w = gr.w, h = gr.h, m = darkMask(gr), x, y, row = new Float32Array(h), x0 = Math.round(w * 0.06), x1 = Math.round(w * 0.94);
+    var gr = toGray(img, 420), w = gr.w, h = gr.h, m = darkMask(gr), x, y, row = new Float32Array(h), x0 = Math.round(w * 0.06), x1 = Math.round(w * 0.94);
     for (y = 0; y < h; y++) { var c = 0; for (x = x0; x < x1; x++) c += m[y * w + x]; row[y] = c; }
     var sm = new Float32Array(h), k;
     for (y = 0; y < h; y++) { var a0 = Math.max(0, y - 2), a1 = Math.min(h - 1, y + 2), q = 0; for (k = a0; k <= a1; k++) q += row[k]; sm[y] = q / (a1 - a0 + 1); }
@@ -2367,6 +2367,9 @@
   var pinP = null; function pinPath() { return pinP || (pinP = new Path2D('M12 3.9a4.3 4.3 0 1 1 0 8.6a4.3 4.3 0 0 1 0-8.6zM10.9 12.2L12 21.5L13.1 12.2z')); }
   var loadGate = 0, loadGateT = null;      // the page is not drawn until the saved trimming / colour / view / handwriting are read (otherwise the uncropped photo flashes first)
   function gateDone() { if (loadGate > 0 && --loadGate === 0) { clearTimeout(loadGateT); try { drawPage(null, 0); } catch (e) {} } }
+  var stallLog = [], phTop = { n: '?', ms: 0 }, hbLast = performance.now();      // where the time goes: every heavy piece of work notes how long it took; a timer that wakes up late (the screen was held) writes down the heaviest piece since the last wake-up
+  function phNote(n, ms) { if (ms > phTop.ms) phTop = { n: n, ms: Math.round(ms) }; }
+  setInterval(function () { var n = performance.now(), gap = n - hbLast; hbLast = n; if (!document.hidden && gap > 160) { stallLog.push([Math.round(gap), phTop.n, phTop.ms, running ? 1 : 0, shownPage]); if (stallLog.length > 120) stallLog.shift(); } phTop = { n: '?', ms: 0 }; }, 50);
   var lastDraw = {};      // (what the last drawing had to make: base picture in the store / finished picture / writing left for later)
   function drawPage(playBar, playFrac) {
     lastDraw = { bh: -1, ch: -1, il: 0 };
@@ -3211,7 +3214,7 @@
     if (!pkg) return;
     pendingTurn = null;
     var cur = shownPage || 1; if (twoUpOn && Math.abs(delta) === 1 && $('padj').hidden && !geoEdit()) { var L = cur % 2 === 1 ? cur : cur - 1; delta = delta * 2; cur = L; if (delta > 0 && L + 2 > maxPage) return; }      // two pages side by side: ONE swipe moves a whole spread (1|2 -> 3|4), it lands on the left page
-    var p = Math.min(maxPage, Math.max(1, cur + delta)); if (running && p !== shownPage) manHold = { until: performance.now() + 20000, from: shownPage }; hidePreview(); showWhy = 'swipe'; var swT0 = performance.now(); showPage(p); showWhy = 'auto'; var swE = [p, Math.round(performance.now() - swT0), 'b' + lastDraw.bh + 'c' + lastDraw.ch + 'i' + lastDraw.il + (paBusy ? 'P' : ''), 0, cur]; swipeLog.push(swE); if (swipeLog.length > 200) swipeLog.shift();
+    var p = Math.min(maxPage, Math.max(1, cur + delta)); if (running && p !== shownPage) manHold = { until: performance.now() + 20000, from: shownPage }; hidePreview(); showWhy = 'swipe'; var swT0 = performance.now(); showPage(p); showWhy = 'auto'; var swE = [p, Math.round(performance.now() - swT0), 'b' + lastDraw.bh + 'c' + lastDraw.ch + 'i' + lastDraw.il + (paBusy ? 'P' : '') + (running ? 'r' : ''), 0, cur]; swipeLog.push(swE); if (swipeLog.length > 200) swipeLog.shift();
       (function (e) { var t0 = performance.now(), last = t0, mx = 0; function fr() { var n = performance.now(); mx = Math.max(mx, n - last); last = n; if (n - t0 < 1600) requestAnimationFrame(fr); else e[3] = Math.round(mx); } try { requestAnimationFrame(fr); } catch (x) {} })(swE);      /* the longest wait between two screen frames in the 1.6 s after the swipe (the time the app was stuck): it goes into the operation record */      /* how long a swipe took to draw the page (goes into the log) */
     if (pager) { var rs = pager.turner.runs, cr = pager.turner.runOf[Math.min(Math.max(Math.floor(pager.last.pos || 0), 0), pkg.order.length - 1)], bk = -1; for (var k = 0; k < rs.length; k++) if (rs[k][2] === p && (bk < 0 || Math.abs(k - cr) < Math.abs(bk - cr))) bk = k; if (bk >= 0) { pager.turner.disp = bk; pager.turner.previewed = -1; } }   // the follower continues from the page you chose
   }
@@ -5391,8 +5394,15 @@
     paPut(key, cv);
     return cv;
   }
+  function pvWarm(list, k) {      // the 'next page' preview places of all pages are looked for one after the other when the screen is quiet (not while playing, not within 1.5 s of a touch), so that no swipe has to wait for it
+    if (imgs !== list || !pkg || k > maxPage) return;
+    if (running || touchDown || Date.now() - lastTouchT < 1500) { setTimeout(function () { pvWarm(list, k); }, 1500); return; }
+    var l = 'p' + k; try { if (pkg.rects[l] && pvRect[l] === undefined && imgs[pkg.rects[l].img]) previewRect(l); } catch (e) {}
+    setTimeout(function () { pvWarm(list, k + 1); }, 150);
+  }
   function imgWarm(list, k) {      // the photos are decoded one after the other in the background, long before they are shown (the first drawing of a photo that was not decoded took a quarter of a second; this also works while playing, since the decoding is not done on the main thread)
-    if (imgs !== list || !list[k]) return;
+    if (imgs !== list) return;
+    if (!list[k]) { setTimeout(function () { pvWarm(list, 1); }, 500); return; }
     if (touchDown || Date.now() - lastTouchT < 400) { setTimeout(function () { imgWarm(list, k); }, 400); return; }
     var pr = null; try { pr = list[k].decode ? list[k].decode() : null; } catch (e) { pr = null; }
     (pr || Promise.resolve()).catch(function () {}).then(function () { setTimeout(function () { imgWarm(list, k + 1); }, 80); });
@@ -5421,7 +5431,7 @@
           var key = paCk(reg.img, a), have = false; for (c0 = 0; c0 < paCache.length; c0++) if (paCache[c0].key === key) have = true; if (have) continue;
           if (paCache.length >= 16 || tot + im.naturalWidth * im.naturalHeight > PA_PX) return;      // no more room: the rest is made when needed
           var it = paGen(im, a, key); paBusy = true;
-          (function run() { try { if (!pkg || (running && !paUrgent)) { paBusy = false; return; } if (touchDown || Date.now() - lastTouchT < (paUrgent ? 150 : 400)) { paPrepT = setTimeout(run, paUrgent ? 120 : 400); return; } var r = it.next(); if (r.done) { paBusy = false; var was = paRawSeen[pg]; delete paRawSeen[pg]; if (!Object.keys(paRawSeen).length) paUrgent = false; if (was && shownPage === pg) { try { drawPage(null, 0); } catch (e2) {} } try { if (was) warmNear(shownPage); } catch (e3) {} paPrepT = setTimeout(step, 60); return; } paPrepT = setTimeout(run, 25); } catch (e) { paBusy = false; } })();
+          (function run() { try { if (!pkg || (running && !paUrgent)) { paBusy = false; return; } if (touchDown || Date.now() - lastTouchT < (paUrgent ? 150 : 400)) { paPrepT = setTimeout(run, paUrgent ? 120 : 400); return; } var t9 = performance.now(), r = it.next(); phNote('paGen-step', performance.now() - t9); if (r.done) { paBusy = false; var was = paRawSeen[pg]; delete paRawSeen[pg]; if (!Object.keys(paRawSeen).length) paUrgent = false; if (was && shownPage === pg) { try { drawPage(null, 0); } catch (e2) {} } try { if (was) warmNear(shownPage); } catch (e3) {} paPrepT = setTimeout(step, 60); return; } paPrepT = setTimeout(run, 25); } catch (e) { paBusy = false; } })();
           return;
         }
       } catch (e) { paBusy = false; }
@@ -5531,6 +5541,7 @@
     var out = { x: xs, Y: keep.map(function (fl) { return fl.map(function (v) { return rnd((v - H / 2) / sc); }); }), T: T.map(function (v) { return rnd((v - H / 2) / sc); }), h: rnd(2.6 * sp / sc) };
     return { w: out, staves: keep.length, move: maxMove / sp, sp: sp / sc };
   }
+  (function () { var dp = drawPage; drawPage = function (a, b) { var t = performance.now(); try { return dp(a, b); } finally { phNote('drawPage', performance.now() - t); } }; var pr = previewRect; previewRect = function (l) { var t = performance.now(); try { return pr(l); } finally { phNote('previewRect', performance.now() - t); } }; var ib = inkBuild; inkBuild = function () { return ib.apply(null, arguments); }; })();
   function geoUI() {
     try { geoWavUI(); } catch (e) {}
     var g = geo[shownPage] || GZ; if (!$('dial')) return;
@@ -5653,8 +5664,9 @@
     (function step() {
       if (inkBld !== job) { ce.cv.width = ce.cv.height = 1; return; }
       if (touchDown || Date.now() - lastTouchT < 250) { setTimeout(step, 200); return; }
-      var t0 = performance.now();
+      var t0 = performance.now(); try { phNote('ink-step', 0); } catch (e0) {}
       while (job.i < list.length && performance.now() - t0 < 14) { var st = list[job.i++]; try { if (st.h) continue; if (inkOk(st) && inkSeen(st, v, cW, cH)) drawOne(q, st, v); } catch (e) { try { q.restore(); } catch (e2) {} } }
+      phNote('ink-step', performance.now() - t0);
       if (job.i < list.length) { setTimeout(step, 30); return; }
       ce.list = list; ce.key = key; inkCache.push(ce); while (inkCache.length > 5) { var old = inkCache.shift(); old.cv.width = old.cv.height = 1; }
       inkBld = null; if (shownPage === p) { try { drawPage(null, 0); } catch (e3) {} }
@@ -6075,7 +6087,7 @@
     if (!list.length && !lch.length && !swipeLog.length) { toast(_t('まだ記録がありません。一度弾いてから押してください')); return; }
     var box = document.createElement('div'); box.id = 'lgpick'; box.style.cssText = 'display:grid;gap:6px;margin-top:6px';
     if (swipeLog.length) { var bs = document.createElement('button'); bs.type = 'button'; bs.style.cssText = 'text-align:left;white-space:pre-line;line-height:1.4'; bs.textContent = _t('ページをめくった記録（弾かなくても残ります）') + '\n' + _t('直近{n}回').replace('{n}', swipeLog.length);
-      bs.onclick = function () { exportText('pagic-swipes', JSON.stringify({ app: (($('ver') && $('ver').textContent) || '').trim(), title: pkg ? pkg.title : '', at: new Date().toISOString(), note: 'swipeMs = [to page, ms for the swipe, b/c/i flags (b: base picture 1 stored 0 made -1 n/a; c: finished picture; i: writing left for later; P: preparation running), longest frame gap in the next 1.6 s (ms), from page]', swipeMs: swipeLog.slice() }), function () { box.remove(); }); }; box.appendChild(bs); }
+      bs.onclick = function () { exportText('pagic-swipes', JSON.stringify({ app: (($('ver') && $('ver').textContent) || '').trim(), title: pkg ? pkg.title : '', at: new Date().toISOString(), note: 'swipeMs = [to page, ms for the swipe, b/c/i flags (b: base picture 1 stored 0 made -1 n/a; c: finished picture; i: writing left for later; P: preparation running), longest frame gap in the next 1.6 s (ms), from page]', swipeMs: swipeLog.slice(), stalls: stallLog.slice(), stallNote: '[gap ms, heaviest known piece of work in that gap (? = none of the measured ones), its ms, running 1/0, shown page]' }), function () { box.remove(); }); }; box.appendChild(bs); }
     if (lch.length) { var bl = document.createElement('button'); bl.type = 'button'; bl.style.cssText = 'text-align:left;white-space:pre-line;line-height:1.4'; bl.textContent = _t('起動時の画面サイズの記録（直近{n}回）').replace('{n}', lch.length); bl.onclick = function () { exportText('pagic-launch', JSON.stringify(lch, null, 1), function () { box.remove(); }); }; box.appendChild(bl); }      // the screen sizes the iPad reported in the first seconds of the last launches
     list.slice().reverse().slice(0, 5).forEach(function (r) {
       var b = document.createElement('button'), d = new Date(r.at), tr = r.trace && r.trace.length ? r.trace[r.trace.length - 1][0] : 0, sm = runStartMs(r), tm = isNaN(sm) ? '' : recDate(sm);
