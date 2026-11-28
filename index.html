@@ -93,9 +93,8 @@
   #inkbar button.wide { width: auto; min-width: 40px; padding: 0 12px; font-size: 14px; font-weight: 600; white-space: nowrap; }
   #pgstrip { position: absolute; left: 0; right: 0; bottom: 6px; z-index: 3; display: flex; justify-content: center; pointer-events: none; touch-action: pan-x; }
   #pgstrip[hidden] { display: none; }
-  footer > #pgstrip { position: static; flex: 0 1 auto; min-width: 0; }
-  footer.pgwrap { flex-wrap: wrap; } footer.pgwrap > #pgstrip { flex: 1 0 100%; order: 20; } footer.pgwrap > #pgstrip .in { max-width: 100%; }
-  footer #pgstrip .in { gap: 2px; padding: 3px 4px; } footer #pgstrip button { min-width: 34px; height: 38px; min-height: 38px; padding: 0 4px; font-size: 16px; } footer #pgstrip.many button { min-width: 29px; padding: 0 2px; font-size: 15px; } footer .cfw .meter { width: 72px; }
+  footer > #pgstrip { position: static; flex: 100 1 0; min-width: 0; }      /* the row of page numbers takes all the room that is left in the bottom row; the numbers grow to fill it and, when the room is too small, stay at their size and the row is swiped sideways */
+  footer #pgstrip .in { gap: 2px; padding: 3px 4px; width: 100%; max-width: 100%; justify-content: flex-start; touch-action: pan-x; } footer #pgstrip button { flex: 1 0 34px; min-width: 0; max-width: 58px; height: 38px; min-height: 38px; padding: 0 4px; font-size: 16px; } footer #pgstrip.many button { flex-basis: 29px; min-width: 0; padding: 0 2px; font-size: 15px; } footer .cfw .meter { width: 72px; }
   footer #pgstrip .in { max-width: 100%; }
   #nextx { position: fixed; z-index: 23; width: 34px; height: 34px; min-height: 34px; padding: 0; border-radius: 17px; background: #fff; color: #1a1c20; border: 2px solid #1a1c20; font-size: 20px; line-height: 1; font-weight: 700; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.35); } #nextx[hidden] { display: none; }
   #pgstrip .in { position: relative; pointer-events: auto; display: flex; gap: 4px; max-width: calc(100% - 140px); overflow-x: auto; padding: 4px 6px; border-radius: 22px; background: rgba(31,35,43,.72); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -312,7 +311,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v518</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v519</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3227,7 +3226,7 @@
       var nv = $('nextmv'), on = !!pkg && maxPage > 1 && !!shownPage && !(nv && !nv.hidden); el.hidden = !on; if (!on) return;
       if (stripN !== maxPage) { stripN = maxPage; box.innerHTML = ''; for (var i = 1; i <= maxPage; i++) { var b = document.createElement('button'); b.type = 'button'; b.textContent = i; b.setAttribute('data-p', i); b.setAttribute('aria-label', 'p.' + i); box.appendChild(b); } }
       el.classList.toggle('many', maxPage > 7);
-      if (!full) { var ft = host; ft.classList.remove('pgwrap'); if (box.scrollWidth > box.clientWidth + 1) ft.classList.add('pgwrap'); } else { var ft2 = document.querySelector('footer'); if (ft2) ft2.classList.remove('pgwrap'); }
+      if (!full) { try { box.style.maxWidth = (maxPage * 60 + 12) + 'px'; } catch (e0) {} } else { box.style.maxWidth = ''; }
       var L = shownPage, R = shownPage; if (twoUpWanted()) { L = shownPage % 2 === 1 ? shownPage : shownPage - 1; R = L + 1; }
       var cur = null; Array.prototype.forEach.call(box.children, function (b) { var n = +b.getAttribute('data-p'), o = n >= L && n <= R; b.classList.toggle('on', o); if (o && !cur) cur = b; });
       if (cur && box.scrollWidth > box.clientWidth) box.scrollLeft = cur.offsetLeft - (box.clientWidth - cur.offsetWidth) / 2;
