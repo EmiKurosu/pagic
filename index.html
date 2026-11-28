@@ -93,7 +93,9 @@
   #inkbar button.wide { width: auto; min-width: 40px; padding: 0 12px; font-size: 14px; font-weight: 600; white-space: nowrap; }
   #pgstrip { position: absolute; left: 0; right: 0; bottom: 6px; z-index: 3; display: flex; justify-content: center; pointer-events: none; touch-action: pan-x; }
   #pgstrip[hidden] { display: none; }
-  footer #pgstrip { position: static; flex: 1 1 0; min-width: 0; }
+  footer > #pgstrip { position: static; flex: 0 1 auto; min-width: 0; }
+  footer.pgwrap { flex-wrap: wrap; } footer.pgwrap > #pgstrip { flex: 1 0 100%; order: 20; } footer.pgwrap > #pgstrip .in { max-width: 100%; }
+  footer #pgstrip .in { gap: 2px; padding: 3px 4px; } footer #pgstrip button { min-width: 34px; height: 38px; min-height: 38px; padding: 0 4px; font-size: 16px; } footer #pgstrip.many button { min-width: 29px; padding: 0 2px; font-size: 15px; } footer .cfw .meter { width: 72px; }
   footer #pgstrip .in { max-width: 100%; }
   #nextx { position: fixed; z-index: 23; width: 34px; height: 34px; min-height: 34px; padding: 0; border-radius: 17px; background: #fff; color: #1a1c20; border: 2px solid #1a1c20; font-size: 20px; line-height: 1; font-weight: 700; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.35); } #nextx[hidden] { display: none; }
   #pgstrip .in { position: relative; pointer-events: auto; display: flex; gap: 4px; max-width: calc(100% - 140px); overflow-x: auto; padding: 4px 6px; border-radius: 22px; background: rgba(31,35,43,.72); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -310,7 +312,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v517</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v518</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -3224,6 +3226,8 @@
       if (host && el.parentNode !== host) { if (!full && sp0) host.insertBefore(el, sp0); else host.appendChild(el); }
       var nv = $('nextmv'), on = !!pkg && maxPage > 1 && !!shownPage && !(nv && !nv.hidden); el.hidden = !on; if (!on) return;
       if (stripN !== maxPage) { stripN = maxPage; box.innerHTML = ''; for (var i = 1; i <= maxPage; i++) { var b = document.createElement('button'); b.type = 'button'; b.textContent = i; b.setAttribute('data-p', i); b.setAttribute('aria-label', 'p.' + i); box.appendChild(b); } }
+      el.classList.toggle('many', maxPage > 7);
+      if (!full) { var ft = host; ft.classList.remove('pgwrap'); if (box.scrollWidth > box.clientWidth + 1) ft.classList.add('pgwrap'); } else { var ft2 = document.querySelector('footer'); if (ft2) ft2.classList.remove('pgwrap'); }
       var L = shownPage, R = shownPage; if (twoUpWanted()) { L = shownPage % 2 === 1 ? shownPage : shownPage - 1; R = L + 1; }
       var cur = null; Array.prototype.forEach.call(box.children, function (b) { var n = +b.getAttribute('data-p'), o = n >= L && n <= R; b.classList.toggle('on', o); if (o && !cur) cur = b; });
       if (cur && box.scrollWidth > box.clientWidth) box.scrollLeft = cur.offsetLeft - (box.clientWidth - cur.offsetWidth) / 2;
@@ -3234,6 +3238,7 @@
     ['touchstart', 'pointerdown', 'mousedown'].forEach(function (n) { box.addEventListener(n, function (e) { e.stopPropagation(); }, { passive: true }); });
     box.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('button'); if (!b) return; e.stopPropagation(); var n = +b.getAttribute('data-p'); if (!n || n === shownPage) return; manual(n - (shownPage || 1)); stripUI(); });
   })();
+  window.addEventListener('resize', function () { setTimeout(stripUI, 120); });
   try { new MutationObserver(function () { stripUI(); }).observe(document.body, { attributes: true, attributeFilter: ['class'] }); } catch (e) {}
   function pgLabel() {      stripUI();      // the page number at the top left: one page, or the two pages of the spread (1、2 / 3、4 ...)
     var p = shownPage; if (!p) return; var t = 'p.' + p;
@@ -5539,6 +5544,12 @@
     j = bj2; for (t = W - 1; t >= 0; t--) { path[t] = Math.round(yc[t] + off) + j - B; j = bp[t * n + j]; }
     return path;
   }
+  function wavSlow(c, W, sp) {      // a slow version of a curve (median over about a tenth of the width): a staff does not jump by a whole line space within a few columns, so places where the traced curve does jump (it slipped onto the neighbouring line) are pulled back
+    var st = 4, half = Math.max(6, Math.round(W / 10 / st / 2)), n = Math.floor(W / st) + 1, med = new Float32Array(n), i, j, k, buf, out = new Float32Array(W);
+    for (i = 0; i < n; i++) { buf = []; for (j = Math.max(0, i - half); j <= Math.min(n - 1, i + half); j++) buf.push(c[Math.min(W - 1, j * st)]); buf.sort(function (a, b) { return a - b; }); med[i] = buf[buf.length >> 1]; }
+    for (k = 0; k < W; k++) { var u = k / st, i0 = Math.min(n - 2, Math.floor(u)), f = u - i0, m = med[i0] * (1 - f) + med[i0 + 1] * f; out[k] = Math.abs(c[k] - m) > 0.45 * sp ? m : c[k]; }
+    return out;
+  }
   function wavCentre(R, W, H, yinit, sp, band) {      // the five lines of a staff followed separately: the centre of the staff is their median (a line that slipped to its neighbour is outvoted)
     var L = [], k, x, sup = new Float32Array(W), cen = new Float32Array(W), vals = [0, 0, 0, 0, 0];
     for (k = 0; k < 5; k++) L.push(wavTrace(R, W, H, yinit, (k - 2) * sp, band * sp));
@@ -5610,7 +5621,7 @@
       keep.forEach(function (fl, q) {
         var yinit = new Float32Array(W), xx, u, s0, f0;
         for (xx = 0; xx < W; xx++) { u = (xx - sw / 2) / sw; s0 = Math.max(0, Math.min(NS - 2, Math.floor(u))); f0 = Math.max(0, Math.min(1, u - s0)); yinit[xx] = fl[s0] * (1 - f0) + fl[s0 + 1] * f0; }
-        var c1 = wavCentre(Rr, W, H, yinit, sp, 0.9), c2 = wavCentre(Rr, W, H, c1.c, sp, 0.5), cen = c2.c, sup = c2.sup;
+        var c1 = wavCentre(Rr, W, H, yinit, sp, 0.9), c1s = wavSlow(c1.c, W, sp), c2 = wavCentre(Rr, W, H, c1s, sp, 0.5), cen = wavSlow(c2.c, W, sp), sup = c2.sup;
         var sm = new Float32Array(W), run = 0, xi; for (xi = 0; xi < W; xi++) { run += sup[xi]; if (xi >= 41) run -= sup[xi - 41]; sm[xi] = run / Math.min(xi + 1, 41); }
         var srt = Array.prototype.slice.call(sm).sort(function (a2, b2) { return a2 - b2; }), thr2 = 0.3 * srt[Math.floor(W * 0.8)], xa = -1, xb = -1, bestA = -1, bestB = -1, st = -1;
         for (xi = 0; xi <= W; xi++) { var on = xi < W && sm[xi] >= thr2; if (on && st < 0) st = xi; if (!on && st >= 0) { if (bestA < 0 || xi - st > bestB - bestA) { bestA = st; bestB = xi - 1; } st = -1; } }
