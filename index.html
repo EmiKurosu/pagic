@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v506</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v507</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -5368,24 +5368,25 @@
     while (paCache.length > 16 || (paCache.length > 5 && tot > PA_PX)) { var po = paCache.shift(); tot -= po.cv.width * po.cv.height; po.cv.width = po.cv.height = 1; }
   }
   function paCk(img, a) { return img + '|' + a.b + '|' + a.c + '|' + a.t + '|' + (a.A ? 'A' : ''); }
-  function* paGen(im, a, key) {
-    var i;
-    var W = im.naturalWidth, H = im.naturalHeight, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-    var g = cv.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0);
+  function* paGen(im, a, key) {      // every step is small (a band of the picture at a time), so that nothing holds the screen for long: the page is read, changed and written back band by band
+    var i, W = im.naturalWidth, H = im.naturalHeight, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+    var g = cv.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0); yield;
     try {
-      var d = g.getImageData(0, 0, W, H), px = d.data, L = paLut(a), n = px.length, ch;
+      var L = paLut(a), bg = null, ik = 0, k2 = 1, rc = null, ch, v;
       if (a.A) {
-        var F = paFlat(im), bd = F.bgCanvas.getContext('2d').getImageData(0, 0, W, H).data, ik = F.ink, k2 = (PA_PAPER[1] - PA_INK) / Math.max(40, PA_PAPER[1] - ik), rc = [new Float32Array(256), new Float32Array(256), new Float32Array(256)], v;
+        var F = paFlat(im); yield; bg = F.bgCanvas.getContext('2d', { willReadFrequently: true }); ik = F.ink; k2 = (PA_PAPER[1] - PA_INK) / Math.max(40, PA_PAPER[1] - ik); rc = [new Float32Array(256), new Float32Array(256), new Float32Array(256)];
         for (ch = 0; ch < 3; ch++) for (v = 0; v < 256; v++) rc[ch][v] = Math.min(3, PA_PAPER[ch] / Math.max(40, v));
-        for (var i0 = 0; i0 < n; i0 += PA_BLK) { var i1 = Math.min(n, i0 + PA_BLK); if (i0) yield;
-         for (i = i0; i < i1; i += 4) {
+      }
+      var bh = Math.max(8, Math.floor(PA_BLK / 4 / W));
+      for (var y0 = 0; y0 < H; y0 += bh) {
+        var hb = Math.min(bh, H - y0), d = g.getImageData(0, y0, W, hb), px = d.data, n = px.length, bd = bg ? bg.getImageData(0, y0, W, hb).data : null;
+        if (bg) for (i = 0; i < n; i += 4) {
           var r = px[i] * rc[0][bd[i]], gg = px[i + 1] * rc[1][bd[i + 1]], bb = px[i + 2] * rc[2][bd[i + 2]];
           r = (r - ik) * k2 + PA_INK; gg = (gg - ik) * k2 + PA_INK; bb = (bb - ik) * k2 + PA_INK;
           px[i] = L[0][r < 0 ? 0 : r > 255 ? 255 : r | 0]; px[i + 1] = L[1][gg < 0 ? 0 : gg > 255 ? 255 : gg | 0]; px[i + 2] = L[2][bb < 0 ? 0 : bb > 255 ? 255 : bb | 0];
-         }
-        }
-      } else for (var j0 = 0; j0 < n; j0 += PA_BLK) { var j1 = Math.min(n, j0 + PA_BLK); if (j0) yield; for (i = j0; i < j1; i += 4) { px[i] = L[0][px[i]]; px[i + 1] = L[1][px[i + 1]]; px[i + 2] = L[2][px[i + 2]]; } }
-      g.putImageData(d, 0, 0);
+        } else for (i = 0; i < n; i += 4) { px[i] = L[0][px[i]]; px[i + 1] = L[1][px[i + 1]]; px[i + 2] = L[2][px[i + 2]]; }
+        g.putImageData(d, 0, y0); yield;
+      }
     } catch (e) { return im; }
     paPut(key, cv);
     return cv;
