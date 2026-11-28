@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v510</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v511</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -2223,8 +2223,9 @@
     if (r) { r.x0 -= 8; r.y0 -= 8; r.x1 += 8; r.y1 += 8; }
     pages[p] = r; return r;
   }
+  var dprCap = 0; try { dprCap = parseFloat(localStorage.getItem('pagic-dprcap') || '0') || 0; } catch (e) {}      // 'light display': the screen picture is made with fewer pixels (1.5 per point instead of 2), so the iPad has less to draw and keep
   function fit(canvas) {
-    var d = window.devicePixelRatio || 1, w = canvas.clientWidth, h = canvas.clientHeight;
+    var d = window.devicePixelRatio || 1; if (dprCap) d = Math.min(d, dprCap); var w = canvas.clientWidth, h = canvas.clientHeight;
     if (canvas.width !== Math.round(w * d) || canvas.height !== Math.round(h * d)) { canvas.width = Math.round(w * d); canvas.height = Math.round(h * d); }
     return d;
   }
@@ -6087,7 +6088,7 @@
     if (!list.length && !lch.length && !swipeLog.length) { toast(_t('まだ記録がありません。一度弾いてから押してください')); return; }
     var box = document.createElement('div'); box.id = 'lgpick'; box.style.cssText = 'display:grid;gap:6px;margin-top:6px';
     if (swipeLog.length) { var bs = document.createElement('button'); bs.type = 'button'; bs.style.cssText = 'text-align:left;white-space:pre-line;line-height:1.4'; bs.textContent = _t('ページをめくった記録（弾かなくても残ります）') + '\n' + _t('直近{n}回').replace('{n}', swipeLog.length);
-      bs.onclick = function () { exportText('pagic-swipes', JSON.stringify({ app: (($('ver') && $('ver').textContent) || '').trim(), title: pkg ? pkg.title : '', at: new Date().toISOString(), note: 'swipeMs = [to page, ms for the swipe, b/c/i flags (b: base picture 1 stored 0 made -1 n/a; c: finished picture; i: writing left for later; P: preparation running), longest frame gap in the next 1.6 s (ms), from page]', swipeMs: swipeLog.slice(), stalls: stallLog.slice(), stallNote: '[gap ms, heaviest known piece of work in that gap (? = none of the measured ones), its ms, running 1/0, shown page]' }), function () { box.remove(); }); }; box.appendChild(bs); }
+      bs.onclick = function () { exportText('pagic-swipes', JSON.stringify({ app: (($('ver') && $('ver').textContent) || '').trim(), title: pkg ? pkg.title : '', at: new Date().toISOString(), note: 'swipeMs = [to page, ms for the swipe, b/c/i flags (b: base picture 1 stored 0 made -1 n/a; c: finished picture; i: writing left for later; P: preparation running), longest frame gap in the next 1.6 s (ms), from page]', swipeMs: swipeLog.slice(), stalls: stallLog.slice(), dprCap: dprCap, dpr: window.devicePixelRatio, canvas: [$('page').width, $('page').height], stallNote: '[gap ms, heaviest known piece of work in that gap (? = none of the measured ones), its ms, running 1/0, shown page]' }), function () { box.remove(); }); }; box.appendChild(bs); }
     if (lch.length) { var bl = document.createElement('button'); bl.type = 'button'; bl.style.cssText = 'text-align:left;white-space:pre-line;line-height:1.4'; bl.textContent = _t('起動時の画面サイズの記録（直近{n}回）').replace('{n}', lch.length); bl.onclick = function () { exportText('pagic-launch', JSON.stringify(lch, null, 1), function () { box.remove(); }); }; box.appendChild(bl); }      // the screen sizes the iPad reported in the first seconds of the last launches
     list.slice().reverse().slice(0, 5).forEach(function (r) {
       var b = document.createElement('button'), d = new Date(r.at), tr = r.trace && r.trace.length ? r.trace[r.trace.length - 1][0] : 0, sm = runStartMs(r), tm = isNaN(sm) ? '' : recDate(sm);
@@ -6096,6 +6097,12 @@
       b.onclick = function () { exportText('pagic-log', JSON.stringify(r), function () { box.remove(); }); }; box.appendChild(b); });      // the list closes by itself once the file has been saved (not when the share sheet is cancelled)
     var anchor = $('diagbtn'); anchor.parentNode.insertBefore(box, anchor.nextSibling);
   }
+  (function () {
+    var bl = document.createElement('button'); bl.type = 'button'; bl.id = 'litebtn'; bl.className = $('diagbtn').className; bl.style.marginTop = '6px';
+    function lab() { bl.textContent = dprCap ? _t('表示の細かさ：軽め（押すと標準に戻ります）') : _t('表示の細かさ：標準（押すと軽めにします）'); }
+    bl.onclick = function () { dprCap = dprCap ? 0 : 1.5; try { localStorage.setItem('pagic-dprcap', String(dprCap)); } catch (e) {} lab(); try { inkCache = []; cmpL = []; baseL = []; paPrep(0); drawPage(null, 0); } catch (e2) {} toast(_t('表示の細かさを変えました')); };
+    lab(); $('diagbtn').parentNode.insertBefore(bl, $('diagbtn').nextSibling);
+  })();
   $('diagbtn').onclick = function () { if (running) { stop(); setTimeout(lgOpen, 250); return; } lgOpen(); };
   var pkgSrc = null, repOff = {}, repTapT = {}, srcRefCache = null;     // pkgSrc = the song as saved; pkg = the song as it is played (repeats on/off applied)
   var replaceAfterSave = null;
