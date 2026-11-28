@@ -91,6 +91,12 @@
   #inkbar button.dot { border-color: rgba(255,255,255,.7); min-height: 32px; width: 32px; }
   #inkbar button.dot.hlp { width: 32px; min-height: 32px; height: 32px; padding: 0; overflow: visible; background: transparent; border-color: transparent; } #inkbar button.dot.hlp.sel { border-color: var(--accent); } #inkbar button.dot.hlp svg { display: block; width: 36px; height: 36px; margin: -2px; pointer-events: none; transform: translateX(-3px); }
   #inkbar button.wide { width: auto; min-width: 40px; padding: 0 12px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+  #pgstrip { position: absolute; left: 0; right: 0; bottom: 6px; z-index: 3; display: flex; justify-content: center; pointer-events: none; touch-action: pan-x; }
+  #pgstrip[hidden] { display: none; }
+  #pgstrip .in { pointer-events: auto; display: flex; gap: 4px; max-width: calc(100% - 140px); overflow-x: auto; padding: 4px 6px; border-radius: 22px; background: rgba(31,35,43,.72); -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  #pgstrip .in::-webkit-scrollbar { display: none; }
+  #pgstrip button { flex: none; min-width: 40px; min-height: 40px; height: 40px; padding: 0 6px; border-radius: 20px; background: transparent; color: #fff; border: 2px solid transparent; font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  #pgstrip button.on { background: var(--accent); border-color: rgba(255,255,255,.7); }
   #pgbar { position: absolute; top: 8px; left: 8px; z-index: 3; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
   #pgbar button { min-height: 40px; width: 40px; padding: 0; border-radius: 20px; display: grid; place-items: center; background: rgba(31,35,43,.82); color: #fff; border: 2px solid rgba(255,255,255,.35); }
   #pgbar #adjt, #pgbar #geot { min-height: 56px; width: 56px; border-radius: 28px; } #pgbar button.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
@@ -301,7 +307,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v512</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v514</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -324,6 +330,7 @@
       <button type="button" id="inkclose" aria-label="閉じる" title="閉じる"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
   </div>
+  <div id="pgstrip" hidden><div class="in" id="pgstripin"></div></div>
   <div id="pgbar">
     <button type="button" id="adjt" aria-label="ページの調整" title="ページの調整"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.6M12 18.9v2.6M2.5 12h2.6M18.9 12h2.6M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9M18.7 5.3l-1.9 1.9M7.2 16.8l-1.9 1.9"/></svg></button>
     <button type="button" id="geot" aria-label="回転・傾き・トリミング" title="回転・傾き・トリミング"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 2.5v15h15"/><path d="M2.5 6.5h15v15"/></svg></button>
@@ -3206,7 +3213,23 @@
   var maxPage = 1;
   function jumpUI() { var on = !!pkg && maxPage > 1; $('pgfirst').hidden = $('pglast').hidden = !on; $('pgfirst').disabled = !on || shownPage <= 1; $('pglast').disabled = !on || shownPage >= maxPage; }
   $('pgfirst').onclick = function () { manual(-9999); }; $('pglast').onclick = function () { manual(9999); };
-  function pgLabel() {      // the page number at the top left: one page, or the two pages of the spread (1、2 / 3、4 ...)
+  var stripN = 0;
+  function stripUI() {      // the row of page numbers at the bottom of the score: tap a number = straight to that page
+    try {
+      var el = $('pgstrip'), box = $('pgstripin'); if (!el || !box) return;
+      var on = !!pkg && maxPage > 1 && !!shownPage; el.hidden = !on; if (!on) return;
+      if (stripN !== maxPage) { stripN = maxPage; box.innerHTML = ''; for (var i = 1; i <= maxPage; i++) { var b = document.createElement('button'); b.type = 'button'; b.textContent = i; b.setAttribute('data-p', i); b.setAttribute('aria-label', 'p.' + i); box.appendChild(b); } }
+      var L = shownPage, R = shownPage; if (twoUpWanted()) { L = shownPage % 2 === 1 ? shownPage : shownPage - 1; R = L + 1; }
+      var cur = null; Array.prototype.forEach.call(box.children, function (b) { var n = +b.getAttribute('data-p'), o = n >= L && n <= R; b.classList.toggle('on', o); if (o && !cur) cur = b; });
+      if (cur && box.scrollWidth > box.clientWidth) box.scrollLeft = cur.offsetLeft - (box.clientWidth - cur.offsetWidth) / 2;
+    } catch (e) {}
+  }
+  (function () {
+    var box = $('pgstripin'); if (!box) return;
+    ['touchstart', 'pointerdown', 'mousedown'].forEach(function (n) { box.addEventListener(n, function (e) { e.stopPropagation(); }, { passive: true }); });
+    box.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('button'); if (!b) return; e.stopPropagation(); var n = +b.getAttribute('data-p'); if (!n || n === shownPage) return; manual(n - (shownPage || 1)); stripUI(); });
+  })();
+  function pgLabel() {      stripUI();      // the page number at the top left: one page, or the two pages of the spread (1、2 / 3、4 ...)
     var p = shownPage; if (!p) return; var t = 'p.' + p;
     if (twoUpWanted()) { var L = p % 2 === 1 ? p : p - 1, R = L + 1; t = 'p.' + L + (R <= maxPage ? '、' + R : ''); }
     $('pg').textContent = t + ((pkg && pkg.recPg && pkg.recPg.indexOf(p) < 0) ? _t('・録音なし') : '');
@@ -5476,6 +5499,40 @@
     g.fillStyle = '#ffd60a'; g.beginPath(); g.moveTo(w / 2 - 5, h - 2); g.lineTo(w / 2 + 5, h - 2); g.lineTo(w / 2, h - 10); g.fill();
     $('dialv').textContent = m.fmt(v);
   }
+  function wavRidge(gray, W, H) {      // where a thin horizontal dark line is: dark in the row, lighter three rows above and below, smoothed over nine columns (notes, beams and stems give little, a staff line gives much)
+    var Dv = new Float32Array(W * H), R = new Float32Array(W * H), row = new Float32Array(W), pre = new Float32Array(W + 1), x, y;
+    for (y = 0; y < H; y++) { var ya = Math.max(0, y - 1) * W, yb = y * W, yc = Math.min(H - 1, y + 1) * W; for (x = 0; x < W; x++) Dv[yb + x] = (2 * (255 - gray[yb + x]) + (255 - gray[ya + x]) + (255 - gray[yc + x])) * 0.25; }
+    for (y = 0; y < H; y++) {
+      var y3a = Math.max(0, y - 3) * W, y3c = Math.min(H - 1, y + 3) * W, o = y * W;
+      for (x = 0; x < W; x++) { var v = Dv[o + x] - 0.5 * (Dv[y3a + x] + Dv[y3c + x]); row[x] = v > 0 ? v : 0; }
+      for (x = 0; x < W; x++) pre[x + 1] = pre[x] + row[x];
+      for (x = 0; x < W; x++) { var a0 = Math.max(0, x - 4), a1 = Math.min(W, x + 5); R[o + x] = (pre[a1] - pre[a0]) / 9; }
+    }
+    return R;
+  }
+  function wavTrace(R, W, H, yc, off, band) {      // one staff line followed from the left edge to the right edge: the path of the strongest line that does not jump (dynamic programming), starting from a rough guess
+    var B = Math.round(band), n = 2 * B + 1, cost = new Float32Array(W * n), bp = new Int8Array(W * n), path = new Float32Array(W), t, j, jp, lam = 6, rp = Math.round(yc[0] + off);
+    for (j = 0; j < n; j++) { var y0 = rp + j - B; cost[j] = -(y0 >= 0 && y0 < H ? R[y0 * W] : 0); }
+    for (t = 1; t < W; t++) {
+      var rc = Math.round(yc[t] + off), dj = rc - rp, o = t * n, po = (t - 1) * n;
+      for (j = 0; j < n; j++) {
+        var yy = rc + j - B, sv = yy >= 0 && yy < H ? R[yy * W + t] : 0, bj = -1, bc = 1e30;
+        for (jp = Math.max(0, j + dj - 4); jp <= Math.min(n - 1, j + dj + 4); jp++) { var cc = cost[po + jp] + lam * Math.abs(j - jp + dj); if (cc < bc) { bc = cc; bj = jp; } }
+        if (bj < 0) { bj = Math.max(0, Math.min(n - 1, j + dj)); bc = cost[po + bj]; }
+        cost[o + j] = bc - sv; bp[o + j] = bj;
+      }
+      rp = rc;
+    }
+    var bj2 = 0, bc2 = 1e30; for (j = 0; j < n; j++) if (cost[(W - 1) * n + j] < bc2) { bc2 = cost[(W - 1) * n + j]; bj2 = j; }
+    j = bj2; for (t = W - 1; t >= 0; t--) { path[t] = Math.round(yc[t] + off) + j - B; j = bp[t * n + j]; }
+    return path;
+  }
+  function wavCentre(R, W, H, yinit, sp, band) {      // the five lines of a staff followed separately: the centre of the staff is their median (a line that slipped to its neighbour is outvoted)
+    var L = [], k, x, sup = new Float32Array(W), cen = new Float32Array(W), vals = [0, 0, 0, 0, 0];
+    for (k = 0; k < 5; k++) L.push(wavTrace(R, W, H, yinit, (k - 2) * sp, band * sp));
+    for (x = 0; x < W; x++) { var sm = 0; for (k = 0; k < 5; k++) { vals[k] = L[k][x] - (k - 2) * sp; var yy = Math.round(L[k][x]); sm += yy >= 0 && yy < H ? R[yy * W + x] : 0; } vals.sort(function (a, b) { return a - b; }); cen[x] = vals[2]; sup[x] = sm / 5; }
+    return { c: cen, sup: sup };
+  }
   function wavFind(p) {      // finds the staves of the page and, for each strip of the page, where the five lines of every staff lie; returns the shifts that make them straight (or {err})
     var reg0 = pageRegion(p), im = reg0 && paSrc(reg0.img, p, true); if (!reg0 || !im) return { err: 'ページが読み込まれていません' };
     var gp = geo[p] || GZ, w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = (gp.q || 0) % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2, th = ((gp.q || 0) * 90 + (gp.f || 0)) * Math.PI / 180;
@@ -5536,6 +5593,25 @@
       keep.push(sm2); T.push(srt[Math.floor(srt.length / 2)]);
     });
     if (!keep.length) return { err: '五線が見つかりませんでした' };
+    try {      // every staff is traced again over its whole width (the strip by strip search above only gives a first guess)
+      var Rr = wavRidge(gray, W, H), keepB = [], TB = [], supB = [];
+      keep.forEach(function (fl, q) {
+        var yinit = new Float32Array(W), xx, u, s0, f0;
+        for (xx = 0; xx < W; xx++) { u = (xx - sw / 2) / sw; s0 = Math.max(0, Math.min(NS - 2, Math.floor(u))); f0 = Math.max(0, Math.min(1, u - s0)); yinit[xx] = fl[s0] * (1 - f0) + fl[s0 + 1] * f0; }
+        var c1 = wavCentre(Rr, W, H, yinit, sp, 0.9), c2 = wavCentre(Rr, W, H, c1.c, sp, 0.5), cen = c2.c, sup = c2.sup;
+        var sm = new Float32Array(W), run = 0, xi; for (xi = 0; xi < W; xi++) { run += sup[xi]; if (xi >= 41) run -= sup[xi - 41]; sm[xi] = run / Math.min(xi + 1, 41); }
+        var srt = Array.prototype.slice.call(sm).sort(function (a2, b2) { return a2 - b2; }), thr2 = 0.3 * srt[Math.floor(W * 0.8)], xa = -1, xb = -1, bestA = -1, bestB = -1, st = -1;
+        for (xi = 0; xi <= W; xi++) { var on = xi < W && sm[xi] >= thr2; if (on && st < 0) st = xi; if (!on && st >= 0) { if (bestA < 0 || xi - st > bestB - bestA) { bestA = st; bestB = xi - 1; } st = -1; } }
+        if (bestA < 0 || bestB - bestA < 0.4 * W) { keepB.push(fl); TB.push(T[q]); supB.push(0); return; }
+        xa = bestA; xb = bestB; for (xi = 0; xi < xa; xi++) cen[xi] = cen[xa]; for (xi = xb + 1; xi < W; xi++) cen[xi] = cen[xb];
+        var f2 = new Array(NS), tm = []; for (s = 0; s < NS; s++) { var xc = Math.round((s + 0.5) * sw), ss = 0, cn = 0; for (xi = Math.max(0, xc - 2); xi <= Math.min(W - 1, xc + 2); xi++) { ss += cen[xi]; cn++; } f2[s] = ss / cn; }
+        for (xi = xa; xi <= xb; xi++) tm.push(cen[xi]); tm.sort(function (a2, b2) { return a2 - b2; });
+        keepB.push(f2); TB.push(tm[Math.floor(tm.length / 2)]); var ssum = 0; for (xi = xa; xi <= xb; xi++) ssum += sup[xi]; supB.push(ssum / (xb - xa + 1));
+      });
+      var idx = []; keepB.forEach(function (_, q) { idx.push(q); }); idx.sort(function (a2, b2) { return TB[a2] - TB[b2]; });
+      var kept = []; idx.forEach(function (q) { var l = kept[kept.length - 1]; if (l !== undefined && Math.abs(TB[q] - TB[l]) < 3 * sp) { if (supB[q] > supB[l]) kept[kept.length - 1] = q; } else kept.push(q); });      // the same staff found twice: the one that fits better stays
+      keep = kept.map(function (q) { return keepB[q]; }); T = kept.map(function (q) { return TB[q]; });
+    } catch (eDP) {}
     var maxMove = 0; keep.forEach(function (fl, q) { for (s = 0; s < NS; s++) maxMove = Math.max(maxMove, Math.abs(fl[s] - T[q])); });
     var xs = [], rnd = function (v) { return Math.round(v * 10) / 10; };
     for (s = 0; s < NS; s++) xs.push(rnd(((s + 0.5) * sw - W / 2) / sc));
