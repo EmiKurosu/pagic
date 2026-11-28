@@ -301,7 +301,7 @@
 <script>try { if (/[?&]fresh=/.test(location.search)) { try { history.replaceState(null, '', location.pathname); } catch (e2) {} }      /* the address goes back to the plain one at once: else iOS opens the app at "?fresh=…" again and again */ } catch (e) {}</script>
 <script>setTimeout(function () { var l = document.getElementById('launch'); if (l) l.className = 'off'; }, 5500);</script>
 <header>
-  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v499</span><span style="flex:1"></span>
+  <h1 id="title">pagic</h1><span id="pg" style="flex:none;color:var(--dim);font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap">p.–</span><span id="hint" aria-live="off"></span><span id="ver" style="color:var(--dim);font-size:11px">v505</span><span style="flex:1"></span>
   <span id="snd" style="flex:none;min-width:15ch;text-align:right;font-size:13px;color:var(--dim);white-space:nowrap"></span>
   <div class="readout" aria-live="off"><b id="bar" style="display:none">–</b></div>
   <button id="prepbtn" type="button">本番モード</button>
@@ -496,6 +496,16 @@
     <p><button type="button" id="dgbtn" style="min-height:48px;font-size:16px">原因を調べる</button></p>
     <h2>よくある質問</h2>
     <h3>マイクが機能していない時</h3>
+    <p><b>いちばん手早い回復手順（軽い順）</b></p>
+    <ol>
+      <li>「止める」を押して、もう一度「弾き始める」を押します。マイクを新しく取り直します。まず、これを試してください。</li>
+      <li>pagicを完全に終了して、開き直します（画面の下から中央あたりまでゆっくり上へ動かして、アプリの一覧を出し、pagicを上へ飛ばします）。多くの場合、これで戻ります。</li>
+      <li>コントロールセンター（画面の右上から下へ指を動かすと出ます）を開いて、閉じます。効くかどうかは確かではありません。</li>
+      <li>音声入力やボイスメモなど、マイクを使うアプリを一度開いて、閉じます。マイクの状態が元に戻ることがあります。</li>
+      <li>それでも戻らなければ、iPadを再起動します。</li>
+    </ol>
+    <p>開始から8秒たっても音が入らないとき、または開始から30秒以内にマイクが止まったときは、アプリが自動で一度だけ、マイクを取り直します。本番の直前には、必ず「弾き始める」を押して、追従のバーが動くことを確かめてください。本番の途中でマイクが切れても、ページは指のスワイプでめくれます。</p>
+    <p>それでも戻らないときの、くわしい確認は、次のとおりです。</p>
     <p>「弾き始める」を押すと、最初は「音は十分に聞こえています」と出るのに、数秒後に「音が小さすぎます」に変わり、最後に「マイクの音が、完全な無音のまま届いています」と出ることがあります。iPadのマイクが、アプリに音を渡せなくなっている状態です。ほかのアプリがマイクを取り合っているときに起こりやすいです。次の順に試してください。</p>
     <ol>
       <li>アプリを完全に終了します。ホームに戻って、画面の下から上へ指を動かし、アプリの一覧を出して、pagicを上へ飛ばします。そのあと、開き直します。ホーム画面のアイコンは削除しないでください。</li>
@@ -2357,7 +2367,9 @@
   var pinP = null; function pinPath() { return pinP || (pinP = new Path2D('M12 3.9a4.3 4.3 0 1 1 0 8.6a4.3 4.3 0 0 1 0-8.6zM10.9 12.2L12 21.5L13.1 12.2z')); }
   var loadGate = 0, loadGateT = null;      // the page is not drawn until the saved trimming / colour / view / handwriting are read (otherwise the uncropped photo flashes first)
   function gateDone() { if (loadGate > 0 && --loadGate === 0) { clearTimeout(loadGateT); try { drawPage(null, 0); } catch (e) {} } }
+  var lastDraw = {};      // (what the last drawing had to make: base picture in the store / finished picture / writing left for later)
   function drawPage(playBar, playFrac) {
+    lastDraw = { bh: -1, ch: -1, il: 0 };
     if (loadGate > 0) return;
     var c = $('page'), g = c.getContext('2d'), d = fit(c); twoUpOn = twoUpWanted();
  if ($('pg') && shownPage) pgLabel();    if (twoUpOn) { if (twoUpLast !== shownPage) { if (Object.keys(adj).length) { Object.keys(adj).forEach(function (k) { delete adj[k]; }); viewSave(); } twoUpLast = shownPage; } } else twoUpLast = null;      // two pages: a zoom (made for writing) belongs to the page it was made on; when another page comes, every page is at the normal, same size again (old saved zooms are dropped too)
@@ -2380,9 +2392,9 @@
     view = { s: s, s0: s0, ox: ox, oy: oy, reg: reg, cs: Math.cos(th), sn: Math.sin(th), pcx: pcx, pcy: pcy, ka: ka, kb: kb, wz: wz, cw: cw, ww: gp && gp.w ? wwPrepOf(gp.w) : null };
     g.imageSmoothingQuality = 'high'; var cmpHit = false, cmpK = null;
     if (gp) {                                    // (rotated / tilted pages are costly to draw: the finished picture is kept and reused while only the writing, flags or the curl change)
-      var pa0 = paOf(shownPage), bk = [shownPage, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), JSON.stringify(gp), pa0 ? [pa0.b, pa0.c, pa0.t, pa0.A ? 1 : 0].join(',') : '', ed ? 1 : 0, geoDial ? 1 : 0, reg0.img].join('|');
+      var pa0 = paOf(shownPage), bk = [shownPage, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), JSON.stringify(gp), pa0 ? [pa0.b, pa0.c, pa0.t, pa0.A ? 1 : 0].join(',') : '', ed ? 1 : 0, geoDial ? 1 : 0, reg0.img, paOk(reg0.img, shownPage) ? '' : 'R'].join('|');
       cmpK = cmpKey(bk, shownPage, view); var cc1 = cmpK ? cmpGet(cmpK) : null; if (cc1) { g.drawImage(cc1, 0, 0); cmpHit = true; } else {
-      baseCv = baseGet(bk);
+      baseCv = baseGet(bk); lastDraw.bh = baseCv ? 1 : 0;
       if (!baseCv) {
         baseCv = baseNew(bk); baseCv.width = c.width; baseCv.height = c.height; var bg = baseCv.getContext('2d'); bg.imageSmoothingQuality = 'high';
         bg.save(); bg.beginPath(); bg.rect(ox, oy, w * s, h * s); bg.clip(); bg.fillStyle = pageTone(reg0.img, shownPage); bg.fillRect(ox, oy, w * s, h * s);
@@ -2394,9 +2406,9 @@
       }
       g.drawImage(baseCv, 0, 0); }
     } else {                                     // an ordinary page: its picture is also kept (while zoomed it is a big picture, and redrawing it after every stroke made the pencil stall)
-      var pb = paOf(shownPage), bk2 = ['n', shownPage, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), pb ? [pb.b, pb.c, pb.t, pb.A ? 1 : 0].join(',') : '', reg.img].join('|');
+      var pb = paOf(shownPage), bk2 = ['n', shownPage, c.width, c.height, s.toFixed(4), ox.toFixed(1), oy.toFixed(1), pb ? [pb.b, pb.c, pb.t, pb.A ? 1 : 0].join(',') : '', reg.img, paOk(reg.img, shownPage) ? '' : 'R'].join('|');
       cmpK = cmpKey(bk2, shownPage, view); var cc2 = cmpK ? cmpGet(cmpK) : null; if (cc2) { g.drawImage(cc2, 0, 0); cmpHit = true; } else {
-      baseCv = baseGet(bk2);
+      baseCv = baseGet(bk2); lastDraw.bh = baseCv ? 1 : 0;
       if (!baseCv) {
         baseCv = baseNew(bk2); baseCv.width = c.width; baseCv.height = c.height; var bg2 = baseCv.getContext('2d'); bg2.imageSmoothingQuality = 'high';
         bg2.fillStyle = '#ffffff'; bg2.fillRect(0, 0, c.width, c.height); bg2.drawImage(paSrc(reg.img, shownPage), reg.x0, reg.y0, w, h, ox, oy, w * s, h * s);
@@ -2406,8 +2418,9 @@
     if (twoUpOn) drawSecond(g, c, d);
     try { var fnL = $('fspgL'), fnR = $('fspgR'); if (twoUpOn && view2) { var pr = playedRight(), pl = pr ? view2.page : shownPage, pq = pr ? shownPage : view2.page; fnL.textContent = _t('{n}ページ').replace('{n}', pl); fnR.textContent = _t('{n}ページ').replace('{n}', pq); fnL.classList.add('on'); fnR.classList.add('on'); } else { fnL.classList.remove('on'); fnR.classList.remove('on'); } } catch (e) {}      // full screen has no header: each page's number stands at the top in the middle of that page
     var b = playBar != null ? pkg.rects[playBar] : null;
-    var inkLate = false;
+    var inkLate = false; lastDraw.ch = cmpHit ? 1 : 0;
     if (!cmpHit) { var lz = showWhy === 'swipe' && !ink.cur; if (gp) { g.save(); g.beginPath(); g.rect(ox, oy, w * s, h * s); g.clip(); inkLate = drawInk(g, view, undefined, lz); g.restore(); } else inkLate = drawInk(g, view, undefined, lz);
+      lastDraw.il = inkLate ? 1 : 0;
       if (inkLate) { var pgL = shownPage; setTimeout(function () { if (shownPage === pgL) drawPage(null, 0); }, 60); }      /* the notes first, the writing a moment later */
       if (cmpK && !inkLate) { try { var cvN = cmpPut(cmpK, c.width, c.height); cvN.getContext('2d').drawImage(c, 0, 0); } catch (e) { cmpL = []; } } }      /* (the finished picture is kept for the next time) */
     if (!ed) drawReps(g, view, d);
@@ -2431,7 +2444,7 @@
     if (ed && fr) { view.frame = [ox + (bx + fr[0] * bw - reg.x0) * s, oy + (by + fr[1] * bh - reg.y0) * s, ox + (bx + (1 - fr[2]) * bw - reg.x0) * s, oy + (by + (1 - fr[3]) * bh - reg.y0) * s]; view.bw = bw; view.bh = bh; g.save(); g.strokeStyle = 'rgba(0,0,0,.35)'; g.lineWidth = 1 * d; g.setLineDash([6 * d, 5 * d]); g.strokeRect(ox + (bx - reg.x0) * s, oy + (by - reg.y0) * s, bw * s, bh * s); g.restore(); geoOverlay(g, view, d); }
   }
   function showPage(p) { try { var mk9 = startPos.mark; if (mk9 && running && p !== mk9.page) mk9.left = true; } catch (e) {}      // while playing, once another page has really been shown, the "start here" pin stays away (also when a repeat comes back to its page)
-    if (pkg && pkg.kind === 'song') setTimeout(function () { var l = 'p' + (p + 1); if (pkg.rects[l] && pvRect[l] === undefined && imgs[pkg.rects[l].img]) previewRect(l); }, 400); if (peel && peel.pg !== undefined && peel.pg !== p) { peel = null; peelHold = null; peelAnim = false; peelKey = ''; peelLast = -1; }       /* a half-turned corner belongs to the page it was made for */ shownPage = p; shows.push([pager && pager.last ? Math.round(pager.last.t * 100) / 100 : -1, p, showWhy]); pgLabel(); $('msg').hidden = true; jumpUI(); paUI(); geoUI(); drawPage(null, 0); setTimeout(function () { try { var r = pageRegion(p + 1); if (r && paOf(p + 1)) paSrc(r.img, p + 1); } catch (e) {} }, 700); warmNear(p); paPrep(); }
+    if (pkg && pkg.kind === 'song') setTimeout(function () { var l = 'p' + (p + 1); if (pkg.rects[l] && pvRect[l] === undefined && imgs[pkg.rects[l].img]) { (function w8(n) { if (n < 8 && (touchDown || Date.now() - lastTouchT < 1500)) { setTimeout(function () { w8(n + 1); }, 800); return; } try { previewRect(l); } catch (e) {} })(0); } }, 400); if (peel && peel.pg !== undefined && peel.pg !== p) { peel = null; peelHold = null; peelAnim = false; peelKey = ''; peelLast = -1; }       /* a half-turned corner belongs to the page it was made for */ shownPage = p; shows.push([pager && pager.last ? Math.round(pager.last.t * 100) / 100 : -1, p, showWhy]); pgLabel(); $('msg').hidden = true; jumpUI(); paUI(); geoUI(); drawPage(null, 0); setTimeout(function () { try { var r = pageRegion(p + 1); if (r && paOf(p + 1)) paSrc(r.img, p + 1); } catch (e) {} }, 700); warmNear(p); paPrep(); }
   var warmT = null, touchDown = false; var lastTouchT = 0; ['touchstart'].forEach(function (n) { document.addEventListener(n, function () { touchDown = true; lastTouchT = Date.now(); }, { passive: true, capture: true }); }); ['touchend', 'touchcancel'].forEach(function (n) { document.addEventListener(n, function () { touchDown = false; lastTouchT = Date.now(); }, { passive: true, capture: true }); });
   function warmNear(p, tries) {      // when the screen is quiet, the pages around the shown one are drawn ahead of time (into the picture store and the handwriting pictures), one page at a time, so that a swipe shows them at once
     clearTimeout(warmT); tries = tries || 0;
@@ -2444,7 +2457,7 @@
           try {
             if (pkg && shownPage === p && Date.now() - lastTouchT < 1500) { setTimeout(one, 500); return; }      /* the finger was on the screen a moment ago (a next swipe may come): one page takes a second or more to make, and nothing can be touched meanwhile */
             if (!pkg || shownPage !== p || touchDown || peelAnim || (typeof pz !== 'undefined' && pz)) { if (shownPage === p && tries < 12) warmNear(p, tries + 1); return; }
-            while (k < list.length) { var q = list[k++]; if (q < 1 || q > maxPage || !pageRegion(q)) continue; var sp = shownPage; shownPage = q; try { drawPage(null, 0); } finally { shownPage = sp; } drawPage(null, 0); setTimeout(one, 30); return; }      // (one page per turn of the loop: a swipe in between is not held up by more than one page)
+            while (k < list.length) { var q = list[k++]; if (q < 1 || q > maxPage || !pageRegion(q)) continue; if (!paOk(pageRegion(q).img, q)) { paWant(q); continue; } var sp = shownPage; shownPage = q; try { drawPage(null, 0); } finally { shownPage = sp; } drawPage(null, 0); setTimeout(one, 30); return; }      // (one page per turn of the loop: a swipe in between is not held up by more than one page)
             drawPage(null, 0);
           } catch (e) { shownPage = p; }
         })();
@@ -3198,7 +3211,8 @@
     if (!pkg) return;
     pendingTurn = null;
     var cur = shownPage || 1; if (twoUpOn && Math.abs(delta) === 1 && $('padj').hidden && !geoEdit()) { var L = cur % 2 === 1 ? cur : cur - 1; delta = delta * 2; cur = L; if (delta > 0 && L + 2 > maxPage) return; }      // two pages side by side: ONE swipe moves a whole spread (1|2 -> 3|4), it lands on the left page
-    var p = Math.min(maxPage, Math.max(1, cur + delta)); if (running && p !== shownPage) manHold = { until: performance.now() + 20000, from: shownPage }; hidePreview(); showWhy = 'swipe'; var swT0 = performance.now(); showPage(p); showWhy = 'auto'; swipeLog.push([p, Math.round(performance.now() - swT0)]); if (swipeLog.length > 40) swipeLog.shift();      /* how long a swipe took to draw the page (goes into the log) */
+    var p = Math.min(maxPage, Math.max(1, cur + delta)); if (running && p !== shownPage) manHold = { until: performance.now() + 20000, from: shownPage }; hidePreview(); showWhy = 'swipe'; var swT0 = performance.now(); showPage(p); showWhy = 'auto'; var swE = [p, Math.round(performance.now() - swT0), 'b' + lastDraw.bh + 'c' + lastDraw.ch + 'i' + lastDraw.il + (paBusy ? 'P' : ''), 0]; swipeLog.push(swE); if (swipeLog.length > 40) swipeLog.shift();
+      (function (e) { var t0 = performance.now(), last = t0, mx = 0; function fr() { var n = performance.now(); mx = Math.max(mx, n - last); last = n; if (n - t0 < 1600) requestAnimationFrame(fr); else e[3] = Math.round(mx); } try { requestAnimationFrame(fr); } catch (x) {} })(swE);      /* the longest wait between two screen frames in the 1.6 s after the swipe (the time the app was stuck): it goes into the operation record */      /* how long a swipe took to draw the page (goes into the log) */
     if (pager) { var rs = pager.turner.runs, cr = pager.turner.runOf[Math.min(Math.max(Math.floor(pager.last.pos || 0), 0), pkg.order.length - 1)], bk = -1; for (var k = 0; k < rs.length; k++) if (rs[k][2] === p && (bk < 0 || Math.abs(k - cr) < Math.abs(bk - cr))) bk = k; if (bk >= 0) { pager.turner.disp = bk; pager.turner.previewed = -1; } }   // the follower continues from the page you chose
   }
   ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (n) { document.addEventListener(n, function (e) { e.preventDefault(); }, { passive: false }); });      // iOS: no browser zoom of the whole screen (the score has its own pinch zoom)
@@ -5347,7 +5361,7 @@
     var ink = pct(h2, aw * ah, 0.01) * PA_PAPER[1] / Math.max(60, glum);        // darkest ink level, as it will be after the paper is whitened
     return { bgCanvas: bc, ink: Math.min(ink, 90) };
   }
-  var PA_BLK = 1200000, PA_PX = 45e6;      // the adjusted picture is made in blocks of about 0.3 million pixels so that, in the background, the screen can still be touched in between
+  var PA_BLK = 400000, PA_PX = 45e6;      // the adjusted picture is made in blocks of about 0.3 million pixels so that, in the background, the screen can still be touched in between
   function paPut(key, cv) {      // keep the adjusted pictures of the pages (about 180 MB at most; at least the last five); the one used last stays longest
     for (var q = paCache.length - 1; q >= 0; q--) if (paCache[q].key === key) paCache.splice(q, 1);
     paCache.push({ key: key, cv: cv }); var tot = 0, c0; for (c0 = 0; c0 < paCache.length; c0++) tot += paCache[c0].cv.width * paCache[c0].cv.height;
@@ -5376,10 +5390,14 @@
     paPut(key, cv);
     return cv;
   }
-  function paSrc(img, page) {                    // the picture of a page with its adjustment applied (the original when nothing is changed)
+  var paRawSeen = {}, paUrgent = false;
+  function paOk(img, page) { var a = paOf(page), im = imgs[img]; if (!a || !im || !im.complete) return true; var key = paCk(img, a); for (var i = 0; i < paCache.length; i++) if (paCache[i].key === key) return true; return false; }
+  function paWant(page) { paRawSeen[page] = 1; paUrgent = true; if (!paBusy) paPrep(0); }      // a page was needed whose adjusted picture is not made yet: it is made in small blocks in the background, and the page is shown with the original picture meanwhile
+  function paSrc(img, page, sync) {                    // the picture of a page with its adjustment applied (the original when nothing is changed, or while the adjusted one is still being made)
     var a = paOf(page), im = imgs[img]; if (!a || !im || !im.complete) return im;
     var key = paCk(img, a), i;
     for (i = 0; i < paCache.length; i++) if (paCache[i].key === key) { var e = paCache.splice(i, 1)[0]; paCache.push(e); return e.cv; }
+    if (!sync) { paWant(page); return im; }
     var it = paGen(im, a, key), r; try { while (!(r = it.next()).done); } catch (e) { return im; }
     return r.value;
   }
@@ -5387,8 +5405,8 @@
   function paPrep(delay) {      // while nothing is playing and no finger is on the screen, the adjusted pictures of ALL pages are made one after the other, in small blocks (the first swipe to each page was slow)
     clearTimeout(paPrepT); paPrepT = setTimeout(function step() {
       try {
-        if (!pkg || running || paBusy) { if (pkg && !paBusy) paPrepT = setTimeout(step, 2000); return; }
-        if (touchDown || Date.now() - lastTouchT < 700) { paPrepT = setTimeout(step, 600); return; }
+        if (!pkg || (running && !paUrgent) || paBusy) { if (pkg && !paBusy) paPrepT = setTimeout(step, 2000); return; }
+        if (touchDown || Date.now() - lastTouchT < (paUrgent ? 200 : 700)) { paPrepT = setTimeout(step, paUrgent ? 150 : 600); return; }
         var cur = shownPage || 1, order = []; for (var q = 1; q <= maxPage; q++) order.push(q); order.sort(function (x, y) { return Math.abs(x - cur) - Math.abs(y - cur) || x - y; });
         var tot = 0, c0; for (c0 = 0; c0 < paCache.length; c0++) tot += paCache[c0].cv.width * paCache[c0].cv.height;
         for (var k = 0; k < order.length; k++) {
@@ -5396,7 +5414,7 @@
           var key = paCk(reg.img, a), have = false; for (c0 = 0; c0 < paCache.length; c0++) if (paCache[c0].key === key) have = true; if (have) continue;
           if (paCache.length >= 16 || tot + im.naturalWidth * im.naturalHeight > PA_PX) return;      // no more room: the rest is made when needed
           var it = paGen(im, a, key); paBusy = true;
-          (function run() { try { if (!pkg || running) { paBusy = false; return; } if (touchDown || Date.now() - lastTouchT < 400) { paPrepT = setTimeout(run, 400); return; } var r = it.next(); if (r.done) { paBusy = false; paPrepT = setTimeout(step, 60); return; } paPrepT = setTimeout(run, 25); } catch (e) { paBusy = false; } })();
+          (function run() { try { if (!pkg || (running && !paUrgent)) { paBusy = false; return; } if (touchDown || Date.now() - lastTouchT < (paUrgent ? 150 : 400)) { paPrepT = setTimeout(run, paUrgent ? 120 : 400); return; } var r = it.next(); if (r.done) { paBusy = false; var was = paRawSeen[pg]; delete paRawSeen[pg]; if (!Object.keys(paRawSeen).length) paUrgent = false; if (was && shownPage === pg) { try { drawPage(null, 0); } catch (e2) {} } try { if (was) warmNear(shownPage); } catch (e3) {} paPrepT = setTimeout(step, 60); return; } paPrepT = setTimeout(run, 25); } catch (e) { paBusy = false; } })();
           return;
         }
       } catch (e) { paBusy = false; }
@@ -5441,7 +5459,7 @@
     $('dialv').textContent = m.fmt(v);
   }
   function wavFind(p) {      // finds the staves of the page and, for each strip of the page, where the five lines of every staff lie; returns the shifts that make them straight (or {err})
-    var reg0 = pageRegion(p), im = reg0 && paSrc(reg0.img, p); if (!reg0 || !im) return { err: 'ページが読み込まれていません' };
+    var reg0 = pageRegion(p), im = reg0 && paSrc(reg0.img, p, true); if (!reg0 || !im) return { err: 'ページが読み込まれていません' };
     var gp = geo[p] || GZ, w0 = reg0.x1 - reg0.x0, h0 = reg0.y1 - reg0.y0, odd = (gp.q || 0) % 2 !== 0, bw = odd ? h0 : w0, bh = odd ? w0 : h0, pcx = (reg0.x0 + reg0.x1) / 2, pcy = (reg0.y0 + reg0.y1) / 2, th = ((gp.q || 0) * 90 + (gp.f || 0)) * Math.PI / 180;
     var sc = Math.min(1, 1500 / bw), W = Math.round(bw * sc), H = Math.round(bh * sc), cv = document.createElement('canvas'); cv.width = W; cv.height = H;
     var g = cv.getContext('2d', { willReadFrequently: true }); g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.translate(W / 2, H / 2); g.scale(sc, sc); g.rotate(th); g.translate(-pcx, -pcy);
@@ -5621,6 +5639,20 @@
   function inkBB(st) { var p = st.p, bb = st._bb; if (bb && bb.n === p.length) return bb; var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (var i = 0; i < p.length; i += 2) { if (p[i] < x0) x0 = p[i]; if (p[i] > x1) x1 = p[i]; if (p[i + 1] < y0) y0 = p[i + 1]; if (p[i + 1] > y1) y1 = p[i + 1]; } bb = { n: p.length, x0: x0, y0: y0, x1: x1, y1: y1 }; try { Object.defineProperty(st, '_bb', { value: bb, writable: true, configurable: true, enumerable: false }); } catch (e) {} return bb; }      // (not saved with the stroke)
   function inkSeen(st, v, W, H) { try { var b = inkBB(st), pad = (st.w || 1) * v.s + 4, xs = [vX(v, b.x0, b.y0), vX(v, b.x1, b.y0), vX(v, b.x0, b.y1), vX(v, b.x1, b.y1)], ys = [vY(v, b.x0, b.y0), vY(v, b.x1, b.y0), vY(v, b.x0, b.y1), vY(v, b.x1, b.y1)]; if (!(isFinite(xs[0]) && isFinite(ys[0]))) return true; return !(Math.max.apply(null, xs) + pad < 0 || Math.min.apply(null, xs) - pad > W || Math.max.apply(null, ys) + pad < 0 || Math.min.apply(null, ys) - pad > H); } catch (e) { return true; } }      // strokes that lie wholly outside the picture (zoomed in) are not drawn at all
   function drawInkRaw(g, v, pg, only) { var list = ink.strokes[pg === undefined ? shownPage : pg]; if (!v || !list) return; var cW = g.canvas.width, cH = g.canvas.height; for (var i = 0; i < list.length; i++) { try { if (only === 'pen' && list[i].h) continue; if (only === 'hi' && !list[i].h) continue; if (inkOk(list[i]) && (list[i] === ink.cur || inkSeen(list[i], v, cW, cH))) drawOne(g, list[i], v); } catch (e) { try { g.restore(); } catch (e2) {} } } }      // one broken stroke is skipped, the page and the other strokes stay
+  var inkBld = null;
+  function inkBuild(p, v, list, key, cW, cH) {      // the pen layer of a page with much writing is drawn in small steps (about 14 ms each, and never while a finger is on the screen), so that the next swipe is not held up; the page is drawn again when it is ready
+    if (inkBld && inkBld.key === key) return;
+    var ce = { page: p, cv: document.createElement('canvas') }; ce.cv.width = cW; ce.cv.height = cH; var q = ce.cv.getContext('2d'), job = { key: key, p: p, i: 0 }; inkBld = job;
+    (function step() {
+      if (inkBld !== job) { ce.cv.width = ce.cv.height = 1; return; }
+      if (touchDown || Date.now() - lastTouchT < 250) { setTimeout(step, 200); return; }
+      var t0 = performance.now();
+      while (job.i < list.length && performance.now() - t0 < 14) { var st = list[job.i++]; try { if (st.h) continue; if (inkOk(st) && inkSeen(st, v, cW, cH)) drawOne(q, st, v); } catch (e) { try { q.restore(); } catch (e2) {} } }
+      if (job.i < list.length) { setTimeout(step, 30); return; }
+      ce.list = list; ce.key = key; inkCache.push(ce); while (inkCache.length > 5) { var old = inkCache.shift(); old.cv.width = old.cv.height = 1; }
+      inkBld = null; if (shownPage === p) { try { drawPage(null, 0); } catch (e3) {} }
+    })();
+  }
   var inkCache = [];      // a page with many strokes is drawn into a picture once and that picture is laid on the page (turning to a page with 600 strokes took more than half a second); at most 5 pictures are kept
   function drawInk(g, v, pg, lazy) {      // lazy (right after a swipe): a page with much writing whose picture is not ready is drawn WITHOUT the writing first; the caller draws again a moment later (returns true then)
     var p = pg === undefined ? shownPage : pg, list = ink.strokes[p]; if (!v || !list) return;
@@ -5629,7 +5661,9 @@
         var cW = g.canvas.width, cH = g.canvas.height, vk = ''; for (var kk in v) if (typeof v[kk] === 'number') vk += kk + ':' + v[kk] + ',';
         var key = p + '|' + cW + 'x' + cH + '|' + vk + '|' + list.length + '|' + list[list.length - 1].p.length + '|' + JSON.stringify(pa[p] || 0), ce = null, ci;
         for (ci = 0; ci < inkCache.length; ci++) if (inkCache[ci].page === p && inkCache[ci].cv.width === cW && inkCache[ci].cv.height === cH) { ce = inkCache[ci]; inkCache.splice(ci, 1); break; }
-        if (lazy && (!ce || ce.list !== list || ce.key !== key)) { if (ce) inkCache.push(ce); return true; }
+        if (ce && (ce.list !== list || ce.key !== key) && inkBld && inkBld.p === p && !lazy) { inkCache.push(ce); return true; }
+        if (!ce && inkBld && inkBld.p === p && !lazy) return true;      // the writing of this page is being made in small steps: it is laid on the page when it is ready
+        if (lazy && (!ce || ce.list !== list || ce.key !== key)) { if (ce) inkCache.push(ce); inkBuild(p, v, list, key, cW, cH); return true; }
         if (!ce || ce.list !== list || ce.key !== key) { if (!ce) { ce = { page: p, cv: document.createElement('canvas') }; ce.cv.width = cW; ce.cv.height = cH; } var q = ce.cv.getContext('2d'); q.setTransform(1, 0, 0, 1, 0, 0); q.clearRect(0, 0, cW, cH); drawInkRaw(q, v, p, 'pen'); ce.list = list; ce.key = key; }
         inkCache.push(ce); while (inkCache.length > 5) { var old = inkCache.shift(); old.cv.width = old.cv.height = 1; }
         g.drawImage(ce.cv, 0, 0); drawInkRaw(g, v, p, 'hi'); return;      // (the highlighter multiplies with the page, so it is drawn on the page itself, after the pen)
